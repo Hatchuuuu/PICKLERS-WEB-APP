@@ -1,0 +1,16 @@
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\canvas-fonts\SmoochSans-OFL.txt
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\canvas-fonts\Tektur-OFL.txt
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\canvas-fonts\WorkSans-OFL.txt
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\canvas-fonts\YoungSerif-OFL.txt
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\references\canvas-design-system.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\references\shadcn-accessibility.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\references\shadcn-components.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\references\shadcn-theming.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\references\tailwind-customization.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\references\tailwind-responsive.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\references\tailwind-utilities.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\scripts\requirements.txt
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-styling\scripts\tests\requirements.txt
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\.claude\skills\ui-ux-pro-max\SKILL.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\vite-monorepo\README.md
+C:\Users\Nitro\Desktop\PICKLERS WEB APP\vite-monorepo\apps\web\index.html
