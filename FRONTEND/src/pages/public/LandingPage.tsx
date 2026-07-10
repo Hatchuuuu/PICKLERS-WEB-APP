@@ -270,10 +270,15 @@ export function LandingPage() {
       {/* Trusted Partners Marquee */}
       <style dangerouslySetInnerHTML={{ __html: shimmerStyles }} />
       <section className="py-12 md:py-16 border-y border-solid overflow-hidden flex flex-col items-center relative z-10 border-border/40 bg-surface-base/30" >
-        <div className="flex items-center gap-4 mb-8 md:mb-12 w-full max-w-[800px] px-8">
-          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-foreground/10" />
-          <p className="text-[10px] md:text-[11px] font-bold tracking-[0.3em] uppercase text-foreground/50 shrink-0">TRUSTED BY ELITE CLUBS & FACILITIES</p>
-          <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-foreground/10" />
+        <div className="flex flex-col items-center mb-8 md:mb-12 w-full max-w-[800px] px-8">
+          <div className="mb-4 p-2.5 rounded-full bg-white/[0.03] border border-white/5 shadow-[0_4px_16px_rgba(255,255,255,0.05),inset_0_1px_0_rgba(255,255,255,0.1)]">
+            <ShieldCheck className="w-5 h-5 text-foreground/70" strokeWidth={1.5} />
+          </div>
+          <div className="flex items-center gap-4 w-full">
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-foreground/10" />
+            <p className="text-[10px] md:text-[11px] font-bold tracking-[0.3em] uppercase text-foreground/50 shrink-0">TRUSTED BY ELITE CLUBS & FACILITIES</p>
+            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-foreground/10" />
+          </div>
         </div>
         <DraggableMarquee />
       </section>
