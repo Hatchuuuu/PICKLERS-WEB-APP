@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { cn, levelColor } from "@/lib/utils";
 import { OPEN_MATCHES } from "@/data/mockData";
@@ -97,52 +98,55 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
       </div>
 
       {/* Join Confirm Modal */}
-      <AnimatePresence>
-        {showJoinConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 pb-8">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
-              onClick={() => setShowJoinConfirm(false)} />
-            <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
-              transition={{ type: "spring", damping: 30, stiffness: 400 }}
-              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-              <div className="w-full max-w-[340px] bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[28px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
-                <div className="p-6 text-center pb-5">
-                  <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-4 ring-1 ring-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                    <span className="text-[24px] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]">🤝</span>
+      {createPortal(
+        <AnimatePresence>
+          {showJoinConfirm && (
+            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 pb-8">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl"
+                onClick={() => setShowJoinConfirm(false)} />
+              <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }}
+                exit={{ y: "100%", opacity: 0 }}
+                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
+                <div className="w-full max-w-[340px] bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[28px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
+                  <div className="p-6 text-center pb-5">
+                    <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-4 ring-1 ring-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                      <span className="text-[24px] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]">🤝</span>
+                    </div>
+                    <h3 className="text-[20px] font-bold text-foreground tracking-tight mb-2" >Join Match?</h3>
+                    <p className="text-[14px] text-foreground/70 leading-relaxed font-medium px-2">
+                      Join <span className="font-bold text-foreground">{m.level}</span> match at <span className="font-bold text-foreground">{m.facility}</span> on <span className="font-bold text-foreground">{m.date}</span> for <span className="font-bold text-emerald-400">₱{m.price}</span>?
+                    </p>
                   </div>
-                  <h3 className="text-[20px] font-bold text-foreground tracking-tight mb-2" >Join Match?</h3>
-                  <p className="text-[14px] text-foreground/70 leading-relaxed font-medium px-2">
-                    Join <span className="font-bold text-foreground">{m.level}</span> match at <span className="font-bold text-foreground">{m.facility}</span> on <span className="font-bold text-foreground">{m.date}</span> for <span className="font-bold text-emerald-400">₱{m.price}</span>?
-                  </p>
+                  <div className="p-5 pt-0 flex gap-2.5">
+                    <button onClick={() => setShowJoinConfirm(false)} className="flex-1 py-3.5 rounded-[16px] text-[15px] font-semibold text-foreground bg-black/10 hover:bg-black/20 dark:bg-white/10 dark:hover:bg-white/20 active:scale-[0.98] transition-all">
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmJoin}
+                      disabled={isSimulating || simSuccess}
+                      className="flex-[1.5] py-3.5 rounded-[16px] text-[15px] font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-400 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/50 flex items-center justify-center gap-2"
+                    >
+                      {isSimulating ? (
+                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
+                          className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+                      ) : simSuccess ? (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                          <Check className="w-6 h-6 text-white" />
+                        </motion.div>
+                      ) : (
+                        "Confirm & Join"
+                      )}
+                    </button>
+                  </div>
                 </div>
-                <div className="p-5 pt-0 flex gap-2.5">
-                  <button onClick={() => setShowJoinConfirm(false)} className="flex-1 py-3.5 rounded-[16px] text-[15px] font-semibold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmJoin}
-                    disabled={isSimulating || simSuccess}
-                    className="flex-[1.5] py-3.5 rounded-[16px] text-[15px] font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-400 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/50 flex items-center justify-center gap-2"
-                  >
-                    {isSimulating ? (
-                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
-                    ) : simSuccess ? (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-                        <Check className="w-6 h-6 text-white" />
-                      </motion.div>
-                    ) : (
-                      "Confirm & Join"
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.div>
   );
 }
