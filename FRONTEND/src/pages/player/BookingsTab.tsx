@@ -62,9 +62,9 @@ export function BookingsTab() {
           <motion.button key={t} onClick={() => setTab(t)}
             whileTap={{ scale: 0.95 }}
             animate={{ 
-              backgroundColor: tab === t ? "var(--accent-primary)" : "rgba(255, 255, 255, 0.04)",
+              backgroundColor: tab === t ? "var(--accent-primary)" : "var(--surface-interactive)",
               color: tab === t ? "var(--surface-base)" : "var(--ink-secondary)",
-              borderColor: tab === t ? "var(--accent-primary)" : "rgba(255, 255, 255, 0.08)",
+              borderColor: tab === t ? "var(--accent-primary)" : "var(--border-subtle)",
               boxShadow: tab === t ? "0 4px 12px rgba(0, 217, 139, 0.3)" : "0 0px 0px rgba(0,0,0,0)"
             }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -112,13 +112,7 @@ export function BookingsTab() {
           <AnimatePresence mode="popLayout">
             {filtered.map((b, i) => (
               <motion.div key={b.id} layout initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95, y: -16 }} transition={{ delay: i * 0.04, ease: [0.23, 1, 0.32, 1], duration: 0.6 }}
-                className="rounded-[24px] p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-transform duration-500 hover:-translate-y-1 relative"
-                style={{ 
-                  background: "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  boxShadow: "0 16px 40px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)",
-                  backdropFilter: "blur(40px)"
-                }}>
+                className="rounded-[24px] p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-transform duration-500 hover:-translate-y-1 relative bg-surface-base shadow-md border border-border dark:bg-white/[0.03] dark:shadow-[0_16px_40px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.1)] dark:border-white/[0.12] backdrop-blur-xl">
                 {("isNew" in b && b.isNew) && (
                   <motion.div className="absolute inset-0 rounded-[24px] border border-emerald-400 pointer-events-none"
                     initial={{ opacity: 0, boxShadow: "inset 0 0 0px rgba(52,211,139,0)" }}
@@ -129,8 +123,7 @@ export function BookingsTab() {
                 <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-xs font-mono text-muted-foreground mr-1">{b.id}</span>
-                  <span className={cn("text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider", statusColor(b.status))}
-                    style={{ border: "1px solid rgba(255,255,255,0.05)", backdropFilter: "blur(8px)" }}>
+                  <span className={cn("text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider bg-surface-interactive border border-border dark:bg-transparent dark:border-white/[0.05] backdrop-blur-md", statusColor(b.status))}>
                     {b.status}
                   </span>
                   {b.status === "upcoming" && (
@@ -177,28 +170,28 @@ export function BookingsTab() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
               onClick={() => setCancelModal(null)}
             />
             
             <motion.div 
               initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[320px] bg-gradient-to-b from-[#1c1c1e]/95 to-[#141415]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-white/[0.08]">
+              <div className="w-[320px] bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
                  <div className="p-8 text-center pb-6">
                    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-5 border border-red-500/20 shadow-[0_0_24px_rgba(239,68,68,0.2)]">
                      <span className="text-[24px] font-black text-red-400">!</span>
                    </div>
-                   <h3 className="text-[22px] font-black text-white tracking-tight" >Cancel Booking?</h3>
-                   <p className="text-[15px] text-white/60 mt-3 leading-relaxed">
-                     Cancel reservation for <span className="font-bold text-white">{cancelModal.court}</span>? You will be refunded <span className="font-bold text-white">₱{cancelModal.total.toLocaleString()}</span>.
+                   <h3 className="text-[22px] font-black text-foreground tracking-tight" >Cancel Booking?</h3>
+                   <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
+                     Cancel reservation for <span className="font-bold text-foreground">{cancelModal.court}</span>? You will be refunded <span className="font-bold text-foreground">₱{cancelModal.total.toLocaleString()}</span>.
                    </p>
                  </div>
                  <div className="flex flex-col p-5 pt-0 gap-3">
                    <button onClick={handleCancelConfirm} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-red-400 bg-red-500/10 hover:bg-red-500/20 active:scale-[0.98] transition-all border border-red-500/20">
                      Cancel Booking
                    </button>
-                   <button onClick={() => setCancelModal(null)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-black bg-white hover:bg-white/90 active:scale-[0.98] transition-all">
+                   <button onClick={() => setCancelModal(null)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-black bg-surface-raised border border-border hover:bg-surface-raised border border-border/90 active:scale-[0.98] transition-all">
                      Keep Booking
                    </button>
                  </div>
@@ -212,8 +205,7 @@ export function BookingsTab() {
       <AnimatePresence>
         {toast && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl border border-solid shadow-lg z-50 flex items-center gap-3"
-            style={{ background: "rgba(10,22,40,0.95)", borderColor: "rgba(0,217,139,0.3)", backdropFilter: "blur(12px)" }}>
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl border border-solid shadow-lg z-50 flex items-center gap-3 bg-surface-base/95 border-emerald-500/30 backdrop-blur-md">
             <div className="w-2 h-2 rounded-full" style={{ background: "var(--accent-success)" }} />
             <span className="text-sm font-medium" style={{ color: "var(--ink-primary)" }}>{toast}</span>
           </motion.div>

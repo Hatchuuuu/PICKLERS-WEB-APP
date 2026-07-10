@@ -89,11 +89,9 @@ export function CommunityTab() {
           className="flex flex-col absolute inset-0 bg-background z-20"
         >
         {/* Chat Header */}
-        <div className="px-4 py-3 shrink-0 flex items-center gap-3 sticky top-0 z-10"
-          style={{ background: "rgba(10,22,40,0.7)", borderBottom: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(30px)" }}>
-          <button onClick={() => setChatOpen(null)} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-95 transition-all"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.05)" }}>
-            <ChevronLeft className="w-5 h-5 pr-0.5" style={{ color: "var(--accent-primary)" }} />
+        <div className="px-4 py-3 shrink-0 flex items-center gap-3 sticky top-0 z-10 bg-surface-base/70 border-b border-border backdrop-blur-2xl">
+          <button onClick={() => setChatOpen(null)} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-95 transition-all bg-surface-interactive border border-border dark:bg-white/[0.06] dark:border-white/[0.05]">
+            <ChevronLeft className="w-5 h-5 pr-0.5 text-accent-primary" />
           </button>
           <div className="relative">
             <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
@@ -125,7 +123,7 @@ export function CommunityTab() {
                 <div className="px-4 py-2.5 rounded-[20px] text-[15px] leading-relaxed shadow-sm"
                   style={msg.from === "me"
                     ? { background: "linear-gradient(135deg, var(--accent-primary) 0%, #00C67F 100%)", color: "var(--surface-base)", borderBottomRightRadius: "4px", boxShadow: "0 2px 10px rgba(0,217,139,0.3)" }
-                    : { background: "rgba(255,255,255,0.06)", color: "var(--ink-primary)", borderBottomLeftRadius: "4px", border: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(12px)" }}>
+                    : { background: "var(--surface-interactive)", color: "var(--ink-primary)", borderBottomLeftRadius: "4px", border: "1px solid var(--border-subtle)" }}>
                   {msg.text}
                 </div>
                 <div className={`text-[10px] text-muted-foreground mt-1 ${msg.from === "me" ? "text-right" : "text-left"}`}>
@@ -138,20 +136,18 @@ export function CommunityTab() {
         </div>
 
         {/* Input */}
-        <div className="px-4 pt-3 pb-2 shrink-0 flex gap-2 items-end"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(10,22,40,0.8)", backdropFilter: "blur(20px)" }}>
+        <div className="px-4 pt-3 pb-2 shrink-0 flex gap-2 items-end border-t border-border bg-surface-base/80 backdrop-blur-xl">
           <input
             value={draft}
             onChange={e => setDraft(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage()}
             placeholder="Aa"
-            className="flex-1 px-4 py-2.5 rounded-full text-[15px] outline-none transition-shadow"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--ink-primary)" }}
+            className="flex-1 px-4 py-2.5 rounded-full text-[15px] outline-none transition-shadow bg-surface-interactive border border-border dark:bg-white/[0.06] dark:border-white/[0.08] text-foreground"
           />
           <button onClick={sendMessage}
             className="w-11 h-11 rounded-full flex items-center justify-center active:scale-95 transition-all duration-300 shrink-0"
             style={{ 
-              background: draft.trim() ? "linear-gradient(135deg, var(--accent-primary) 0%, #00C67F 100%)" : "rgba(255,255,255,0.08)",
+              background: draft.trim() ? "linear-gradient(135deg, var(--accent-primary) 0%, #00C67F 100%)" : "var(--surface-interactive)",
               boxShadow: draft.trim() ? "0 2px 12px rgba(0,217,139,0.4)" : "none"
             }}>
             <Send className="w-5 h-5 ml-0.5" style={{ color: draft.trim() ? "var(--surface-base)" : "var(--ink-muted)" }} />
