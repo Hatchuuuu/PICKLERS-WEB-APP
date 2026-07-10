@@ -233,7 +233,7 @@ export function LandingPage() {
             <button onClick={() => navigate("/auth?intent=book")}
               className="px-5 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-[13px] sm:text-base active:scale-[0.98] transition-all relative overflow-hidden group flex items-center justify-center gap-2 sm:gap-2.5 animate-kid-jump whitespace-nowrap bg-accent-primary text-white shadow-[0_8px_32px_-8px_rgba(0,217,139,0.5)]" style={{ animationDelay: "1.5s" }}>
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-              <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/90 to-transparent skew-x-[-20deg]" style={{ animation: "button-shine 8s ease infinite", animationDelay: "1.5s" }} />
+              <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/90 to-transparent skew-x-[-20deg]" style={{ animation: "button-shine 3s ease infinite", animationDelay: "1.5s" }} />
               <CalendarCheck className="relative z-10 w-[18px] h-[18px] sm:w-5 sm:h-5" />
               <span className="relative z-10">Book a Court</span>
             </button>
@@ -241,7 +241,7 @@ export function LandingPage() {
               className="px-5 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-[13px] sm:text-base active:scale-[0.98] transition-all relative overflow-hidden group flex items-center justify-center gap-2 sm:gap-2.5 animate-kid-jump whitespace-nowrap"
               style={{ background: "var(--accent-secondary)", color: "#ffffff", boxShadow: "0 8px 32px -8px rgba(59, 130, 246, 0.5)", animationDelay: "2.5s" }}>
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-              <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/90 to-transparent skew-x-[-20deg]" style={{ animation: "button-shine 8s ease infinite", animationDelay: "2.5s" }} />
+              <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/90 to-transparent skew-x-[-20deg]" style={{ animation: "button-shine 3s ease infinite", animationDelay: "2.5s" }} />
               <UserSearch className="relative z-10 w-[18px] h-[18px] sm:w-5 sm:h-5" />
               <span className="relative z-10">Join Open Play</span>
             </button>
@@ -253,7 +253,7 @@ export function LandingPage() {
               border: "1px solid rgba(0, 217, 139, 0.3)",
               boxShadow: "0 0 24px -6px rgba(0, 217, 139, 0.4), inset 0 0 12px -6px rgba(0, 217, 139, 0.2)"
             }}>
-            <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-[-20deg]" style={{ animation: "button-shine 8s ease infinite", animationDelay: "3.5s" }} />
+            <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-[-20deg]" style={{ animation: "button-shine 3s ease infinite", animationDelay: "3.5s" }} />
             <div className="relative z-10 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0"
               style={{ background: "var(--accent-primary-muted)", color: "var(--accent-primary)" }}>
               <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
