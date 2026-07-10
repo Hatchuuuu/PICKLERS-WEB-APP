@@ -138,6 +138,7 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
 
         {/* Re-center Button Left */}
         <motion.button 
+          onClick={() => setViewState({ longitude: 123.3050, latitude: 9.3110, zoom: 15.5, pitch: 65, bearing: 10 })}
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.6, type: "spring" }}
