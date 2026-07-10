@@ -31,15 +31,6 @@ export function ExploreTab() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <AnimatePresence>
-        {joined.size > 0 && (
-          <motion.div initial={{ opacity: 0, y: -20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ type: "spring", bounce: 0.4 }} className="flex items-center gap-3 px-4 py-3 rounded-xl mb-5"
-            style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)" }}>
-            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="text-sm text-emerald-400">You've joined {joined.size} match{joined.size > 1 ? "es" : ""}! Payment will be collected at the venue.</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
       <div className="flex gap-1.5 mb-6 overflow-x-auto pb-2 scrollbar-none">
         {levels.map(l => (
           <motion.button key={l} onClick={() => setFilter(l)}
@@ -84,6 +75,20 @@ export function ExploreTab() {
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Floating Success Snackbar */}
+      <AnimatePresence>
+        {joined.size > 0 && (
+          <motion.div initial={{ opacity: 0, y: 50, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.9 }} transition={{ type: "spring", bounce: 0.4 }} 
+            className="fixed bottom-[96px] left-4 right-4 md:left-auto md:right-8 md:w-auto flex items-center gap-3 px-4 py-3.5 rounded-[20px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5)] z-50 backdrop-blur-3xl"
+            style={{ background: "rgba(10, 25, 20, 0.85)", border: "1px solid rgba(34,197,94,0.3)" }}>
+            <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 ring-1 ring-emerald-500/30">
+              <Check className="w-3.5 h-3.5 text-emerald-400" strokeWidth={3} />
+            </div>
+            <span className="text-[14.5px] font-medium text-emerald-400/90 leading-snug pr-2">You've joined {joined.size} match{joined.size > 1 ? "es" : ""}! Payment will be collected at the venue.</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
