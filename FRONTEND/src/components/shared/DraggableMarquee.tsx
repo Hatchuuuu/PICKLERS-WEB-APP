@@ -66,7 +66,7 @@ export function DraggableMarquee() {
           {[1, 2, 3].map((set) => (
             <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-24 pl-16 md:pl-24 group">
               {brands.map((brand, i) => (
-                <div key={i} className="flex items-center gap-3.5 text-foreground/40 font-semibold text-lg md:text-xl tracking-tight transition-all duration-500 hover:scale-110 select-none">
+                <div key={i} className="flex flex-col items-center justify-center gap-3 transition-all duration-500 hover:scale-110 select-none group/item">
                   
                   <img 
                     src={brand.logoUrl} 
@@ -74,14 +74,12 @@ export function DraggableMarquee() {
                     className="h-8 md:h-10 w-auto max-w-[120px] md:max-w-[160px] object-contain drop-shadow-md rounded-sm" 
                     onError={(e) => { 
                       e.currentTarget.style.display = 'none'; 
-                      if (e.currentTarget.nextElementSibling) {
-                        e.currentTarget.nextElementSibling.classList.remove('hidden');
-                      }
                     }} 
                   />
                   
-                  {/* Fallback Text if Logo Fails */}
-                  <span className="hidden whitespace-nowrap">{brand.label}</span>
+                  <span className="text-foreground/50 group-hover/item:text-foreground/80 font-semibold text-xs md:text-sm tracking-[0.2em] uppercase transition-colors duration-300 text-center">
+                    {brand.label}
+                  </span>
                 </div>
               ))}
             </div>
