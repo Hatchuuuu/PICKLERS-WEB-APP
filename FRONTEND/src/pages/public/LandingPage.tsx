@@ -30,7 +30,7 @@ export function LandingPage() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -116,19 +116,19 @@ export function LandingPage() {
         <div className="hidden md:flex items-center gap-8">
           {mounted && (
             <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="text-foreground/80 hover:text-foreground transition-colors p-2 rounded-full hover:bg-surface-interactive focus:outline-none"
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              className="text-foreground/80 hover:text-foreground transition-colors p-2 rounded-full hover:bg-surface-interactive focus:outline-none flex items-center justify-center"
               aria-label="Toggle Theme"
             >
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
-                  key={theme === "dark" ? "dark" : "light"}
+                  key={resolvedTheme === "dark" ? "dark" : "light"}
                   initial={{ y: -10, opacity: 0, rotate: -45 }}
                   animate={{ y: 0, opacity: 1, rotate: 0 }}
                   exit={{ y: 10, opacity: 0, rotate: 45 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 >
-                  {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                  {resolvedTheme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </motion.div>
               </AnimatePresence>
             </button>
@@ -150,7 +150,16 @@ export function LandingPage() {
       <AnimatePresence>
         {mobileMenu && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            className="fixed top-[60px] left-0 right-0 z-40 p-4 bg-surface-base/95 border-b border-border backdrop-blur-xl">
+            className="fixed top-[60px] left-0 right-0 z-40 p-4 bg-surface-base/95 border-b border-border backdrop-blur-xl flex flex-col gap-4">
+            {mounted && (
+              <button
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                className="w-full py-3.5 rounded-[10px] font-semibold shadow-sm bg-surface-interactive text-foreground flex items-center justify-center gap-2"
+              >
+                {resolvedTheme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                {resolvedTheme === "dark" ? "Dark Mode" : "Light Mode"}
+              </button>
+            )}
             <button onClick={() => { navigate("/auth?intent=signup"); setMobileMenu(false); }}
               className="w-full py-3.5 rounded-[10px] font-semibold shadow-sm"
               style={{ background: "var(--accent-primary)", color: "var(--ink-inverse)" }}>
