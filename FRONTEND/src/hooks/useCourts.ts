@@ -94,7 +94,11 @@ export function useUpdateCourt() {
   return useMutation({
     mutationFn: async (courtUpdates: any) => {
       await delay(500); // simulate latency
-      // In a real app, this patches the backend
+      // Actually mutate the mock backend so refetches persist the state
+      const idx = LIVE_COURTS.findIndex(c => c.id === courtUpdates.id);
+      if (idx !== -1) {
+        LIVE_COURTS[idx] = { ...LIVE_COURTS[idx], ...courtUpdates };
+      }
       return courtUpdates;
     },
     onMutate: async (newCourt) => {

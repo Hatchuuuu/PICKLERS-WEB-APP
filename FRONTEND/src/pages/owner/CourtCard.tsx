@@ -15,7 +15,11 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
     if (court.status !== "occupied" || seconds <= 0) return;
     const t = setInterval(() => setSeconds(s => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
-  }, [court.status]);
+  }, [court.status, seconds]);
+
+  useEffect(() => {
+    setSeconds(court.remaining);
+  }, [court.remaining]);
 
   useEffect(() => {
     onAlertChange?.(isAlert);
@@ -57,7 +61,7 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
           </div>
           <button onClick={() => setShowEndConfirm(true)}
             className="w-full text-[13px] font-semibold mt-1.5 py-2.5 rounded-full active:scale-[0.97] transition-all bg-[#ff3b30]/10 hover:bg-[#ff3b30]/15 border border-[#ff3b30]/15 text-[#ff3b30]">
-            Skip / End Session
+            {isAlert ? "Clear Court" : "End Session Early"}
           </button>
         </>
       )}
@@ -82,8 +86,10 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-border text-center bg-surface-base/95 dark:bg-[#1e1e20]/75 backdrop-blur-[40px] saturate-150 dark:border-white/[0.15]">
-              <h3 className="text-xl font-bold text-foreground mb-2">End Session Early?</h3>
-              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">Are you sure you want to terminate this active session? The players will be notified that their court time has ended.</p>
+              <h3 className="text-xl font-bold text-foreground mb-2">{isAlert ? "Clear Court?" : "End Session Early?"}</h3>
+              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">
+                {isAlert ? "Are you sure you want to clear this court and make it available again?" : "Are you sure you want to terminate this active session? The players will be notified that their court time has ended."}
+              </p>
               <div className="flex flex-col gap-3">
                 <button onClick={() => { onEnd?.(); setShowEndConfirm(false); }} 
                   className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-accent-danger text-white" >
