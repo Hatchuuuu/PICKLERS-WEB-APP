@@ -83,8 +83,8 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
           onLoad={() => setImgLoaded(true)}
           className="w-full h-full object-cover" 
         />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #0A1118 0%, rgba(10,17,24,0.4) 40%, transparent 100%)" }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(10,17,24,0.5) 0%, transparent 40%)" }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 dark:from-[#0A1118] dark:via-[#0A1118]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 dark:from-[#0A1118]/50 dark:via-transparent to-transparent" />
 
         {/* Premium Frosted Back Button */}
         <button onClick={onBack} aria-label="Back to courts"

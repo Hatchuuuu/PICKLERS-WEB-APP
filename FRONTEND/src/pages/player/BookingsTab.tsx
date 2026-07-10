@@ -152,10 +152,8 @@ export function BookingsTab() {
                 </div>
                 {b.status === "upcoming" && (
                   <button onClick={() => setCancelModal(b)}
-                    className="text-[13px] px-5 py-2 rounded-full font-bold active:scale-[0.95] transition-all duration-300 bg-red-500/10"
-                    style={{ border: "1px solid rgba(239,68,68,0.2)", color: "var(--accent-danger)" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.2)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.2)"; }}>
+                    className="px-5 py-2 rounded-full text-[13px] font-bold transition-all active:scale-[0.95] bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 hover:border-red-500/40"
+                  >
                     Cancel
                   </button>
                 )}

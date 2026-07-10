@@ -254,13 +254,7 @@ export function CommunityTab() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-foreground">{p.name}</span>
-                    <span className="text-[11px] px-2.5 py-0.5 rounded-full font-bold tracking-wide whitespace-nowrap flex items-center gap-1"
-                      style={{ 
-                        background: "rgba(0,217,139,0.08)", 
-                        color: "var(--accent-primary)",
-                        border: "1px solid rgba(0,217,139,0.2)",
-                        backdropFilter: "blur(4px)"
-                      }}>
+                    <span className="text-[11px] px-2.5 py-0.5 rounded-full font-bold tracking-wide whitespace-nowrap flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 backdrop-blur-sm">
                       <span className="opacity-60 text-[9px] uppercase tracking-wider">Lv</span> {p.level}
                     </span>
                   </div>

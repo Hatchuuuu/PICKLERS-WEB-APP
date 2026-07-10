@@ -13,7 +13,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
   return (
     <button
       onClick={onChange}
-      className={`w-12 h-[28px] rounded-full flex items-center px-0.5 transition-colors duration-300 shrink-0 ${checked ? "bg-emerald-500" : "bg-surface-interactive border border-white/5"}`}
+      className={`w-12 h-[28px] rounded-full flex items-center px-0.5 transition-colors duration-300 shrink-0 ${checked ? "bg-emerald-500" : "bg-surface-interactive border border-black/5 dark:border-white/5"}`}
     >
       <motion.div
         className="w-[24px] h-[24px] rounded-full bg-surface-raised border border-border shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
