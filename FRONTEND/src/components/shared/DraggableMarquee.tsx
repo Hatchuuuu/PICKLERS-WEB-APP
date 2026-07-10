@@ -3,12 +3,27 @@ import { Trophy, MapPin, ShieldCheck, Building, Zap } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 
-const logos = [
-  { icon: Trophy, label: "DUPR" },
-  { icon: MapPin, label: "Manila Polo Club" },
-  { icon: ShieldCheck, label: "PPA Tour" },
-  { icon: Building, label: "The Picklerry" },
-  { icon: Zap, label: "Joola" },
+const brands = [
+  { label: "JOOLA", domain: "joolausa.com" },
+  { label: "Selkirk", domain: "selkirk.com" },
+  { label: "Six Zero", domain: "sixzeropickleball.com" },
+  { label: "CRBN", domain: "crbnpickleball.com" },
+  { label: "Wilson", domain: "wilson.com" },
+  { label: "Gearbox", domain: "gearboxsports.com" },
+  { label: "Vatic Pro", domain: "vaticpro.com" },
+  { label: "Pelago", domain: "pelagosports.com" },
+  { label: "Palakol Performance", domain: "palakolphilippines.com" },
+  { label: "Bread & Butter", domain: "bnbpickleball.com" },
+  { label: "Honolulu Pickleball", domain: "honolulupickleballcompany.com" },
+  { label: "Holbrook", domain: "holbrookpickleball.com" },
+  { label: "11SIX24", domain: "11six24.com" },
+  { label: "Franklin", domain: "franklinsports.com" },
+  { label: "Head", domain: "head.com" },
+  { label: "Black Knight", domain: "blackknight.ca" },
+  { label: "Questor", domain: "olympicvillageunited.com" },
+  { label: "Tecnifibre", domain: "tecnifibre.com" },
+  { label: "Mizuno", domain: "mizunousa.com" },
+  { label: "Volair", domain: "volair.com" }
 ];
 
 export function DraggableMarquee() {
@@ -48,11 +63,21 @@ export function DraggableMarquee() {
     <div className="w-full max-w-[2000px] overflow-hidden cursor-grab active:cursor-grabbing" style={{ maskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)" }}>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex touch-pan-y">
-          {[1, 2, 3, 4, 5, 6].map((set) => (
-            <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-32 pl-16 md:pl-32 group">
-              {logos.map((logo, i) => (
-                <div key={i} className="flex items-center gap-3 text-foreground/40 font-semibold text-xl md:text-2xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_16px_rgba(255,255,255,0.2)] select-none">
-                  <logo.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} /> {logo.label}
+          {[1, 2, 3].map((set) => (
+            <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-24 pl-16 md:pl-24 group">
+              {brands.map((brand, i) => (
+                <div key={i} className="flex items-center gap-3.5 text-foreground/40 font-semibold text-lg md:text-xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_16px_rgba(255,255,255,0.2)] select-none">
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-lg flex items-center justify-center p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden">
+                    <img 
+                      src={`https://logo.clearbit.com/${brand.domain}?size=100`} 
+                      alt={brand.label}
+                      className="w-full h-full object-contain" 
+                      onError={(e) => { 
+                        e.currentTarget.style.display = 'none'; 
+                      }} 
+                    />
+                  </div>
+                  {brand.label}
                 </div>
               ))}
             </div>
