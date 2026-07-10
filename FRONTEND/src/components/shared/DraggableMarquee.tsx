@@ -17,7 +17,7 @@ export function DraggableMarquee() {
     [
       AutoScroll({
         playOnInit: true,
-        speed: 0.8, // Smooth ambient speed
+        speed: 1.6, // 2x faster ambient speed
         stopOnInteraction: true, // We will manually restart it to control the exact delay
         direction: "backward", // Flows to the RIGHT
       })
