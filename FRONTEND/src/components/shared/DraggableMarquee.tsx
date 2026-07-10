@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Trophy, MapPin, ShieldCheck, Building, Zap } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
@@ -11,17 +12,37 @@ const logos = [
 ];
 
 export function DraggableMarquee() {
-  const [emblaRef] = useEmblaCarousel(
+  const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, dragFree: true },
     [
       AutoScroll({
         playOnInit: true,
         speed: 0.8, // Smooth ambient speed
-        stopOnInteraction: false, // Automatically resumes after drag!
+        stopOnInteraction: true, // We will manually restart it to control the exact delay
         direction: "backward", // Flows to the RIGHT
       })
     ]
   );
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const autoScroll = emblaApi.plugins().autoScroll;
+    if (!autoScroll) return;
+
+    // Wait exactly 200ms (very short pause) after they let go, then resume!
+    const resumeAutoScroll = () => {
+      setTimeout(() => {
+        if (!autoScroll.isPlaying()) {
+          autoScroll.play();
+        }
+      }, 200); 
+    };
+
+    emblaApi.on("pointerUp", resumeAutoScroll);
+    return () => {
+      emblaApi.off("pointerUp", resumeAutoScroll);
+    };
+  }, [emblaApi]);
 
   return (
     <div className="w-full max-w-[2000px] overflow-hidden cursor-grab active:cursor-grabbing" style={{ maskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)" }}>
