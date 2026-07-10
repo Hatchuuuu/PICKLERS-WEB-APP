@@ -31,10 +31,13 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
     <div className={`rounded-3xl p-5 transition-all relative overflow-hidden backdrop-blur-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${isAlert ? 'border border-red-500/60 dark:border-t-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.15),inset_0_0_20px_rgba(239,68,68,0.05)] bg-red-500/5' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
       <div className="flex items-center justify-between gap-3 mb-5">
         <span className="text-[16px] font-bold text-foreground tracking-tight leading-tight truncate whitespace-nowrap">{court.name}</span>
-        <div className={cn("w-2.5 h-2.5 rounded-full shrink-0",
-          isAlert ? "bg-red-500 dark:shadow-[0_0_8px_rgba(239,68,68,0.6)]" :
-          court.status === "occupied" ? "bg-cyan-500 dark:shadow-[0_0_8px_rgba(6,182,212,0.6)]" :
-          court.status === "available" ? "bg-emerald-500 dark:shadow-[0_0_8px_rgba(16,185,129,0.6)]" : 
+        <motion.div 
+          animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className={cn("w-3 h-3 rounded-full shrink-0",
+          isAlert ? "bg-red-500 dark:shadow-[0_0_12px_rgba(239,68,68,0.8)]" :
+          court.status === "occupied" ? "bg-cyan-500 dark:shadow-[0_0_12px_rgba(6,182,212,0.8)]" :
+          court.status === "available" ? "bg-emerald-500 dark:shadow-[0_0_12px_rgba(16,185,129,0.8)]" : 
           "bg-muted"
         )} />
       </div>
