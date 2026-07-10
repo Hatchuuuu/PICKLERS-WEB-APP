@@ -51,7 +51,7 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={`p-5 flex gap-5 items-center cursor-default h-full rounded-[24px] backdrop-blur-[20px] shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${joined ? 'bg-emerald-500/5 border border-emerald-500/30' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
+      className={`p-5 flex gap-5 items-center cursor-default h-full rounded-[24px] border backdrop-blur-[20px] ${joined ? 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_8px_32px_rgba(52,211,153,0.15),inset_0_1px_1px_rgba(255,255,255,0.1)]' : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.01] dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.06)]'}`}>
       <CapacityRing filled={filled} max={m.max} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1.5">
@@ -78,13 +78,13 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
         <div className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-muted)" }}>your share</div>
         {publicMode ? (
           <button onClick={onJoin} disabled={joined || full}
-            className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-150 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-accent-success border-[1.5px] border-accent-success' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none' : 'bg-accent-secondary text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
+            className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none' : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
             {joined ? "Joined" : full ? "Full" : "Join"}
           </button>
         ) : (
           <VerificationGate disabled={joined || full} onVerifiedClick={handleJoin}>
             <button disabled={joined || full}
-              className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-150 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-accent-success border-[1.5px] border-accent-success' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none' : 'bg-accent-secondary text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
+              className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none' : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
               {loading ? (
                 <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
                   className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full" />
