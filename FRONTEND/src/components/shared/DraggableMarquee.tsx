@@ -4,26 +4,26 @@ import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 
 const brands = [
-  { label: "JOOLA", domain: "joolausa.com" },
-  { label: "Selkirk", domain: "selkirk.com" },
-  { label: "Six Zero", domain: "sixzeropickleball.com" },
-  { label: "CRBN", domain: "crbnpickleball.com" },
-  { label: "Wilson", domain: "wilson.com" },
-  { label: "Gearbox", domain: "gearboxsports.com" },
-  { label: "Vatic Pro", domain: "vaticpro.com" },
-  { label: "Pelago", domain: "pelagosports.com" },
-  { label: "Palakol Performance", domain: "palakolphilippines.com" },
-  { label: "Bread & Butter", domain: "bnbpickleball.com" },
-  { label: "Honolulu Pickleball", domain: "honolulupickleballcompany.com" },
-  { label: "Holbrook", domain: "holbrookpickleball.com" },
-  { label: "11SIX24", domain: "11six24.com" },
-  { label: "Franklin", domain: "franklinsports.com" },
-  { label: "Head", domain: "head.com" },
-  { label: "Black Knight", domain: "blackknight.ca" },
-  { label: "Questor", domain: "olympicvillageunited.com" },
-  { label: "Tecnifibre", domain: "tecnifibre.com" },
-  { label: "Mizuno", domain: "mizunousa.com" },
-  { label: "Volair", domain: "volair.com" }
+  { "label": "JOOLA", "logoUrl": "/brand-logos/joola.png" },
+  { "label": "Selkirk", "logoUrl": "/brand-logos/selkirk.png" },
+  { "label": "Six Zero", "logoUrl": "/brand-logos/six-zero.png" },
+  { "label": "CRBN", "logoUrl": "/brand-logos/crbn.png" },
+  { "label": "Wilson", "logoUrl": "https://logo.clearbit.com/wilson.com?size=100" },
+  { "label": "Gearbox", "logoUrl": "https://logo.clearbit.com/gearboxsports.com?size=100" },
+  { "label": "Vatic Pro", "logoUrl": "/brand-logos/vatic-pro.png" },
+  { "label": "Pelago", "logoUrl": "/brand-logos/pelago.svg" },
+  { "label": "Palakol Performance", "logoUrl": "/brand-logos/palakol-performance.png" },
+  { "label": "Bread & Butter", "logoUrl": "/brand-logos/bread-butter.png" },
+  { "label": "Honolulu Pickleball", "logoUrl": "https://logo.clearbit.com/honolulupickleballcompany.com?size=100" },
+  { "label": "Holbrook", "logoUrl": "/brand-logos/holbrook.png" },
+  { "label": "11SIX24", "logoUrl": "/brand-logos/11six24.png" },
+  { "label": "Franklin", "logoUrl": "https://logo.clearbit.com/franklinsports.com?size=100" },
+  { "label": "Head", "logoUrl": "https://logo.clearbit.com/head.com?size=100" },
+  { "label": "Black Knight", "logoUrl": "/brand-logos/black-knight.png" },
+  { "label": "Questor", "logoUrl": "/brand-logos/questor.png" },
+  { "label": "Tecnifibre", "logoUrl": "/brand-logos/tecnifibre.png" },
+  { "label": "Mizuno", "logoUrl": "/brand-logos/mizuno.png" },
+  { "label": "Volair", "logoUrl": "/brand-logos/volair.png" }
 ];
 
 export function DraggableMarquee() {
@@ -68,7 +68,7 @@ export function DraggableMarquee() {
               {brands.map((brand, i) => (
                 <div key={i} className="flex items-center gap-3.5 text-foreground/40 font-semibold text-lg md:text-xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_16px_rgba(255,255,255,0.2)] select-none">
                   <img 
-                    src={`https://logo.clearbit.com/${brand.domain}?size=100`} 
+                    src={brand.logoUrl} 
                     alt={brand.label}
                     className="h-8 md:h-10 w-auto object-contain drop-shadow-md rounded-sm" 
                     onError={(e) => { 
