@@ -51,24 +51,26 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={`p-5 flex gap-5 items-center cursor-default h-full rounded-[24px] border backdrop-blur-[20px] ${joined ? 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_8px_32px_rgba(52,211,153,0.15),inset_0_1px_1px_rgba(255,255,255,0.1)]' : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.01] dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.06)]'}`}>
+      className={`relative p-5 pt-[52px] flex gap-5 items-center cursor-default h-full rounded-[24px] border backdrop-blur-[20px] ${joined ? 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_8px_32px_rgba(52,211,153,0.15),inset_0_1px_1px_rgba(255,255,255,0.1)]' : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.01] dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.06)]'}`}>
+      
+      {/* Absolute Level Badge */}
+      <div className="absolute top-4 left-5 flex items-center gap-2">
+        <span className="text-[12px] px-3 py-1 rounded-full font-bold tracking-wide bg-black/5 text-accent-primary border border-border dark:bg-white/5 dark:border-white/5 backdrop-blur-[8px]">
+          {m.level}
+        </span>
+        {joined && (
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full font-semibold border border-solid"
+            style={{
+              background: "rgba(52,211,153,0.1)",
+              color: "var(--accent-success)",
+              borderColor: "rgba(52,211,153,0.25)"
+            }}>
+            Joined ✓
+          </span>
+        )}
+      </div>
       <CapacityRing filled={filled} max={m.max} />
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-[12px] px-3 py-1 rounded-full font-bold tracking-wide bg-black/5 text-accent-primary border border-border dark:bg-white/5 dark:border-white/5 backdrop-blur-[8px]">
-            {m.level}
-          </span>
-          {joined && (
-            <span className="text-[11px] px-2.5 py-0.5 rounded-full font-semibold border border-solid"
-              style={{
-                background: "rgba(52,211,153,0.1)",
-                color: "var(--accent-success)",
-                borderColor: "rgba(52,211,153,0.25)"
-              }}>
-              Joined ✓
-            </span>
-          )}
-        </div>
         <div className="text-[16px] font-bold tracking-tight truncate" style={{ color: "var(--ink-primary)" }}>{m.facility}</div>
         <div className="text-[13px] font-medium mt-1" style={{ color: "var(--ink-secondary)" }}>{m.date} · {m.time}</div>
         <div className="text-[12px] font-medium mt-1" style={{ color: "var(--ink-muted)" }}>Host: {m.host}</div>
