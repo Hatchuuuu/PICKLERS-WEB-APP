@@ -393,17 +393,17 @@ export function AuthPage() {
             </AnimatePresence>
           </motion.button>
 
-          <div className="flex items-center gap-4 my-3">
-            <div className="flex-1 h-px" style={{ background: "var(--border-subtle)" }} />
-            <span className="text-[11px] font-bold tracking-wider" style={{ color: "var(--ink-muted)" }}>OR CONTINUE WITH</span>
-            <div className="flex-1 h-px" style={{ background: "var(--border-subtle)" }} />
+          <div className="flex items-center gap-4 my-5">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-black/10 to-black/10 dark:via-white/10 dark:to-white/10" />
+            <span className="text-[11px] font-bold tracking-widest text-foreground/40 uppercase">OR CONTINUE WITH</span>
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent via-black/10 to-black/10 dark:via-white/10 dark:to-white/10" />
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 pb-1">
             {["Google", "Facebook"].map(provider => (
               <button key={provider} type="button"
-                className="flex-1 py-2.5 rounded-[10px] text-[15px] font-medium active:scale-[0.98] hover:bg-surface-raised transition-all border border-solid flex items-center justify-center gap-2"
-                style={{ background: "var(--surface-interactive)", borderColor: "var(--border-default)", color: "var(--ink-primary)" }}>
+                className="flex-1 h-[48px] rounded-[16px] text-[15px] font-semibold tracking-tight transition-all duration-300 flex items-center justify-center gap-2.5 active:scale-[0.97] bg-white dark:bg-white/5 border border-black/[0.04] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-[1px] text-foreground"
+              >
                 {provider === "Google" ? (
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
