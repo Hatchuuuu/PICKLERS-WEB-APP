@@ -276,7 +276,7 @@ export function LandingPage() {
           </div>
           <div className="flex items-center gap-4 w-full">
             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-foreground/10" />
-            <p className="text-[10px] md:text-[11px] font-bold tracking-[0.3em] uppercase text-foreground/50 shrink-0">TRUSTED BY ELITE CLUBS & FACILITIES</p>
+            <p className="text-[10px] md:text-[11px] font-bold tracking-[0.3em] uppercase text-foreground/50 shrink-0">TRUSTED BY FAMOUS BRANDS & FACILITIES</p>
             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-foreground/10" />
           </div>
         </div>
