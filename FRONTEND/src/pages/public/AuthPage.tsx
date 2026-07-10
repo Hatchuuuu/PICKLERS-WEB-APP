@@ -166,9 +166,8 @@ export function AuthPage() {
           className="w-full max-w-[440px] rounded-[24px] p-5 sm:p-8 relative z-10 overflow-hidden bg-white/80 dark:bg-[#111f3a]/60 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-[0_24px_48px_rgba(0,0,0,0.4)]">
 
         <div className="text-center mb-4 sm:mb-6">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <PicklersLogo size={32} />
-            <ShinyText text="PICKLERS" className="text-2xl font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+          <div className="flex items-center justify-center mb-4 mt-2">
+            <PicklersLogo size={42} />
           </div>
           <AnimatePresence mode="wait">
             <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
