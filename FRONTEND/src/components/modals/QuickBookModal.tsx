@@ -140,7 +140,7 @@ export function QuickBookModal({
           </div>
         </div>
 
-        <div className="px-6 pt-5 pb-8 overflow-y-auto scrollbar-none">
+        <div className="px-6 pt-5 pb-[max(env(safe-area-inset-bottom),32px)] overflow-y-auto scrollbar-none">
           {stage === "form" && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
 

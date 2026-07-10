@@ -191,7 +191,9 @@ WITH CHECK (status = 'cancelled');
 
 -- Open Matches: Viewable by all, manageable by host.
 CREATE POLICY "Open matches are viewable by everyone" ON open_matches FOR SELECT USING (true);
-CREATE POLICY "Hosts can manage their open matches" ON open_matches FOR ALL USING (auth.uid() = host_id);
+CREATE POLICY "Hosts can manage their open matches" ON open_matches FOR UPDATE USING (auth.uid() = host_id);
+CREATE POLICY "Hosts can delete their open matches" ON open_matches FOR DELETE USING (auth.uid() = host_id);
+-- INSERT is blocked directly. Must use create_verified_match RPC.
 
 -- ====================================================================
 -- 5. TRIGGERS & FUNCTIONS
@@ -226,3 +228,43 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ====================================================================
+-- SECURE OPEN MATCH RPC
+-- ====================================================================
+-- Users cannot directly INSERT into the open_matches table to prevent spam/phishing.
+-- They must call this RPC, which verifies they actually have a booking.
+
+CREATE OR REPLACE FUNCTION create_verified_match(
+  p_facility_id UUID, 
+  p_date TEXT,
+  p_time TEXT,
+  p_level TEXT,
+  p_price NUMERIC,
+  p_players_needed INTEGER
+) RETURNS UUID AS $$
+DECLARE
+  v_has_booking BOOLEAN;
+  v_match_id UUID;
+BEGIN
+  -- Verify the host actually has a booking at this facility for the given date/time
+  SELECT EXISTS (
+    SELECT 1 FROM bookings b
+    JOIN courts c ON b.court_id = c.id
+    WHERE c.facility_id = p_facility_id
+      AND b.user_id = auth.uid()
+      AND b.status = 'upcoming'
+  ) INTO v_has_booking;
+
+  IF NOT v_has_booking THEN
+    RAISE EXCEPTION 'Unauthorized: You must have a valid booking at this facility to host an open match.';
+  END IF;
+
+  -- Safely insert the open match
+  INSERT INTO open_matches (host_id, facility_id, date, time, level, price, players_needed, status)
+  VALUES (auth.uid(), p_facility_id, p_date, p_time, p_level, p_price, p_players_needed, 'open')
+  RETURNING id INTO v_match_id;
+
+  RETURN v_match_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
