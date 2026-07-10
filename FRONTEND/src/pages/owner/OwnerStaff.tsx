@@ -40,7 +40,7 @@ export function OwnerStaff() {
           <motion.div key="staff-modal" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed inset-0 z-50 flex items-center justify-center px-4"
             onClick={() => setAddStaffOpen(false)}>
-            <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: "var(--surface-base)", border: "1px solid var(--border-emphasis)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}
+            <div className="w-full max-w-sm rounded-2xl p-6 shadow-[0_24px_64px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-border bg-surface-base"
                  onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-lg font-bold tracking-tight">Add Staff</h2>
@@ -51,14 +51,12 @@ export function OwnerStaff() {
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Full Name</label>
                   <input value={newStaffName} onChange={e => setNewStaffName(e.target.value)} placeholder="e.g. Maria Santos"
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring"
-                    style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
+                    className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors placeholder:text-muted-foreground" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Email</label>
                   <input value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} type="email" placeholder="staff@facility.com"
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring"
-                    style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
+                    className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors placeholder:text-muted-foreground" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Role</label>
