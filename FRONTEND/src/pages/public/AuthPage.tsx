@@ -167,7 +167,7 @@ export function AuthPage() {
 
         <div className="text-center mb-4 sm:mb-6">
           <div className="flex items-center justify-center mb-4 mt-2">
-            <PicklersLogo size={42} />
+            <PicklersLogo size={68} />
           </div>
           <AnimatePresence mode="wait">
             <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
