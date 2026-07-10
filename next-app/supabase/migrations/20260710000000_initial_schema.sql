@@ -82,7 +82,7 @@ CREATE TABLE bookings (
     CONSTRAINT prevent_double_booking EXCLUDE USING gist (
         court_id WITH =,
         tsrange(start_time, end_time) WITH &&
-    )
+    ) WHERE (status = 'upcoming') -- Only prevent overlap for active bookings
 );
 
 -- OPEN MATCHES (Social Play)
@@ -228,6 +228,27 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Trigger to freeze booking data on cancellation to prevent metrics poisoning
+CREATE OR REPLACE FUNCTION freeze_booking_data_on_cancel()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.status = 'cancelled' THEN
+    NEW.user_id = OLD.user_id;
+    NEW.court_id = OLD.court_id;
+    NEW.start_time = OLD.start_time;
+    NEW.end_time = OLD.end_time;
+    NEW.total_amount = OLD.total_amount;
+    NEW.created_at = OLD.created_at;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER enforce_booking_immutability
+BEFORE UPDATE ON bookings
+FOR EACH ROW
+EXECUTE FUNCTION freeze_booking_data_on_cancel();
 
 -- ====================================================================
 -- SECURE OPEN MATCH RPC

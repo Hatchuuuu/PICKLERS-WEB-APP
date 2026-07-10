@@ -165,7 +165,8 @@ export function LandingPage() {
       <AnimatePresence>
         {mobileMenu && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            className="fixed top-[60px] left-0 right-0 z-40 p-4 bg-surface-base/95 border-b border-border backdrop-blur-xl flex flex-col gap-4">
+            style={{ top: navHeight }}
+            className="fixed left-0 right-0 z-40 p-4 bg-surface-base/95 border-b border-border backdrop-blur-xl flex flex-col gap-4">
             {mounted && (
               <button
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
