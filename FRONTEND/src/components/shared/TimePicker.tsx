@@ -91,22 +91,17 @@ export function TimePicker({
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }}
         onClick={() => setIsOpen(false)}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
       />
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }} 
         animate={{ opacity: 1, scale: 1, y: 0 }} 
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="relative w-[300px] rounded-[24px] overflow-hidden shadow-2xl z-10 flex flex-col"
-        style={{ 
-          background: "rgba(28, 28, 30, 0.8)", 
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.1)"
-        }}
+        className="relative w-[300px] rounded-[24px] overflow-hidden shadow-2xl z-10 flex flex-col bg-surface-base/90 dark:bg-[#1c1c1e]/80 backdrop-blur-[20px] border border-border dark:border-white/10"
       >
-        <div className="px-5 py-4 border-b border-white/10 flex justify-between items-center">
-          <span className="text-sm font-semibold text-white">Time</span>
+        <div className="px-5 py-4 border-b border-border flex justify-between items-center">
+          <span className="text-sm font-semibold text-foreground">Time</span>
           <button onClick={handleSave} className="text-sm font-bold text-[#0a84ff] active:opacity-70">Done</button>
         </div>
 
@@ -124,7 +119,7 @@ export function TimePicker({
                 onClick={() => handleItemClick(h, setTempHour, hours, hourRef)}
                 className={cn(
                   "h-[30px] w-full flex items-center justify-center shrink-0 snap-center text-xl cursor-pointer transition-colors",
-                  tempHour === h ? "text-white font-bold" : "text-white/40 font-medium"
+                  tempHour === h ? "text-foreground font-bold" : "text-foreground/40 font-medium"
                 )}
               >
                 {h}
@@ -133,7 +128,7 @@ export function TimePicker({
             <div className="h-[60px] shrink-0" />
           </div>
 
-          <span className="text-2xl font-bold text-white mb-1">:</span>
+          <span className="text-2xl font-bold text-foreground mb-1">:</span>
 
           {/* Minute Column */}
           <div 
@@ -148,7 +143,7 @@ export function TimePicker({
                 onClick={() => handleItemClick(m, setTempMinute, minutes, minRef)}
                 className={cn(
                   "h-[30px] w-full flex items-center justify-center shrink-0 snap-center text-xl cursor-pointer transition-colors",
-                  tempMinute === m ? "text-white font-bold" : "text-white/40 font-medium"
+                  tempMinute === m ? "text-foreground font-bold" : "text-foreground/40 font-medium"
                 )}
               >
                 {m}
@@ -170,7 +165,7 @@ export function TimePicker({
                 onClick={() => handleItemClick(p, setTempPeriod, periods, periodRef)}
                 className={cn(
                   "h-[30px] w-full flex items-center justify-center shrink-0 snap-center text-xl cursor-pointer transition-colors",
-                  tempPeriod === p ? "text-white font-bold" : "text-white/40 font-medium"
+                  tempPeriod === p ? "text-foreground font-bold" : "text-foreground/40 font-medium"
                 )}
               >
                 {p}
@@ -180,7 +175,7 @@ export function TimePicker({
           </div>
 
           {/* Selection Highlight (Visual Only) */}
-          <div className="absolute top-1/2 left-4 right-4 h-[34px] -translate-y-[1px] bg-white/10 rounded-lg pointer-events-none -z-10" />
+          <div className="absolute top-1/2 left-4 right-4 h-[34px] -translate-y-[1px] bg-surface-interactive rounded-lg pointer-events-none -z-10" />
         </div>
       </motion.div>
     </div>,

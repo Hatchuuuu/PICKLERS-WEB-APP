@@ -16,16 +16,15 @@ export function NotificationDropdown({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: -8, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="absolute top-[calc(100%+12px)] right-0 w-[340px] rounded-[24px] shadow-[0_24px_54px_rgba(0,0,0,0.6)] overflow-hidden z-[100] border origin-top-right"
-      style={{ background: "rgba(10,22,40,0.9)", backdropFilter: "blur(30px) saturate(1.5)", borderColor: "rgba(255,255,255,0.08)" }}>
-      
-      <div className="p-4 flex items-center justify-between border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-        <h3 className="text-[16px] font-bold text-white tracking-tight" >Notifications</h3>
+      className="absolute top-[calc(100%+12px)] right-0 w-[340px] rounded-[24px] shadow-[0_24px_54px_rgba(0,0,0,0.6)] overflow-hidden z-[100] border origin-top-right bg-surface-overlay/90 backdrop-blur-2xl border-border">
+
+      <div className="p-4 flex items-center justify-between border-b border-border dark:border-white/5">
+        <h3 className="text-[16px] font-bold text-foreground tracking-tight" >Notifications</h3>
         {notifications.some(n => !n.read) && (
           <button onClick={markAllNotificationsRead} className="text-[12px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 active:scale-95">
             <Check className="w-3.5 h-3.5" /> Mark all read
@@ -37,10 +36,10 @@ export function NotificationDropdown({ onClose }: { onClose: () => void }) {
         <AnimatePresence initial={false}>
           {notifications.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 text-center flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                <Bell className="w-6 h-6 text-white/20" />
+              <div className="w-12 h-12 rounded-full bg-surface-interactive/80 flex items-center justify-center mb-3">
+                <Bell className="w-6 h-6 text-foreground/20" />
               </div>
-              <p className="text-[14px] font-medium text-white/60">You're all caught up!</p>
+              <p className="text-[14px] font-medium text-foreground/60">You're all caught up!</p>
             </motion.div>
           ) : (
             notifications.map((n, i) => (
@@ -53,30 +52,30 @@ export function NotificationDropdown({ onClose }: { onClose: () => void }) {
                 transition={{ type: "spring", stiffness: 400, damping: 30, delay: i * 0.05 }}
                 className={cn(
                   "relative flex gap-3 p-3.5 rounded-[16px] transition-colors group cursor-pointer",
-                  n.read ? "hover:bg-white/[0.04]" : "bg-emerald-500/[0.04] hover:bg-emerald-500/[0.08]"
+                  n.read ? "hover:bg-surface-interactive" : "bg-emerald-500/[0.04] hover:bg-emerald-500/[0.08]"
                 )}
                 onClick={() => dismissNotification(n.id)}
               >
-                <div className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5">
                   {getIcon(n.type)}
                 </div>
                 <div className="flex-1 pr-6">
                   <div className="flex items-start justify-between mb-0.5">
-                    <span className={cn("text-[14px] font-semibold", n.read ? "text-white/80" : "text-white")}>{n.title}</span>
-                    <span className="text-[11px] text-white/40 shrink-0 mt-0.5">{n.time}</span>
+                    <span className={cn("text-[14px] font-semibold", n.read ? "text-foreground/80" : "text-foreground")}>{n.title}</span>
+                    <span className="text-[11px] text-foreground/40 shrink-0 mt-0.5">{n.time}</span>
                   </div>
-                  <p className={cn("text-[13px] leading-snug", n.read ? "text-white/50" : "text-white/70")}>{n.body}</p>
+                  <p className={cn("text-[13px] leading-snug", n.read ? "text-foreground/50" : "text-foreground/70")}>{n.body}</p>
                 </div>
-                
+
                 {/* Unread dot */}
                 {!n.read && (
                   <div className="absolute left-3.5 top-3.5 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                 )}
-                
+
                 {/* Dismiss Icon */}
                 <div className="absolute right-3.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20">
-                    <X className="w-3.5 h-3.5 text-white/70" />
+                  <div className="w-6 h-6 rounded-full bg-surface-interactive flex items-center justify-center hover:bg-surface-interactive hover:bg-surface-interactive/80">
+                    <X className="w-3.5 h-3.5 text-foreground/70" />
                   </div>
                 </div>
               </motion.div>

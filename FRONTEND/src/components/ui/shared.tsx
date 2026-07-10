@@ -6,7 +6,7 @@ export function CapacityRing({ filled, max }: { filled: number; max: number }) {
   return (
     <div className="relative flex items-center justify-center w-14 h-14 shrink-0">
       <svg width="56" height="56" className="-rotate-90">
-        <circle cx="28" cy="28" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
+        <circle cx="28" cy="28" r={r} fill="none" className="stroke-black/5 dark:stroke-white/10" strokeWidth="4" />
         <circle cx="28" cy="28" r={r} fill="none" stroke="var(--accent-primary)" strokeWidth="4"
           strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round"
           style={{ transition: "stroke-dashoffset 0.6s ease-out" }} />
@@ -29,7 +29,7 @@ export function Toggle({ value, onChange, label }: { value: boolean; onChange: (
           border: "1px solid var(--border-emphasis)",
           transition: "background-color 200ms ease-out" }}>
         <motion.div animate={{ x: value ? 24 : 2 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="absolute top-0.5 w-5 h-5 rounded-full bg-white" />
+          className="absolute top-0.5 w-5 h-5 rounded-full bg-surface-raised border border-border" />
       </div>
     </button>
   );

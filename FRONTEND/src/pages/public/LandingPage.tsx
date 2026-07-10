@@ -189,16 +189,8 @@ export function LandingPage() {
 
         <motion.div initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }} className="relative z-10 w-full max-w-4xl mx-auto">
           <div className="relative inline-flex items-center justify-center mb-8 group">
-            {/* The Glass Badge Body (Static Glassmorphism) */}
-            <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-medium w-full h-full"
-              style={{
-                background: "rgba(255, 255, 255, 0.08)", // White glass background
-                backdropFilter: "blur(16px)", // Stronger blur
-                WebkitBackdropFilter: "blur(16px)",
-                color: "var(--accent-primary)",
-                border: "1px solid rgba(255, 255, 255, 0.15)", // Stronger white border
-                boxShadow: "0 4px 24px -4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)" // Glass inner shadow
-              }}>
+            {/* The Glass Badge Body (Responsive Glassmorphism) */}
+            <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-medium w-full h-full text-accent-primary bg-black/[0.04] border border-black/10 shadow-sm backdrop-blur-md dark:bg-white/[0.08] dark:border-white/[0.15] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.1)]">
               <motion.div animate={{ opacity: [1, 0.5, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}>
                 <Radio className="w-3.5 h-3.5" />
               </motion.div>
@@ -478,18 +470,10 @@ export function LandingPage() {
         </AnimatedContent>
 
         <div className="flex justify-center mb-12">
-          <div className="relative flex rounded-full p-1"
-            style={{
-              background: "rgba(0, 0, 0, 0.25)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              boxShadow: "inset 0 2px 6px rgba(0,0,0,0.2)"
-            }}>
-            <motion.div layout className="absolute inset-y-1 rounded-full"
+          <div className="relative flex rounded-full p-1 bg-black/5 border border-black/10 shadow-inner backdrop-blur-xl dark:bg-black/25 dark:border-white/[0.08] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.2)]">
+            <motion.div layout className="absolute inset-y-1 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2),0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.15)]"
               style={{
                 background: toggle === "facilities" ? "var(--accent-primary)" : "var(--accent-secondary)",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15)",
                 left: toggle === "facilities" ? "4px" : "calc(50%)",
                 width: "calc(50% - 4px)"
               }}
@@ -728,12 +712,7 @@ export function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1], delay: i * 0.05 }}
-                className="overflow-hidden rounded-2xl transition-colors duration-300 cursor-pointer"
-                style={{
-                  background: openFaq === i ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
-                  border: "1px solid",
-                  borderColor: openFaq === i ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)"
-                }}
+                className={`overflow-hidden rounded-2xl transition-colors duration-300 cursor-pointer border ${openFaq === i ? 'bg-black/[0.04] border-black/[0.08] dark:bg-white/[0.04] dark:border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.04] dark:bg-white/[0.02] dark:border-white/[0.04]'}`}
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
               >
                 <div className="px-6 py-5 flex items-center justify-between">
@@ -816,7 +795,7 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-solid" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+          <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border dark:border-white/5">
             <span className="text-[14px]" style={{ color: "var(--ink-muted)" }}>© 2026 Picklers PH. All rights reserved.</span>
             <div className="flex gap-6 text-[14px]" style={{ color: "var(--ink-muted)" }}>
               <button className="hover:text-emerald-400 transition-colors duration-200">Terms of Service</button>

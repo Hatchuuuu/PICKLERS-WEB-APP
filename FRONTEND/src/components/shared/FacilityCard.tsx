@@ -31,14 +31,7 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[
     <motion.div ref={ref}
       whileHover={{ y: -6, boxShadow: "0 24px 48px -12px rgba(0,0,0,0.5)" }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="rounded-[28px] overflow-hidden flex flex-col group relative cursor-pointer h-full border border-solid"
-      style={{
-        background: "linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)",
-        borderColor: "rgba(255,255,255,0.08)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.06)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)"
-      }}
+      className="rounded-[28px] overflow-hidden flex flex-col group relative cursor-pointer h-full border backdrop-blur-[20px] bg-surface-base border-border shadow-md dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.01] dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.06)]"
       onClick={onViewCourts}>
 
       {/* Flush Edge-to-Edge Image */}
@@ -47,18 +40,14 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
 
-        <span className="absolute top-4 left-4 text-[11px] px-3.5 py-1.5 rounded-[8px] font-extrabold uppercase tracking-widest text-foreground shadow-sm border border-white/20"
-          style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
+        <span className="absolute top-4 left-4 text-[11px] px-3.5 py-1.5 rounded-[8px] font-extrabold uppercase tracking-widest text-foreground shadow-sm border border-black/5 dark:border-white/20 bg-white/50 dark:bg-white/15 backdrop-blur-[12px]">
           {f.type}
         </span>
 
         <motion.button onClick={handleFav} aria-label={f.favorited ? "Remove favorite" : "Add to favorites"}
           animate={pop ? { scale: [1, 1.35, 1] } : { scale: 1 }}
           transition={{ type: "spring", stiffness: 500, damping: 20 }}
-          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-colors shadow-md"
-          style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
-          onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.6)"}
-          onMouseLeave={e => e.currentTarget.style.background = "rgba(0,0,0,0.45)"}>
+          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-colors shadow-md bg-white/50 hover:bg-white/70 dark:bg-black/45 dark:hover:bg-black/60 backdrop-blur-[8px]">
           <Heart className={cn("w-4 h-4 transition-colors", f.favorited ? "fill-red-500 text-red-500" : "text-foreground")} />
         </motion.button>
       </div>
