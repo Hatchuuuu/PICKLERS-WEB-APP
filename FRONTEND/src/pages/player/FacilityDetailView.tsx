@@ -152,23 +152,23 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
       </div>
 
       {/* Floating Info Pill */}
-      <div className="relative z-10 px-4 -mt-4 sm:-mt-6 max-w-6xl mx-auto w-full">
-        <div className="flex items-center justify-start gap-4 sm:gap-6 px-6 py-3.5 rounded-full overflow-x-auto scrollbar-none w-max max-w-full mx-auto shadow-2xl border border-white/5" 
+      <div className="relative z-10 px-2 sm:px-4 -mt-4 sm:-mt-6 max-w-6xl mx-auto w-full">
+        <div className="flex items-center justify-center gap-2 sm:gap-6 px-4 sm:px-6 py-3 sm:py-3.5 rounded-full w-max max-w-full mx-auto shadow-2xl border border-white/5" 
              style={{ background: "rgba(20,30,45,0.8)", backdropFilter: "blur(24px)" }}>
-          <div className="flex items-center gap-2 text-[13px] font-bold text-white/80 shrink-0">
-            <Clock className="w-4 h-4 shrink-0 text-cyan-400" />{facility.hours}
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[13px] font-bold text-white/80 shrink-0">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-cyan-400" />{facility.hours}
           </div>
-          <div className="w-px h-4 shrink-0 bg-white/10" />
-          <div className="text-[13px] font-bold text-white/80 shrink-0" >🏍 {facility.moto} · 🚗 {facility.car}</div>
-          <div className="w-px h-4 shrink-0 bg-white/10" />
-          <div className="flex items-center gap-4 shrink-0">
-            <span className="flex items-center gap-1.5 text-[13px]">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,139,0.8)]" />
+          <div className="w-px h-3 sm:h-4 shrink-0 bg-white/10" />
+          <div className="text-[11px] sm:text-[13px] font-bold text-white/80 shrink-0" >🏍 {facility.moto} · 🚗 {facility.car}</div>
+          <div className="w-px h-3 sm:h-4 shrink-0 bg-white/10" />
+          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
+            <span className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[13px]">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,139,0.8)]" />
               <span className="font-bold text-white">{available} free</span>
             </span>
-            <span className="flex items-center gap-1.5 text-[13px]">
-              <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="font-bold text-white/60">{occupied} occupied</span>
+            <span className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[13px]">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-500" />
+              <span className="font-bold text-white/60">{occupied} occ</span>
             </span>
           </div>
         </div>
