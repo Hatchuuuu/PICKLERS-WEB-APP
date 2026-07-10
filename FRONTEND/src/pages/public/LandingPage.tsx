@@ -117,20 +117,34 @@ export function LandingPage() {
           {mounted && (
             <button
               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              className="text-foreground/80 hover:text-foreground transition-colors p-2 rounded-full hover:bg-surface-interactive focus:outline-none flex items-center justify-center"
+              className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 ${
+                resolvedTheme === "dark" ? "bg-surface-interactive" : "bg-gray-200"
+              }`}
               aria-label="Toggle Theme"
             >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={resolvedTheme === "dark" ? "dark" : "light"}
-                  initial={{ y: -10, opacity: 0, rotate: -45 }}
-                  animate={{ y: 0, opacity: 1, rotate: 0 }}
-                  exit={{ y: 10, opacity: 0, rotate: 45 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                >
-                  {resolvedTheme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                </motion.div>
-              </AnimatePresence>
+              <span className="sr-only">Toggle theme</span>
+              <span
+                className={`pointer-events-none relative inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-300 ease-in-out flex items-center justify-center ${
+                  resolvedTheme === "dark" ? "translate-x-7 bg-surface-base" : "translate-x-1 bg-white"
+                }`}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={resolvedTheme === "dark" ? "dark" : "light"}
+                    initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    {resolvedTheme === "dark" ? (
+                      <Moon className="h-3.5 w-3.5 text-foreground" />
+                    ) : (
+                      <Sun className="h-3.5 w-3.5 text-amber-500" />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </span>
             </button>
           )}
           <button onClick={() => navigate("/auth")} className="text-base py-2.5 font-medium text-secondary-foreground hover:text-foreground transition-colors inline-flex items-center justify-center">
