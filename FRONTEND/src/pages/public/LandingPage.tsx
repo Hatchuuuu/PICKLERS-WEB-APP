@@ -271,8 +271,8 @@ export function LandingPage() {
       <style dangerouslySetInnerHTML={{ __html: shimmerStyles }} />
       <section className="py-12 md:py-16 border-y border-solid overflow-hidden flex flex-col items-center relative z-10 border-border/40 bg-surface-base/30" >
         <div className="flex flex-col items-center mb-8 md:mb-12 w-full max-w-[800px] px-8">
-          <div className="mb-4 p-2.5 rounded-full bg-white/[0.03] border border-white/5 shadow-[0_4px_16px_rgba(255,255,255,0.05),inset_0_1px_0_rgba(255,255,255,0.1)]">
-            <ShieldCheck className="w-5 h-5 text-foreground/70" strokeWidth={1.5} />
+          <div className="mb-4 p-2.5 rounded-full bg-[rgba(0,217,139,0.05)] border border-[rgba(0,217,139,0.15)] shadow-[0_0_24px_-6px_rgba(0,217,139,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
+            <ShieldCheck className="w-5 h-5 drop-shadow-[0_0_8px_rgba(0,217,139,0.5)]" style={{ color: "var(--accent-primary)" }} strokeWidth={2} />
           </div>
           <div className="flex items-center gap-4 w-full">
             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-foreground/10" />
