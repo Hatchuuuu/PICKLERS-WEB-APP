@@ -473,9 +473,8 @@ export function LandingPage() {
               transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }} />
             {(["facilities", "open-play"] as const).map((val, idx) => (
               <button key={val} onClick={() => handleToggle(val)}
-                className="relative z-10 w-[140px] sm:w-[160px] flex items-center justify-center py-2 rounded-full text-[13.5px] sm:text-[14.5px] font-medium tracking-tight transition-colors duration-300"
+                className="relative z-10 w-[140px] sm:w-[160px] flex items-center justify-center py-2 rounded-full text-[13.5px] sm:text-[14.5px] font-bold tracking-tight transition-colors duration-300"
                 style={{
-                  fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
                   WebkitFontSmoothing: "antialiased",
                   textShadow: toggle === val ? "0 1px 2px rgba(0,0,0,0.1)" : "none"
                 }}>
