@@ -82,23 +82,26 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {showEndConfirm && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
                  onClick={(e) => { e.stopPropagation(); setShowEndConfirm(false); }}>
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-border text-center bg-surface-base/95 dark:bg-[#1e1e20]/75 backdrop-blur-[40px] saturate-150 dark:border-white/[0.15]">
-                <h3 className="text-xl font-bold text-foreground mb-2">{isAlert ? "Clear Court?" : "End Session Early?"}</h3>
-                <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">
-                  {isAlert ? "Are you sure you want to clear this court and make it available again?" : "Are you sure you want to terminate this active session? The players will be notified that their court time has ended."}
-                </p>
-                <div className="flex flex-col gap-3">
+                className="w-full max-w-[320px] rounded-[24px] overflow-hidden shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl saturate-150">
+                <div className="p-6 pb-5">
+                  <h3 className="text-[18px] font-bold text-foreground mb-2">{isAlert ? "Clear Court?" : "End Session Early?"}</h3>
+                  <p className="text-[14px] text-foreground/60 leading-normal">
+                    {isAlert ? "Are you sure you want to clear this court and make it available again?" : "Are you sure you want to terminate this active session? The players will be notified that their court time has ended."}
+                  </p>
+                </div>
+                <div className="flex flex-col">
+                  <div className="h-[1px] w-full bg-black/10 dark:bg-white/10" />
                   <button onClick={(e) => { e.stopPropagation(); onEnd?.(); setShowEndConfirm(false); }} 
-                    className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-accent-danger text-white" >
+                    className="w-full py-3.5 text-[17px] font-medium text-[#FF3B30] hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors" >
                     End Session
                   </button>
+                  <div className="h-[1px] w-full bg-black/10 dark:bg-white/10" />
                   <button onClick={(e) => { e.stopPropagation(); setShowEndConfirm(false); }} 
-                    className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                    style={{ background: "rgba(34, 197, 94, 0.15)", color: "#4ade80", border: "1px solid rgba(34, 197, 94, 0.25)" }}>
+                    className="w-full py-3.5 text-[17px] font-semibold text-emerald-600 dark:text-emerald-500 hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors">
                     Keep Playing
                   </button>
                 </div>
