@@ -263,20 +263,20 @@ export function OwnerCourts() {
                onClick={() => setDisableConfirmId(null)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
-              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-foreground mb-2">Disable Court?</h3>
-              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">This will immediately remove this court from the booking schedule. Players will not be able to reserve it until it is re-enabled.</p>
+              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
+              <div className="mb-6">
+                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Disable Court?</h3>
+                <p className="text-[14px] text-foreground/60 leading-relaxed">This will immediately remove this court from the booking schedule. Players will not be able to reserve it until it is re-enabled.</p>
+              </div>
               <div className="flex flex-col gap-3">
                 <button onClick={() => handleActionConfirm("disable", disableConfirmId)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2 bg-accent-danger text-white" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-[#FF3B30] shadow-[0_4px_12px_rgba(255,59,48,0.3)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
                   {actionStatus === "idle" && "Disable Court"}
                   {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
                   {actionStatus === "success" && <Check className="w-5 h-5" />}
                 </button>
                 <button onClick={() => setDisableConfirmId(null)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "rgba(34, 197, 94, 0.15)", color: "#4ade80", border: "1px solid rgba(34, 197, 94, 0.25)", opacity: actionStatus !== "idle" ? 0.5 : 1 }}>
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15 active:scale-[0.98] transition-all">
                   Keep Available
                 </button>
               </div>
@@ -291,19 +291,20 @@ export function OwnerCourts() {
                onClick={() => setEnableConfirmId(null)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
-              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-foreground mb-2">Enable Court?</h3>
-              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">Are you sure you want to enable this court? It will immediately become available for players to book.</p>
+              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
+              <div className="mb-6">
+                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Enable Court?</h3>
+                <p className="text-[14px] text-foreground/60 leading-relaxed">Are you sure you want to enable this court? It will immediately become available for players to book.</p>
+              </div>
               <div className="flex flex-col gap-3">
                 <button onClick={() => handleActionConfirm("enable", enableConfirmId)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2 bg-accent-success text-white" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-accent-success shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
                   {actionStatus === "idle" && "Enable Court"}
                   {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
                   {actionStatus === "success" && <Check className="w-5 h-5" />}
                 </button>
                 <button onClick={() => setEnableConfirmId(null)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-surface-interactive border border-border text-foreground">
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
                   Cancel
                 </button>
               </div>
@@ -318,19 +319,20 @@ export function OwnerCourts() {
                onClick={() => setShowSaveConfirm(false)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
-              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-foreground mb-2">Save Changes?</h3>
-              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">Are you sure you want to save these changes? The updated details will be immediately visible to players.</p>
+              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
+              <div className="mb-6">
+                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Save Changes?</h3>
+                <p className="text-[14px] text-foreground/60 leading-relaxed">Are you sure you want to save these changes? The updated details will be immediately visible to players.</p>
+              </div>
               <div className="flex flex-col gap-3">
                 <button onClick={() => handleActionConfirm("save")} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2 bg-accent-success text-white" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-accent-success shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
                   {actionStatus === "idle" && "Save Changes"}
                   {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
                   {actionStatus === "success" && <Check className="w-5 h-5" />}
                 </button>
                 <button onClick={() => setShowSaveConfirm(false)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-surface-interactive border border-border text-foreground">
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
                   Cancel
                 </button>
               </div>

@@ -82,7 +82,7 @@ export function OwnerDashboard() {
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: -20, opacity: 0, scale: 0.8 }}
               transition={{ type: "spring", stiffness: 400, damping: 25, mass: 0.8 }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 hidden md:flex items-center gap-3 shadow-2xl z-50 border border-white/10"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-base/90 backdrop-blur-md rounded-full px-4 py-2 hidden md:flex items-center gap-3 shadow-2xl z-50 border border-border"
               style={{ boxShadow: "0 10px 40px rgba(0,217,139,0.15)" }}
             >
               <motion.div 
@@ -90,7 +90,7 @@ export function OwnerDashboard() {
                 transition={{ repeat: Infinity, duration: 2, ease: [0.32, 0.72, 0, 1] }}
                 className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" 
               />
-              <span className="text-white text-[13px] font-semibold tracking-wide">
+              <span className="text-foreground text-[13px] font-semibold tracking-wide">
                 {requests.length} New Request{requests.length > 1 ? 's' : ''}
               </span>
             </motion.div>
@@ -141,11 +141,11 @@ export function OwnerDashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
               {isFetchingMetrics ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={`skeleton-${i}`} className="rounded-xl p-4 overflow-hidden relative" style={{ background: "var(--surface-raised)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div key={`skeleton-${i}`} className="rounded-xl p-4 overflow-hidden relative bg-surface-raised border border-border dark:border-white/[0.05]">
                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                    <div className="w-20 h-3 bg-white/10 rounded-full mb-3" />
-                    <div className="w-28 h-6 bg-white/20 rounded-full mb-2" />
-                    <div className="w-12 h-3 bg-white/10 rounded-full" />
+                    <div className="w-20 h-3 bg-surface-interactive rounded-full mb-3" />
+                    <div className="w-28 h-6 bg-surface-interactive hover:bg-surface-interactive/80 rounded-full mb-2" />
+                    <div className="w-12 h-3 bg-surface-interactive rounded-full" />
                   </div>
                 ))
               ) : (
@@ -169,17 +169,13 @@ export function OwnerDashboard() {
       </AnimatePresence>
 
       {/* Mobile Segmented Control (Apple iOS Style) */}
-      <div className="xl:hidden flex bg-white/[0.08] p-1 rounded-full mb-6">
+      <div className="xl:hidden flex bg-surface-raised border border-border/[0.08] p-1 rounded-full mb-6">
         <motion.button
           onClick={() => setActiveTab("courts")}
-          className="flex-1 relative py-2.5 text-[14px] transition-colors z-10 rounded-full"
+          className={`flex-1 relative py-2.5 text-[14px] transition-colors z-10 rounded-full ${activeTab === "courts" ? "text-[#1a1a1a] font-bold" : "text-foreground/50 hover:text-foreground/80 font-medium"}`}
           animate={timedUpCourts.length > 0 && activeTab !== "courts" ? { scale: [1, 1.02, 1] } : {}}
           transition={{ repeat: Infinity, duration: 2, ease: [0.32, 0.72, 0, 1] }}
-          style={{ 
-            color: activeTab === "courts" ? "#1a1a1a" : "rgba(255,255,255,0.5)",
-            fontWeight: activeTab === "courts" ? "700" : "500",
-            border: "1px solid transparent"
-          }}
+          style={{ border: "1px solid transparent" }}
         >
           {activeTab === "courts" && (
             <motion.div layoutId="owner-tab-indicator" className="absolute inset-0 rounded-full -z-10"
@@ -198,7 +194,6 @@ export function OwnerDashboard() {
                   className="text-[10px] px-1.5 py-0.5 rounded-full" 
                   style={{ 
                     background: "#ff4b4b",
-                    color: "#ffffff",
                     fontWeight: "800"
                   }}>
                   {timedUpCourts.length}
@@ -209,14 +204,10 @@ export function OwnerDashboard() {
         </motion.button>
         <motion.button
           onClick={() => setActiveTab("requests")}
-          className="flex-1 relative py-2.5 text-[14px] transition-colors z-10 flex items-center justify-center gap-1.5 rounded-full"
+          className={`flex-1 relative py-2.5 text-[14px] transition-colors z-10 flex items-center justify-center gap-1.5 rounded-full ${activeTab === "requests" ? "text-[#1a1a1a] font-bold" : "text-foreground/50 hover:text-foreground/80 font-medium"}`}
           animate={requests.length > 0 && activeTab !== "requests" ? { scale: [1, 1.02, 1] } : {}}
           transition={{ repeat: Infinity, duration: 2, ease: [0.32, 0.72, 0, 1] }}
-          style={{ 
-            color: activeTab === "requests" ? "#1a1a1a" : "rgba(255,255,255,0.5)",
-            fontWeight: activeTab === "requests" ? "700" : "500",
-            border: "1px solid transparent"
-          }}
+          style={{ border: "1px solid transparent" }}
         >
           {activeTab === "requests" && (
             <motion.div layoutId="owner-tab-indicator" className="absolute inset-0 rounded-full -z-10"
@@ -235,7 +226,6 @@ export function OwnerDashboard() {
                   className="text-[10px] px-1.5 py-0.5 rounded-full" 
                   style={{ 
                     background: "#ff4b4b",
-                    color: "#ffffff",
                     fontWeight: "800"
                   }}>
                   {requests.length}
@@ -277,10 +267,10 @@ export function OwnerDashboard() {
                       transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
                       className="bg-card rounded-[24px] border border-white/5 p-4 h-[160px] flex flex-col justify-between shadow-sm overflow-hidden relative"
                     >
-                      <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse" />
+                      <div className="w-12 h-12 rounded-full bg-surface-interactive/80 animate-pulse" />
                       <div className="space-y-2 mt-4">
-                        <div className="h-4 bg-white/5 rounded-full w-2/3 animate-pulse" />
-                        <div className="h-3 bg-white/5 rounded-full w-1/2 animate-pulse" />
+                        <div className="h-4 bg-surface-interactive/80 rounded-full w-2/3 animate-pulse" />
+                        <div className="h-3 bg-surface-interactive/80 rounded-full w-1/2 animate-pulse" />
                       </div>
                     </motion.div>
                   ))}
@@ -336,8 +326,7 @@ export function OwnerDashboard() {
                 <p>No pending requests</p>
                 <motion.button 
                   onClick={() => queryClient.setQueryData(['bookingRequests'], BOOKING_REQUESTS)}
-                  className="px-4 py-2 rounded-full text-[13px] font-bold transition-all"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+                  className="px-4 py-2 rounded-full text-[13px] font-bold transition-all bg-surface-raised border border-border text-foreground"
                   whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -345,21 +334,18 @@ export function OwnerDashboard() {
                 </motion.button>
               </div>
             ) : requests.map(r => (
-              <div key={r.id} className="rounded-3xl p-5 transition-all" style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255, 255, 255, 0.05)", borderTop: "1px solid rgba(255, 255, 255, 0.1)", backdropFilter: "blur(20px)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)" }}>
+              <div key={r.id} className="rounded-3xl p-5 transition-all bg-surface-base shadow-lg border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl">
                 <div className="text-[15px] font-bold text-foreground mb-0.5 tracking-tight">{r.player}</div>
                 <div className="text-[13px] text-muted-foreground">{r.court}</div>
                 <div className="text-[13px] text-muted-foreground">{r.time}</div>
                 <div className="text-cyan-400 font-mono text-[15px] font-bold mt-2">₱{r.total.toLocaleString()}</div>
                 <div className="flex gap-3 mt-4">
                   <button onClick={() => setAcceptModalId(r.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all shadow-lg hover:opacity-90"
-                    style={{ background: "var(--accent-success)", color: "#fff", boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}>
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all shadow-lg hover:opacity-90 bg-accent-success text-white" style={{ boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}>
                     <Check className="w-3.5 h-3.5" /> Accept
                   </button>
                   <motion.button onClick={() => setDeclineModalId(r.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-bold transition-all"
-                    style={{ background: "rgba(255,255,255,0.06)", color: "var(--ink-secondary)", border: "1px solid rgba(255,255,255,0.1)" }}
-                    whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-bold transition-all bg-surface-interactive border border-border text-muted-foreground hover:bg-black/5 hover:text-foreground dark:bg-white/[0.06] dark:border-white/[0.1] dark:text-white/60 dark:hover:bg-white/[0.1] dark:hover:text-white"
                     whileTap={{ scale: 0.97 }}>
                     <X className="w-3.5 h-3.5" /> Decline
                   </motion.button>
@@ -374,8 +360,7 @@ export function OwnerDashboard() {
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Recent Activity</h2>
               <div className="flex flex-col gap-3">
                 {resolvedRequests.map(r => (
-                  <div key={r.id} className="rounded-2xl p-4 flex items-center justify-between"
-                    style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255, 255, 255, 0.05)", opacity: 0.8 }}>
+                  <div key={r.id} className="rounded-2xl p-4 flex items-center justify-between bg-surface-interactive/50 border border-border opacity-80 dark:bg-white/[0.02] dark:border-white/[0.05]">
                     <div>
                       <div className="text-[14px] font-bold text-foreground mb-0.5">{r.player}</div>
                       <div className="text-[12px] text-muted-foreground">{r.court}</div>
@@ -394,26 +379,25 @@ export function OwnerDashboard() {
 
       <AnimatePresence>
         {acceptModalId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
                onClick={() => setAcceptModalId(null)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
-              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">Are you sure you want to accept?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">
-                This will lock in the court schedule and notify the player that their booking is confirmed.
-              </p>
+              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
+              <div className="mb-6">
+                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Accept Request?</h3>
+                <p className="text-[14px] text-foreground/60 leading-relaxed">
+                  This will lock in the court schedule and notify the player that their booking is confirmed.
+                </p>
+              </div>
               <div className="flex flex-col gap-3">
                 <button onClick={() => { handleRequestAction(acceptModalId, "accepted"); setAcceptModalId(null); }} 
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "#22c55e", color: "#ffffff" }}>
-                  Yes
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-accent-success shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:opacity-90 active:scale-[0.98] transition-all">
+                  Yes, Accept
                 </button>
                 <button onClick={() => setAcceptModalId(null)} 
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "rgba(255, 255, 255, 0.1)", color: "#ffffff", border: "1px solid rgba(255, 255, 255, 0.2)" }}>
-                  No
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
+                  Cancel
                 </button>
               </div>
             </motion.div>
@@ -423,24 +407,23 @@ export function OwnerDashboard() {
 
       <AnimatePresence>
         {declineModalId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
                onClick={() => setDeclineModalId(null)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
-              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">Are you sure you want to cancel?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">This will reject the reservation request and notify the player. This action cannot be undone.</p>
+              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
+              <div className="mb-6">
+                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Decline Request?</h3>
+                <p className="text-[14px] text-foreground/60 leading-relaxed">This will reject the reservation request and notify the player. This action cannot be undone.</p>
+              </div>
               <div className="flex flex-col gap-3">
                 <button onClick={() => { handleRequestAction(declineModalId, "declined"); setDeclineModalId(null); }} 
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "#ef4444", color: "#ffffff" }}>
-                  Yes
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-[#FF3B30] shadow-[0_4px_12px_rgba(255,59,48,0.3)] hover:opacity-90 active:scale-[0.98] transition-all">
+                  Yes, Decline
                 </button>
                 <button onClick={() => setDeclineModalId(null)} 
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "rgba(34, 197, 94, 0.15)", color: "#4ade80", border: "1px solid rgba(34, 197, 94, 0.25)" }}>
-                  No
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
+                  Cancel
                 </button>
               </div>
             </motion.div>

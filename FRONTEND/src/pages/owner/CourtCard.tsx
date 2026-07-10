@@ -67,7 +67,7 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
       )}
       {court.status === "available" && (
         <div className="flex items-center gap-2 mt-2">
-          <div className="w-full h-8 bg-surface-interactive/80 rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground border border-white/5">
+          <div className="w-full h-8 bg-surface-interactive/80 rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground border border-black/5 dark:border-white/5">
             Waiting for players
           </div>
         </div>
