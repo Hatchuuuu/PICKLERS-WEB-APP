@@ -29,13 +29,14 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
 
   return (
     <div className={`rounded-3xl p-5 transition-all relative overflow-hidden backdrop-blur-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${isAlert ? 'border border-red-500/60 dark:border-t-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.15),inset_0_0_20px_rgba(239,68,68,0.05)] bg-red-500/5' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
-      <div className="flex items-start justify-between gap-3 mb-5">
+      <div className="flex items-center justify-between gap-3 mb-5">
         <span className="text-[16px] font-bold text-foreground tracking-tight leading-tight truncate whitespace-nowrap">{court.name}</span>
-        <span className={cn("text-[10px] px-2.5 py-1 rounded-full font-bold tracking-wider shadow-sm shrink-0",
-          court.status === "occupied" ? "bg-cyan-50 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 dark:border-cyan-500/30" :
-          court.status === "available" ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30" : "bg-surface-interactive text-muted-foreground border border-border")}>
-          {court.status.toUpperCase()}
-        </span>
+        <div className={cn("w-2.5 h-2.5 rounded-full shrink-0",
+          isAlert ? "bg-red-500 dark:shadow-[0_0_8px_rgba(239,68,68,0.6)]" :
+          court.status === "occupied" ? "bg-cyan-500 dark:shadow-[0_0_8px_rgba(6,182,212,0.6)]" :
+          court.status === "available" ? "bg-emerald-500 dark:shadow-[0_0_8px_rgba(16,185,129,0.6)]" : 
+          "bg-muted"
+        )} />
       </div>
       {court.status === "occupied" && (
         <>
