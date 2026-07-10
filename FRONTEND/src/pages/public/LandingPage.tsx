@@ -65,8 +65,9 @@ export function LandingPage() {
   const { scrollY } = useScroll();
   const navHeight = useTransform(scrollY, [0, 100], [84, 68]);
   const navBackground = useTransform(scrollY, [0, 100], ["rgba(0, 0, 0, 0)", "var(--surface-base)"]);
-  const navBorder = "rgba(255, 255, 255, 0.08)";
-  const navShadow = useTransform(scrollY, [0, 100], ["none", "0 4px 24px rgba(0,0,0,0.4)"]);
+  const isDark = resolvedTheme === "dark";
+  const navBorder = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)";
+  const navShadow = useTransform(scrollY, [0, 100], ["none", isDark ? "0 4px 24px rgba(0,0,0,0.4)" : "0 4px 24px rgba(0,0,0,0.06)"]);
   const navBlur = useTransform(scrollY, [0, 100], ["blur(0px)", "blur(20px)"]);
   const logoScale = useTransform(scrollY, [0, 100], [1, 0.95]);
 

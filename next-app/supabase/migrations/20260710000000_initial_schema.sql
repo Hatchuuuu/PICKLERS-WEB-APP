@@ -81,7 +81,8 @@ CREATE TABLE open_matches (
     available_slots INTEGER NOT NULL,
     price_per_player NUMERIC(10, 2) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT available_slots_check CHECK (available_slots >= 0)
 );
 
 -- ====================================================================
@@ -121,8 +122,17 @@ CREATE POLICY "Owners can manage their courts" ON courts FOR ALL USING (
 
 -- Bookings: Users can view and manage their own bookings. Facilities can see bookings for their courts.
 CREATE POLICY "Users can view own bookings" ON bookings FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Owners can view bookings for their facilities" ON bookings FOR SELECT USING (
+    EXISTS (
+        SELECT 1 FROM courts c
+        JOIN facilities f ON c.facility_id = f.id
+        WHERE c.id = bookings.court_id AND f.owner_id = auth.uid()
+    )
+);
 CREATE POLICY "Users can insert own bookings" ON bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own bookings" ON bookings FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can only cancel upcoming bookings" ON bookings FOR UPDATE 
+USING (auth.uid() = user_id AND status = 'upcoming') 
+WITH CHECK (status = 'cancelled');
 
 -- Open Matches: Viewable by all, manageable by host.
 CREATE POLICY "Open matches are viewable by everyone" ON open_matches FOR SELECT USING (true);
