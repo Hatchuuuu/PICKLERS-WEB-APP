@@ -68,7 +68,7 @@ export function BookingsTab() {
               boxShadow: tab === t ? "0 4px 12px rgba(0, 217, 139, 0.3)" : "0 0px 0px rgba(0,0,0,0)"
             }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className="shrink-0 px-3 py-1.5 rounded-full text-[11px] leading-none font-semibold tracking-wide border border-solid relative overflow-hidden"
+            className="shrink-0 px-4 py-2.5 rounded-full text-[14px] font-semibold tracking-wide border border-solid relative overflow-hidden"
             style={{ backdropFilter: "blur(12px)" }}>
             {t}
           </motion.button>
