@@ -177,7 +177,7 @@ export function BookingsTab() {
             <motion.div 
               initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[320px] bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
+              <div className="w-[320px] bg-white/95 dark:bg-[#111F3A]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
                  <div className="p-8 text-center pb-6">
                    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-5 border border-red-500/20 shadow-[0_0_24px_rgba(239,68,68,0.2)]">
                      <span className="text-[24px] font-black text-red-400">!</span>

@@ -377,10 +377,10 @@ export function PlayerSettingsTab() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
               onClick={() => setShowLogoutConfirm(false)} />
-            <motion.div initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[320px] bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-2xl dark:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
+            <motion.div
+              initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center" >
+              <div className="w-[320px] bg-white/95 dark:bg-[#111F3A]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-2xl dark:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
                  <div className="p-8 text-center pb-6">
                    <div className="w-16 h-16 rounded-full bg-[#FF3B30]/10 flex items-center justify-center mx-auto mb-5 border border-[#FF3B30]/20 shadow-[0_0_24px_rgba(255,59,48,0.2)]">
                      <LogOut className="w-7 h-7 text-[#FF3B30]" style={{ marginLeft: "-2px" }} />
