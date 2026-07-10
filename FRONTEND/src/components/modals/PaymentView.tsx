@@ -312,21 +312,21 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className="relative w-full max-w-sm flex flex-col gap-2 z-10"
             >
-              <div className="w-full max-w-sm bg-white/95 dark:bg-[#111F3A]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-2xl dark:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
+              <div className="w-full max-w-sm bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
                 <div className="p-8 text-center pb-6">
-                  <div className="w-16 h-16 rounded-full bg-cyan-500/10 flex items-center justify-center mx-auto mb-5 border border-cyan-500/20 shadow-[0_0_24px_rgba(34,211,238,0.2)]">
-                    <CreditCard className="w-8 h-8 text-cyan-400" />
+                  <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-6 ring-1 ring-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                    <CreditCard className="w-8 h-8 text-emerald-400 drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" strokeWidth={1.5} />
                   </div>
-                  <h3 className="text-[22px] font-black text-foreground tracking-tight" >Confirm Payment</h3>
-                  <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
-                    You will be charged <span className="font-bold text-foreground">₱{total.toLocaleString()}</span> via <span className="font-bold text-foreground">{method === 'gcash' ? 'GCash' : method === 'maya' ? 'Maya' : method === 'cash' ? 'Cash on Site' : 'Pickle Credits'}</span>.
+                  <h3 className="text-[22px] font-bold text-foreground tracking-tight mb-2">Confirm Payment</h3>
+                  <p className="text-[15px] text-foreground/70 leading-relaxed font-medium">
+                    You will be charged <span className="font-semibold text-foreground">₱{total.toLocaleString()}</span> via <span className="font-semibold text-foreground">{method === 'gcash' ? 'GCash' : method === 'maya' ? 'Maya' : method === 'cash' ? 'Cash on Site' : 'Pickle Credits'}</span>.
                   </p>
                 </div>
                 <div className="p-5 pt-0 flex gap-3">
-                  <button onClick={() => setShowConfirm(false)} className="flex-1 py-4 rounded-[18px] text-[16px] font-semibold text-foreground/90 bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-[0.97] transition-all">
+                  <button onClick={() => setShowConfirm(false)} className="flex-1 py-4 rounded-[20px] text-[16px] font-semibold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
                     Cancel
                   </button>
-                  <button onClick={() => { setShowConfirm(false); handleConfirm(); }} className="flex-[1.5] py-4 rounded-[18px] text-[16px] font-extrabold text-black bg-cyan-400 hover:bg-cyan-300 active:scale-[0.97] transition-all shadow-[0_8px_24px_rgba(34,211,238,0.3)]">
+                  <button onClick={() => { setShowConfirm(false); handleConfirm(); }} className="flex-[1.5] py-4 rounded-[20px] text-[16px] font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-400 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/50">
                     Pay Now
                   </button>
                 </div>
