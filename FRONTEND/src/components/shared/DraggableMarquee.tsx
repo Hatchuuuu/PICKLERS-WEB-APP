@@ -16,7 +16,7 @@ const logos = [
 ];
 
 export function DraggableMarquee() {
-  const baseVelocity = 0.03; // Much slower, premium ambient speed
+  const baseVelocity = 0.02; // Normal speed (matches original CSS animation)
   const baseX = useMotionValue(0);
   const scrollVelocity = useMotionValue(baseVelocity);
   const smoothVelocity = useSpring(scrollVelocity, {
