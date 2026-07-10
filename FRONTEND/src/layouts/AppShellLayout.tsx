@@ -221,27 +221,26 @@ export function AppShellLayout() {
         {showLogoutConfirm && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl"
               onClick={() => setShowLogoutConfirm(false)} />
-            <motion.div initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[320px] bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
+            <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
+              <div className="w-full max-w-sm bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
                  <div className="p-8 text-center pb-6">
-                   <div className="w-16 h-16 rounded-full bg-[#FF3B30]/10 flex items-center justify-center mx-auto mb-5 border border-[#FF3B30]/20 shadow-[0_0_24px_rgba(255,59,48,0.2)]">
-                     <LogOut className="w-7 h-7 text-[#FF3B30]" style={{ marginLeft: "-2px" }} />
+                   <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-red-500/10 to-red-500/5 flex items-center justify-center mx-auto mb-6 ring-1 ring-red-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                     <LogOut className="w-8 h-8 text-red-500 drop-shadow-[0_2px_8px_rgba(239,68,68,0.4)]" style={{ marginLeft: "-2px" }} strokeWidth={1.5} />
                    </div>
-                   <h3 className="text-[22px] font-black text-foreground tracking-tight" >Sign Out</h3>
-                   <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
+                   <h3 className="text-[22px] font-bold text-foreground tracking-tight mb-2">Sign Out</h3>
+                   <p className="text-[15px] text-foreground/70 leading-relaxed font-medium">
                      You will need to sign in again to access your bookings and profile.
                    </p>
                  </div>
-                 <div className="flex flex-col p-5 pt-0 gap-3">
-                   <button onClick={() => { logout(); navigate("/"); }} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-foreground bg-[#FF3B30] hover:bg-[#FF3B30]/90 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(255,59,48,0.3)]">
-                     Sign Out
-                   </button>
-                   <button onClick={() => setShowLogoutConfirm(false)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-foreground/80 bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-[0.98] transition-all">
+                 <div className="p-5 pt-0 flex gap-3">
+                   <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-4 rounded-[20px] text-[16px] font-semibold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
                      Cancel
+                   </button>
+                   <button onClick={() => { logout(); navigate("/"); }} className="flex-[1.5] py-4 rounded-[20px] text-[16px] font-bold text-white bg-gradient-to-r from-red-500 to-red-400 hover:from-red-400 hover:to-red-400 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(239,68,68,0.25)] ring-1 ring-red-400/50">
+                     Sign Out
                    </button>
                  </div>
               </div>
