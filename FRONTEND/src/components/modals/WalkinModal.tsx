@@ -27,14 +27,13 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
         initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
         transition={{ ease: "easeOut", duration: 0.2 }}
         className="fixed inset-0 z-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl p-6"
-          style={{ background: "var(--surface-base)", border: "1px solid var(--border-emphasis)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
+        <div className="w-full max-w-md rounded-2xl p-6 shadow-[0_24px_64px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-border bg-surface-base">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-lg font-bold" >LOG WALK-IN</h2>
               <p className="text-xs text-muted-foreground">Register a front-desk booking instantly</p>
             </div>
-            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-interactive/80"
               style={{ border: "1px solid var(--border-default)", color: "var(--ink-muted)" }}>
               <X className="w-4 h-4" />
             </button>
@@ -43,14 +42,12 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Player Name</label>
               <input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="e.g. Juan Dela Cruz (or leave blank)"
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring"
-                style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
+                className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors placeholder:text-muted-foreground" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Court</label>
               <select value={court} onChange={e => setCourt(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring appearance-none"
-                style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)", colorScheme: "dark" }}>
+                className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors appearance-none">
                 {courts.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -58,16 +55,14 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Start</label>
                 <select value={startTime} onChange={e => { setStartTime(e.target.value); setEndTime(TIME_SLOTS[slotIndex(e.target.value) + 2] ?? TIME_SLOTS[slotIndex(e.target.value) + 1]); }}
-                  className="w-full px-3 py-3 rounded-xl text-sm outline-none appearance-none"
-                  style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)", colorScheme: "dark" }}>
+                  className="w-full px-3 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors appearance-none">
                   {TIME_SLOTS.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">End</label>
                 <select value={endTime} onChange={e => setEndTime(e.target.value)}
-                  className="w-full px-3 py-3 rounded-xl text-sm outline-none appearance-none"
-                  style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)", colorScheme: "dark" }}>
+                  className="w-full px-3 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors appearance-none">
                   {endSlots.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
