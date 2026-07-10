@@ -136,20 +136,18 @@ export function OwnerStaff() {
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[320px] rounded-[24px] overflow-hidden shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl saturate-150">
-              <div className="p-6 pb-5">
-                <h3 className="text-[18px] font-bold text-foreground mb-2">Revoke Staff Access?</h3>
-                <p className="text-[14px] text-foreground/60 leading-normal">This will immediately remove this user's access to the facility dashboard and management system.</p>
+              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
+              <div className="mb-6">
+                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Revoke Staff Access?</h3>
+                <p className="text-[14px] text-foreground/60 leading-relaxed">This will immediately remove this user's access to the facility dashboard and management system.</p>
               </div>
-              <div className="flex flex-col">
-                <div className="h-[1px] w-full bg-black/10 dark:bg-white/10" />
+              <div className="flex flex-col gap-3">
                 <button onClick={() => handleDelete(confirm!)} 
-                  className="w-full py-3.5 text-[17px] font-medium text-[#FF3B30] hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors" >
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-[#FF3B30] shadow-[0_4px_12px_rgba(255,59,48,0.3)] hover:opacity-90 active:scale-[0.98] transition-all" >
                   Revoke Access
                 </button>
-                <div className="h-[1px] w-full bg-black/10 dark:bg-white/10" />
                 <button onClick={() => { setConfirm(null); setConfirmText(""); }} 
-                  className="w-full py-3.5 text-[17px] font-semibold text-emerald-600 dark:text-emerald-500 hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors">
+                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15 active:scale-[0.98] transition-all">
                   Cancel
                 </button>
               </div>
