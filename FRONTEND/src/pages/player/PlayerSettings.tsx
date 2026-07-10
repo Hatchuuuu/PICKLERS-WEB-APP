@@ -350,8 +350,7 @@ export function PlayerSettingsTab() {
                   type="text"
                   value={editValue}
                   onChange={e => setEditValue(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl text-[16px] outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
+                  className="w-full px-4 py-3 rounded-xl text-[16px] outline-none bg-black/5 border border-black/10 text-foreground dark:bg-white/5 dark:border-white/10 dark:text-white"
                 />
               </div>
 
@@ -381,7 +380,7 @@ export function PlayerSettingsTab() {
             <motion.div initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[320px] bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
+              <div className="w-[320px] bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-2xl dark:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
                  <div className="p-8 text-center pb-6">
                    <div className="w-16 h-16 rounded-full bg-[#FF3B30]/10 flex items-center justify-center mx-auto mb-5 border border-[#FF3B30]/20 shadow-[0_0_24px_rgba(255,59,48,0.2)]">
                      <LogOut className="w-7 h-7 text-[#FF3B30]" style={{ marginLeft: "-2px" }} />
@@ -392,7 +391,7 @@ export function PlayerSettingsTab() {
                    </p>
                  </div>
                  <div className="flex flex-col p-5 pt-0 gap-3">
-                   <button onClick={() => { logout(); navigate("/"); }} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-foreground bg-[#FF3B30] hover:bg-[#FF3B30]/90 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(255,59,48,0.3)]">
+                   <button onClick={() => { logout(); navigate("/"); }} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-white bg-[#FF3B30] hover:bg-[#FF3B30]/90 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(255,59,48,0.3)]">
                      Sign Out
                    </button>
                    <button onClick={() => setShowLogoutConfirm(false)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-foreground/80 bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-[0.98] transition-all">

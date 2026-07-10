@@ -50,7 +50,7 @@ export function PlayTab() {
           transition={{ ease: [0.23, 1, 0.32, 1], duration: 0.4 }}
           className="p-4 max-w-6xl mx-auto w-full">
           {toastMessage && (
-            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full bg-black text-white shadow-lg text-sm font-medium">
+            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full bg-surface-overlay/80 backdrop-blur-xl border border-border text-foreground shadow-lg text-sm font-medium">
               {toastMessage}
             </motion.div>
           )}
@@ -217,24 +217,23 @@ export function PlayTab() {
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsFilterOpen(false)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl mx-auto rounded-t-[32px] border-t shadow-[0_-8px_40px_rgba(0,0,0,0.4)] pb-safe"
-              style={{ background: "rgba(18, 25, 35, 0.95)", backdropFilter: "blur(24px)", borderColor: "rgba(255,255,255,0.08)" }}
+              className="relative w-full max-w-2xl mx-auto rounded-t-[32px] border-t shadow-2xl dark:shadow-[0_-8px_40px_rgba(0,0,0,0.4)] pb-safe bg-surface-base/95 border-border dark:bg-[#121923]/95 dark:border-white/[0.08] backdrop-blur-2xl"
             >
               <div className="p-6">
-                <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto mb-6" />
+                <div className="w-12 h-1.5 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 mx-auto mb-6" />
                 
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-[22px] font-black text-white tracking-tight" >Filter & Sort</h2>
+                  <h2 className="text-[22px] font-black text-foreground tracking-tight" >Filter & Sort</h2>
                   {(filterType !== "All" || filterSort !== "Recommended") && (
                     <motion.button 
                       onClick={() => { setFilterType("All"); setFilterSort("Recommended"); }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-sm font-bold text-accent-primary transition-colors hover:text-white"
+                      className="text-sm font-bold text-accent-primary transition-colors hover:text-foreground"
                     >
                       Reset All
                     </motion.button>
@@ -243,15 +242,15 @@ export function PlayTab() {
                 
                 {/* Court Type */}
                 <div className="mb-8">
-                  <h3 className="text-[14px] font-bold text-white/60 mb-3 uppercase tracking-wider">Court Type</h3>
-                  <div className="flex gap-2 relative bg-white/5 p-1.5 rounded-[20px]">
+                  <h3 className="text-[14px] font-bold text-foreground/60 mb-3 uppercase tracking-wider">Court Type</h3>
+                  <div className="flex gap-2 relative bg-surface-interactive/80 p-1.5 rounded-[20px]">
                     {(["All", "Indoor", "Outdoor"] as const).map(type => (
                       <motion.button
                         key={type}
                         onClick={() => setFilterType(type)}
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        className={`relative flex-1 py-3 rounded-[14px] text-[15px] font-bold transition-colors ${filterType === type ? "text-black" : "text-white hover:text-white/80"}`}
+                        className={`relative flex-1 py-3 rounded-[14px] text-[15px] font-bold transition-colors ${filterType === type ? "text-foreground" : "text-foreground hover:text-foreground/80"}`}
                       >
                         {filterType === type && (
                           <motion.div 
@@ -268,7 +267,7 @@ export function PlayTab() {
 
                 {/* Sort By */}
                 <div className="mb-8">
-                  <h3 className="text-[14px] font-bold text-white/60 mb-3 uppercase tracking-wider">Sort By</h3>
+                  <h3 className="text-[14px] font-bold text-foreground/60 mb-3 uppercase tracking-wider">Sort By</h3>
                   <div className="flex flex-col gap-2">
                     {(["Recommended", "Price (Low to High)", "Rating (High to Low)"] as const).map(sort => (
                       <motion.button
@@ -276,7 +275,7 @@ export function PlayTab() {
                         onClick={() => setFilterSort(sort)}
                         whileTap={{ scale: 0.97 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        className={`relative flex items-center justify-between p-4 rounded-[16px] text-[15px] font-bold transition-all border border-solid ${filterSort === sort ? "border-transparent text-accent-primary" : "bg-transparent border-white/[0.08] text-white hover:bg-white/5"}`}
+                        className={`relative flex items-center justify-between p-4 rounded-[16px] text-[15px] font-bold transition-all border border-solid ${filterSort === sort ? "border-transparent text-accent-primary" : "bg-transparent border-border text-foreground hover:bg-surface-interactive/80"}`}
                       >
                         {filterSort === sort && (
                           <motion.div 
@@ -297,7 +296,7 @@ export function PlayTab() {
                 <motion.button
                   onClick={() => setIsFilterOpen(false)}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full py-4 rounded-[18px] text-black text-[16px] font-black shadow-[0_0_24px_rgba(0,217,139,0.2)] transition-shadow hover:shadow-[0_0_32px_rgba(0,217,139,0.4)]"
+                  className="w-full py-4 rounded-[18px] text-foreground text-[16px] font-black shadow-[0_0_24px_rgba(0,217,139,0.2)] transition-shadow hover:shadow-[0_0_32px_rgba(0,217,139,0.4)]"
                   style={{ background: "var(--accent-primary)" }}
                 >
                   Show Results

@@ -319,23 +319,17 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
                     )}
                   </div>
 
-                  <div className="px-6 py-5 flex items-center justify-between border-t relative z-10" style={{ borderColor: "rgba(255,255,255,0.05)", background: "rgba(0,0,0,0.2)" }}>
+                  <div className="px-6 py-5 flex items-center justify-between border-t relative z-10 bg-black/5 border-border dark:bg-black/20 dark:border-white/[0.05]">
                     <div>
-                      <span className="text-2xl font-bold font-mono text-cyan-400 drop-shadow-md">₱{court.price}</span>
+                      <span className="text-2xl font-bold font-mono text-cyan-500 dark:text-cyan-400 drop-shadow-md">₱{court.price}</span>
                       <span className="text-[13px] font-bold text-foreground/40 ml-1">/hr</span>
                     </div>
 
                     <button
                       disabled={!isAvailable || isBooked}
                       onClick={() => handleBook(court.id)}
-                      className="flex items-center justify-center gap-2 px-6 py-3 rounded-[14px] text-[14px] font-bold active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed transition-all relative overflow-hidden shadow-lg"
-                      style={{
-                        background: !isAvailable ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-                        color: !isAvailable ? "rgba(255,255,255,0.4)" : "white",
-                        minWidth: "120px",
-                        boxShadow: isAvailable ? "0 8px 20px rgba(16,185,129,0.3)" : "none",
-                        border: !isAvailable ? "1px solid rgba(255,255,255,0.05)" : "none"
-                      }}
+                      className={`flex items-center justify-center gap-2 px-6 py-3 rounded-[14px] text-[14px] font-bold active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed transition-all relative overflow-hidden shadow-lg ${!isAvailable ? 'bg-black/5 dark:bg-white/10 text-muted-foreground border border-border dark:border-white/5 shadow-none' : 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-none shadow-[0_8px_20px_rgba(16,185,129,0.3)]'}`}
+                      style={{ minWidth: "120px" }}
                     >
                       {isAvailable && (
                         <div className="absolute inset-0 bg-surface-interactive hover:bg-surface-interactive/80 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />

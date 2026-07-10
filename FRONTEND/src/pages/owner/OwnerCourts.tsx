@@ -114,8 +114,7 @@ export function OwnerCourts() {
             </p>
           </motion.div>
         <button onClick={() => { setShowAddModal(true); setNewName(""); setNewSurface("Indoor · Hard"); setNewPrice("400"); }}
-          className="flex items-center gap-1.5 px-4 py-2 mt-2 rounded-full text-sm font-bold transition-colors active:scale-95 shrink-0 z-10 relative shadow-lg"
-          style={{ background: "var(--accent-success)", color: "#fff", transition: "opacity 150ms ease-out", boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}
+          className="flex items-center gap-1.5 px-4 py-2 mt-2 rounded-full text-sm font-bold transition-colors active:scale-95 shrink-0 z-10 relative shadow-lg bg-accent-success text-white" style={{ transition: "opacity 150ms ease-out", boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}
           onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
           onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
           <Plus className="w-4 h-4" /> List Court
@@ -136,41 +135,31 @@ export function OwnerCourts() {
       <div className="relative mb-6">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Filter by court name..."
-          className="w-full pl-11 pr-4 py-3 rounded-full text-[14px] font-medium outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-all shadow-inner"
-          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--ink-primary)" }} />
+          className="w-full pl-11 pr-4 py-3 rounded-full text-[14px] font-medium outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-all shadow-inner bg-surface-interactive border border-border text-foreground dark:bg-white/[0.03] dark:border-white/[0.08]" />
       </div>
       {filtered.length === 0 && <div className="text-center py-16 text-muted-foreground text-sm">No courts match "{search}"</div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(c => (
-          <div key={c.id} className="rounded-3xl p-5 shadow-xl" 
+          <div key={c.id} className="rounded-3xl p-5 shadow-xl bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl" 
             style={{ 
-              background: "linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)", 
-              border: "1px solid rgba(255, 255, 255, 0.08)", 
-              borderTop: "1px solid rgba(255, 255, 255, 0.12)", 
-              backdropFilter: "blur(30px) saturate(120%)",
               boxShadow: lastSavedId === c.id ? "0 0 32px rgba(34,197,94,0.4)" : undefined,
-              borderColor: lastSavedId === c.id ? "rgba(34,197,94,0.5)" : "rgba(255, 255, 255, 0.08)",
+              borderColor: lastSavedId === c.id ? "rgba(34,197,94,0.5)" : undefined,
               transition: "box-shadow 0.5s ease-out, border-color 0.5s ease-out"
             }}>
             {editId === c.id ? (
               <div className="space-y-3">
-                <input value={newName} onChange={e => setNewName(e.target.value)} className="w-full px-4 py-2.5 rounded-full text-[14px] font-medium outline-none shadow-inner transition-all"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--ink-primary)" }} />
-                <select value={newSurface} onChange={e => setNewSurface(e.target.value)} className="w-full px-4 py-2.5 rounded-full text-[14px] font-medium outline-none appearance-none shadow-inner transition-all"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--ink-primary)", colorScheme: "dark" }}>
+                <input value={newName} onChange={e => setNewName(e.target.value)} className="w-full px-4 py-2.5 rounded-full text-[14px] font-medium outline-none shadow-inner transition-all bg-surface-interactive border border-border text-foreground dark:bg-white/[0.03] dark:border-white/[0.08]" />
+                <select value={newSurface} onChange={e => setNewSurface(e.target.value)} className="w-full px-4 py-2.5 rounded-full text-[14px] font-medium outline-none appearance-none shadow-inner transition-all bg-surface-interactive border border-border text-foreground dark:bg-white/[0.03] dark:border-white/[0.08]">
                   {surfaces.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
                 <div className="flex items-center gap-2">
                   <span className="text-[14px] font-bold text-muted-foreground pl-1">₱</span>
-                  <input value={newPrice} onChange={e => setNewPrice(e.target.value)} type="number" className="flex-1 px-4 py-2.5 rounded-full text-[14px] font-medium outline-none shadow-inner transition-all"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--ink-primary)" }} />
+                  <input value={newPrice} onChange={e => setNewPrice(e.target.value)} type="number" className="flex-1 px-4 py-2.5 rounded-full text-[14px] font-medium outline-none shadow-inner transition-all bg-surface-interactive border border-border text-foreground dark:bg-white/[0.03] dark:border-white/[0.08]" />
                   <span className="text-[14px] font-bold text-muted-foreground pr-1">/hr</span>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button onClick={() => setShowSaveConfirm(true)} className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90"
-                    style={{ background: "#22c55e", color: "#fff", boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}>Save</button>
-                  <button onClick={() => setEditId(null)} className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90"
-                    style={{ background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>Cancel</button>
+                  <button onClick={() => setShowSaveConfirm(true)} className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-accent-success text-white" style={{ boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}>Save</button>
+                  <button onClick={() => setEditId(null)} className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-surface-interactive border border-border text-foreground hover:bg-surface-interactive/80">Cancel</button>
                 </div>
               </div>
             ) : (
@@ -189,8 +178,7 @@ export function OwnerCourts() {
                 <div className="text-cyan-400 font-bold font-mono text-[15px] mb-4 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]">₱{c.price}/hr</div>
                 <div className="flex gap-3 mt-4">
                   <button onClick={() => startEdit(c)} 
-                    className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90"
-                    style={{ background: "rgba(255,255,255,0.08)", color: "#ffffff", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+                    className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-surface-interactive border border-border text-foreground hover:bg-surface-interactive/80">
                     Edit
                   </button>
                   <button onClick={() => c.available ? setDisableConfirmId(c.id) : setEnableConfirmId(c.id)} 
@@ -223,7 +211,7 @@ export function OwnerCourts() {
                 onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-lg font-bold tracking-tight">List New Court</h2>
-                  <button onClick={() => setShowAddModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
+                  <button onClick={() => setShowAddModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-interactive/80"
                     style={{ border: "1px solid var(--border-default)", color: "var(--ink-muted)" }}><X className="w-4 h-4" /></button>
                 </div>
                 <div className="space-y-4">
@@ -249,8 +237,7 @@ export function OwnerCourts() {
                   </div>
                 </div>
                 <button onClick={addCourt} disabled={!newName.trim()}
-                  className="w-full mt-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.97] disabled:opacity-40"
-                  style={{ background: "var(--accent-success)", color: "#fff", transition: "opacity 150ms ease-out" }}>
+                  className="w-full mt-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.97] disabled:opacity-40 bg-accent-success text-white" style={{ transition: "opacity 150ms ease-out" }}>
                   Add Court
                 </button>
               </div>
@@ -260,8 +247,7 @@ export function OwnerCourts() {
       </AnimatePresence>
 
       <button onClick={() => setWalkInOpen(true)}
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2.5 px-6 py-3.5 rounded-full font-bold text-[15px] shadow-2xl active:scale-[0.97] z-30"
-        style={{ background: "var(--accent-success)", color: "#fff", boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
+        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2.5 px-6 py-3.5 rounded-full font-bold text-[15px] shadow-2xl active:scale-[0.97] z-30 bg-accent-success text-white" style={{ boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
         onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
         onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
         <Plus className="w-5 h-5" />Log Walk-in
@@ -273,18 +259,17 @@ export function OwnerCourts() {
 
       <AnimatePresence>
         {disableConfirmId !== null && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
                onClick={() => setDisableConfirmId(null)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
               style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">Disable Court?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">This will immediately remove this court from the booking schedule. Players will not be able to reserve it until it is re-enabled.</p>
+              <h3 className="text-xl font-bold text-foreground mb-2">Disable Court?</h3>
+              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">This will immediately remove this court from the booking schedule. Players will not be able to reserve it until it is re-enabled.</p>
               <div className="flex flex-col gap-3">
                 <button onClick={() => handleActionConfirm("disable", disableConfirmId)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2"
-                  style={{ background: "#ef4444", color: "#ffffff", opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2 bg-accent-danger text-white" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
                   {actionStatus === "idle" && "Disable Court"}
                   {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
                   {actionStatus === "success" && <Check className="w-5 h-5" />}
@@ -302,25 +287,23 @@ export function OwnerCourts() {
 
       <AnimatePresence>
         {enableConfirmId !== null && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
                onClick={() => setEnableConfirmId(null)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
               style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">Enable Court?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">Are you sure you want to enable this court? It will immediately become available for players to book.</p>
+              <h3 className="text-xl font-bold text-foreground mb-2">Enable Court?</h3>
+              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">Are you sure you want to enable this court? It will immediately become available for players to book.</p>
               <div className="flex flex-col gap-3">
                 <button onClick={() => handleActionConfirm("enable", enableConfirmId)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2"
-                  style={{ background: "#22c55e", color: "#ffffff", opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2 bg-accent-success text-white" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
                   {actionStatus === "idle" && "Enable Court"}
                   {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
                   {actionStatus === "success" && <Check className="w-5 h-5" />}
                 </button>
                 <button onClick={() => setEnableConfirmId(null)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "rgba(255, 255, 255, 0.1)", color: "#ffffff", border: "1px solid rgba(255, 255, 255, 0.2)", opacity: actionStatus !== "idle" ? 0.5 : 1 }}>
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-surface-interactive border border-border text-foreground">
                   Cancel
                 </button>
               </div>
@@ -331,25 +314,23 @@ export function OwnerCourts() {
 
       <AnimatePresence>
         {showSaveConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
                onClick={() => setShowSaveConfirm(false)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
               style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">Save Changes?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">Are you sure you want to save these changes? The updated details will be immediately visible to players.</p>
+              <h3 className="text-xl font-bold text-foreground mb-2">Save Changes?</h3>
+              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">Are you sure you want to save these changes? The updated details will be immediately visible to players.</p>
               <div className="flex flex-col gap-3">
                 <button onClick={() => handleActionConfirm("save")} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2"
-                  style={{ background: "#22c55e", color: "#ffffff", opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg flex items-center justify-center gap-2 bg-accent-success text-white" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
                   {actionStatus === "idle" && "Save Changes"}
                   {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
                   {actionStatus === "success" && <Check className="w-5 h-5" />}
                 </button>
                 <button onClick={() => setShowSaveConfirm(false)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "rgba(255, 255, 255, 0.1)", color: "#ffffff", border: "1px solid rgba(255, 255, 255, 0.2)", opacity: actionStatus !== "idle" ? 0.5 : 1 }}>
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-surface-interactive border border-border text-foreground">
                   Cancel
                 </button>
               </div>

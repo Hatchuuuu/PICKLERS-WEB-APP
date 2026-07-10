@@ -24,18 +24,12 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
   const pct = court.maxTime > 0 ? seconds / court.maxTime : 0;
 
   return (
-    <div className="rounded-3xl p-5 transition-all relative overflow-hidden"
-      style={{
-        background: "rgba(255, 255, 255, 0.02)",
-        backdropFilter: "blur(20px)",
-        border: isAlert ? "1px solid rgba(239,68,68,0.6)" : "1px solid rgba(255, 255, 255, 0.05)",
-        borderTop: isAlert ? "1px solid rgba(239,68,68,0.6)" : "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: isAlert ? "0 0 20px rgba(239,68,68,0.15), inset 0 0 20px rgba(239,68,68,0.05)" : "0 8px 32px rgba(0,0,0,0.2)" }}>
+    <div className={`rounded-3xl p-5 transition-all relative overflow-hidden backdrop-blur-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${isAlert ? 'border border-red-500/60 dark:border-t-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.15),inset_0_0_20px_rgba(239,68,68,0.05)] bg-red-500/5' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
       <div className="flex items-center justify-between mb-4">
         <span className="text-[15px] font-bold text-foreground tracking-tight">{court.name}</span>
         <span className={cn("text-[11px] px-2.5 py-1 rounded-full font-bold tracking-wide shadow-sm",
           court.status === "occupied" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" :
-          court.status === "available" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-white/10 text-muted-foreground border border-white/10")}>
+          court.status === "available" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-surface-interactive text-muted-foreground border border-border")}>
           {court.status.toUpperCase()}
         </span>
       </div>
@@ -62,17 +56,14 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
               style={{ width: `${pct * 100}%`, background: pct > 0.2 ? "var(--accent-primary)" : "var(--accent-danger)", color: pct > 0.2 ? "var(--accent-primary)" : "var(--accent-danger)" }} />
           </div>
           <button onClick={() => setShowEndConfirm(true)}
-            className="w-full text-[13px] font-semibold mt-1.5 py-2.5 rounded-full active:scale-[0.97] transition-all"
-            style={{ background: "rgba(255, 59, 48, 0.1)", border: "1px solid rgba(255, 59, 48, 0.15)", color: "#ff3b30" }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255, 59, 48, 0.15)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255, 59, 48, 0.1)")}>
+            className="w-full text-[13px] font-semibold mt-1.5 py-2.5 rounded-full active:scale-[0.97] transition-all bg-[#ff3b30]/10 hover:bg-[#ff3b30]/15 border border-[#ff3b30]/15 text-[#ff3b30]">
             Skip / End Session
           </button>
         </>
       )}
       {court.status === "available" && (
         <div className="flex items-center gap-2 mt-2">
-          <div className="w-full h-8 bg-white/5 rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground border border-white/5">
+          <div className="w-full h-8 bg-surface-interactive/80 rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground border border-white/5">
             Waiting for players
           </div>
         </div>
@@ -86,18 +77,16 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
 
       <AnimatePresence>
         {showEndConfirm && createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
                onClick={() => setShowEndConfirm(false)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
-              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">End Session Early?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">Are you sure you want to terminate this active session? The players will be notified that their court time has ended.</p>
+              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-border text-center bg-surface-base/95 dark:bg-[#1e1e20]/75 backdrop-blur-[40px] saturate-150 dark:border-white/[0.15]">
+              <h3 className="text-xl font-bold text-foreground mb-2">End Session Early?</h3>
+              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">Are you sure you want to terminate this active session? The players will be notified that their court time has ended.</p>
               <div className="flex flex-col gap-3">
                 <button onClick={() => { onEnd?.(); setShowEndConfirm(false); }} 
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "#ef4444", color: "#ffffff" }}>
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-accent-danger text-white" >
                   End Session
                 </button>
                 <button onClick={() => setShowEndConfirm(false)} 
