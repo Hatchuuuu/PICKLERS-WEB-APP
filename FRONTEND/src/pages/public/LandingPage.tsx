@@ -478,8 +478,8 @@ export function LandingPage() {
         <AnimatePresence mode="wait">
           {isFetching ? (
             <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-              <div className={toggle === "facilities" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-5"}>
-                {[1, 2, 3, 4, 5, 6].map(i => (
+              <div className={toggle === "facilities" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-5"}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].slice(0, toggle === "facilities" ? 10 : 6).map(i => (
                   <div key={i} className={`rounded-[28px] overflow-hidden relative ${toggle === "facilities" ? "h-[380px]" : "h-[160px]"}`}
                     style={{ boxShadow: "0 8px 32px -8px rgba(0,0,0,0.3)" }}>
                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
@@ -493,8 +493,8 @@ export function LandingPage() {
             </motion.div>
           ) : toggle === "facilities" ? (
             <motion.div key="fac" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {FACILITIES.map((f, i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                {FACILITIES.slice(0, 10).map((f, i) => (
                   <motion.div key={f.id}
                     className="h-full"
                     initial={{ opacity: 0, y: 24 }}
