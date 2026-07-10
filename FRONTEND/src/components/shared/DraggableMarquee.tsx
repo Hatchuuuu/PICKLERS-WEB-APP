@@ -16,7 +16,7 @@ const logos = [
 ];
 
 export function DraggableMarquee() {
-  const baseVelocity = -1.5;
+  const baseVelocity = 1.5; // Positive velocity flows RIGHT
   const baseX = useMotionValue(0);
   const scrollVelocity = useMotionValue(baseVelocity);
   const smoothVelocity = useSpring(scrollVelocity, {
@@ -28,9 +28,8 @@ export function DraggableMarquee() {
   const [isDragging, setIsDragging] = useState(false);
   const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // We have 4 sets rendered to ensure infinite scrolling looks seamless
-  // Wrap from 0 to -25% (since 4 sets total)
-  const x = useTransform(baseX, (v) => `${wrap(0, -25, v)}%`);
+  // We wrap between -25% and 0% so there is always content to the left when flowing right
+  const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
 
   useAnimationFrame((t, delta) => {
     if (isDragging) return;
