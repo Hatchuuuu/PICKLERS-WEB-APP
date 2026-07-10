@@ -88,7 +88,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
 
         {/* Premium Frosted Back Button */}
         <button onClick={onBack} aria-label="Back to courts"
-          className="absolute top-6 left-6 flex items-center gap-1.5 pr-5 pl-3 min-h-[44px] rounded-full text-[14px] font-bold text-foreground transition-all active:scale-95 shadow-[0_8px_32px_rgba(0,0,0,0.4)] group"
+          className="absolute top-6 left-6 flex items-center gap-1.5 pr-5 pl-3 min-h-[44px] rounded-full text-[14px] font-bold text-white transition-all active:scale-95 shadow-[0_8px_32px_rgba(0,0,0,0.4)] group"
           style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.18)" }}
           onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.6)")}
           onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,0,0,0.4)")}>
@@ -100,7 +100,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
         <div className="absolute top-6 right-6 flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
           style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.18)" }}>
           <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span className="text-[14px] font-bold text-foreground">{facility.rating}</span>
+          <span className="text-[14px] font-bold text-white">{facility.rating}</span>
         </div>
 
         {/* Facility name overlay */}
@@ -108,22 +108,22 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
           <div className="flex items-end justify-between gap-4 max-w-6xl mx-auto w-full">
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wider text-foreground shadow-lg"
+                <span className="text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wider text-white shadow-lg"
                   style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" }}>
                   {facility.type}
                 </span>
               </div>
-              <h1 className="text-[22px] sm:text-4xl font-bold leading-none text-foreground drop-shadow-xl tracking-tight truncate" title={facility.name}>
+              <h1 className="text-[22px] sm:text-4xl font-bold leading-none text-white drop-shadow-xl tracking-tight truncate" title={facility.name}>
                 {facility.name}
               </h1>
-              <div className="flex items-center gap-1.5 mt-2 text-[14px] font-medium text-foreground/80 drop-shadow-md">
+              <div className="flex items-center gap-1.5 mt-2 text-[14px] font-medium text-white/80 drop-shadow-md">
                 <MapPin className="w-4 h-4 shrink-0" />{facility.location}
               </div>
             </div>
             <div className="text-right shrink-0 pb-1 flex flex-col items-end">
               {courts.length > 0 ? (
                 <>
-                  <div className="text-[13px] mb-1 font-bold text-foreground/60 uppercase tracking-widest">from</div>
+                  <div className="text-[13px] mb-1 font-bold text-white/60 uppercase tracking-widest">from</div>
                   <div className="text-4xl sm:text-5xl font-bold font-mono leading-none drop-shadow-2xl" style={{ 
                     background: "linear-gradient(135deg, #00F260 0%, #0575E6 100%)",
                     WebkitBackgroundClip: "text",
@@ -132,7 +132,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
                   }}>
                     ₱{Math.min(...courts.map(c => c.price))}
                   </div>
-                  <div className="text-[13px] mt-1 font-bold text-foreground/60">/hr</div>
+                  <div className="text-[13px] mt-1 font-bold text-white/60">/hr</div>
                 </>
               ) : (
                 <div className="px-4 py-2 rounded-full mt-4 shadow-xl" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" }}>
@@ -153,22 +153,22 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
 
       {/* Floating Info Pill */}
       <div className="relative z-10 px-4 -mt-4 sm:-mt-6 max-w-6xl mx-auto w-full">
-        <div className="flex items-center justify-center gap-4 sm:gap-6 px-6 py-3.5 rounded-full overflow-x-auto scrollbar-none w-max max-w-full mx-auto shadow-2xl border border-border" 
+        <div className="flex items-center justify-center gap-4 sm:gap-6 px-6 py-3.5 rounded-full overflow-x-auto scrollbar-none w-max max-w-full mx-auto shadow-2xl border border-white/5" 
              style={{ background: "rgba(20,30,45,0.8)", backdropFilter: "blur(24px)" }}>
-          <div className="flex items-center gap-2 text-[13px] font-bold text-foreground/80 shrink-0">
+          <div className="flex items-center gap-2 text-[13px] font-bold text-white/80 shrink-0">
             <Clock className="w-4 h-4 shrink-0 text-cyan-400" />{facility.hours}
           </div>
-          <div className="w-px h-4 shrink-0 bg-surface-interactive" />
-          <div className="text-[13px] font-bold text-foreground/80 shrink-0" >🏍 {facility.moto} · 🚗 {facility.car}</div>
-          <div className="w-px h-4 shrink-0 bg-surface-interactive" />
+          <div className="w-px h-4 shrink-0 bg-white/10" />
+          <div className="text-[13px] font-bold text-white/80 shrink-0" >🏍 {facility.moto} · 🚗 {facility.car}</div>
+          <div className="w-px h-4 shrink-0 bg-white/10" />
           <div className="flex items-center gap-4 shrink-0">
             <span className="flex items-center gap-1.5 text-[13px]">
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,139,0.8)]" />
-              <span className="font-bold text-foreground">{available} free</span>
+              <span className="font-bold text-white">{available} free</span>
             </span>
             <span className="flex items-center gap-1.5 text-[13px]">
               <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="font-bold text-foreground/60">{occupied} occupied</span>
+              <span className="font-bold text-white/60">{occupied} occupied</span>
             </span>
           </div>
         </div>
@@ -193,8 +193,8 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
-              <CalendarDays className="w-4 h-4 text-foreground drop-shadow-md relative z-10" />
-              <span className="text-[13px] font-bold text-foreground relative z-10" style={{ letterSpacing: "0.02em" }}>
+              <CalendarDays className="w-4 h-4 text-white drop-shadow-md relative z-10" />
+              <span className="text-[13px] font-bold text-white relative z-10" style={{ letterSpacing: "0.02em" }}>
                 Quick Book
               </span>
             </button>
