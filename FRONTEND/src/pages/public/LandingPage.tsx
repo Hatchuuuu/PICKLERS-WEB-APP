@@ -270,7 +270,11 @@ export function LandingPage() {
       {/* Trusted Partners Marquee */}
       <style dangerouslySetInnerHTML={{ __html: shimmerStyles }} />
       <section className="py-12 md:py-16 border-y border-solid overflow-hidden flex flex-col items-center relative z-10 border-border/40 bg-surface-base/30" >
-        <p className="text-[11px] md:text-[12px] font-semibold tracking-[0.25em] uppercase mb-8 md:mb-12 text-foreground/40 bg-clip-text">TRUSTED BY ELITE CLUBS & FACILITIES</p>
+        <div className="flex items-center gap-4 mb-8 md:mb-12 w-full max-w-[800px] px-8">
+          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-foreground/10" />
+          <p className="text-[10px] md:text-[11px] font-bold tracking-[0.3em] uppercase text-foreground/50 shrink-0">TRUSTED BY ELITE CLUBS & FACILITIES</p>
+          <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-foreground/10" />
+        </div>
         <DraggableMarquee />
       </section>
 

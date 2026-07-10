@@ -49,10 +49,10 @@ export function DraggableMarquee() {
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex touch-pan-y">
           {[1, 2, 3, 4, 5, 6].map((set) => (
-            <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-32 pl-16 md:pl-32 group">
+            <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-6 md:gap-8 pl-6 md:pl-8 group">
               {logos.map((logo, i) => (
-                <div key={i} className="flex items-center gap-3 text-foreground/40 font-semibold text-xl md:text-2xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.15)] select-none">
-                  <logo.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} /> {logo.label}
+                <div key={i} className="flex items-center gap-3 text-foreground/60 font-medium text-base md:text-lg tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-40 hover:scale-105 select-none px-6 py-3 rounded-full bg-white/[0.03] border border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-[0_8px_24px_-8px_rgba(255,255,255,0.15)]">
+                  <logo.icon className="w-4 h-4 md:w-5 md:h-5 opacity-70" strokeWidth={2.5} /> {logo.label}
                 </div>
               ))}
             </div>
