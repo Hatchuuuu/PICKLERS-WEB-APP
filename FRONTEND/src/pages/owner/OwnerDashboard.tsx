@@ -57,6 +57,25 @@ export function OwnerDashboard() {
     setTimeout(() => setRequestSuccess(null), 3000);
   }
 
+  const sortedCourts = [...courts].sort((a, b) => {
+    const aIsAlert = timedUpCourts.includes(a.id);
+    const bIsAlert = timedUpCourts.includes(b.id);
+    if (aIsAlert && !bIsAlert) return -1;
+    if (!aIsAlert && bIsAlert) return 1;
+
+    const statusOrder: Record<string, number> = { "occupied": 1, "available": 2, "maintenance": 3 };
+    const aOrder = statusOrder[a.status] || 4;
+    const bOrder = statusOrder[b.status] || 4;
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+
+    if (a.status === "occupied" && b.status === "occupied") {
+       return (a.remaining || 0) - (b.remaining || 0);
+    }
+    
+    return 0;
+  });
+
   return (
     <div className="p-4 max-w-6xl mx-auto w-full relative">
 
@@ -277,10 +296,11 @@ export function OwnerDashboard() {
                 </>
               ) : (
                 <>
-                  {courts.map((c, idx) => (
+                  {sortedCourts.map((c) => (
                     <motion.div 
                       key={c.id} 
-                      layoutId={`court-card-${idx + 1}`}
+                      layout
+                      layoutId={`court-card-${c.id}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
