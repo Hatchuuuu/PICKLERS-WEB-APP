@@ -67,16 +67,14 @@ export function DraggableMarquee() {
             <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-24 pl-16 md:pl-24 group">
               {brands.map((brand, i) => (
                 <div key={i} className="flex items-center gap-3.5 text-foreground/40 font-semibold text-lg md:text-xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_16px_rgba(255,255,255,0.2)] select-none">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-lg flex items-center justify-center p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden">
-                    <img 
-                      src={`https://logo.clearbit.com/${brand.domain}?size=100`} 
-                      alt={brand.label}
-                      className="w-full h-full object-contain" 
-                      onError={(e) => { 
-                        e.currentTarget.style.display = 'none'; 
-                      }} 
-                    />
-                  </div>
+                  <img 
+                    src={`https://logo.clearbit.com/${brand.domain}?size=100`} 
+                    alt={brand.label}
+                    className="h-8 md:h-10 w-auto object-contain drop-shadow-md rounded-sm" 
+                    onError={(e) => { 
+                      e.currentTarget.style.display = 'none'; 
+                    }} 
+                  />
                   {brand.label}
                 </div>
               ))}
