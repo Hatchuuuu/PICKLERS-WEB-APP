@@ -147,8 +147,8 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center px-4 py-4 sm:py-8 bg-background relative overflow-hidden selection:bg-accent-primary/20">
-      <div className="absolute top-6 left-6 z-20">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8 bg-background relative overflow-y-auto selection:bg-accent-primary/20">
+      <div className="w-full max-w-[440px] flex justify-start mb-4 sm:absolute sm:top-6 sm:left-6 sm:mb-0 z-20 shrink-0">
         <button onClick={() => navigate("/")} 
           className="flex items-center gap-2 text-[14px] font-bold transition-colors"
           style={{ color: "var(--ink-secondary)" }}
