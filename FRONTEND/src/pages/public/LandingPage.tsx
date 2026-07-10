@@ -15,8 +15,13 @@ import AnimatedContent from "@/components/ui/AnimatedContent";
 import CountUp from "@/components/ui/CountUp";
 import GradientText from "@/components/ui/GradientText";
 import ShinyText from "@/components/ui/ShinyText";
-`;
+import { DraggableMarquee } from "@/components/shared/DraggableMarquee";
 
+const shimmerStyles = `
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+`;
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -262,6 +267,7 @@ export function LandingPage() {
       </section>
 
       {/* Trusted Partners Marquee */}
+      <style dangerouslySetInnerHTML={{ __html: shimmerStyles }} />
       <section className="py-12 md:py-16 border-y border-solid overflow-hidden flex flex-col items-center relative z-10 border-border/40 bg-surface-base/30" >
         <p className="text-[11px] md:text-[12px] font-semibold tracking-[0.25em] uppercase mb-8 md:mb-12 text-foreground/40 bg-clip-text">TRUSTED BY ELITE CLUBS & FACILITIES</p>
         <DraggableMarquee />
