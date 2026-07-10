@@ -153,7 +153,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
 
       {/* Floating Info Pill */}
       <div className="relative z-10 px-4 -mt-4 sm:-mt-6 max-w-6xl mx-auto w-full">
-        <div className="flex items-center justify-center gap-4 sm:gap-6 px-6 py-3.5 rounded-full overflow-x-auto scrollbar-none w-max max-w-full mx-auto shadow-2xl border border-white/5" 
+        <div className="flex items-center justify-start gap-4 sm:gap-6 px-6 py-3.5 rounded-full overflow-x-auto scrollbar-none w-max max-w-full mx-auto shadow-2xl border border-white/5" 
              style={{ background: "rgba(20,30,45,0.8)", backdropFilter: "blur(24px)" }}>
           <div className="flex items-center gap-2 text-[13px] font-bold text-white/80 shrink-0">
             <Clock className="w-4 h-4 shrink-0 text-cyan-400" />{facility.hours}
