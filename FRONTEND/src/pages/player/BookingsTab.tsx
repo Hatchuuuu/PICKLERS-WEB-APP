@@ -73,6 +73,8 @@ export function BookingsTab() {
             {t}
           </motion.button>
         ))}
+        {/* Spacer to fix right padding on horizontal scroll */}
+        <div className="w-3 shrink-0 md:hidden" />
       </div>
 
       {tab === "Refunds" ? (
