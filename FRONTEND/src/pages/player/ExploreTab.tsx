@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check
 } from "lucide-react";
@@ -11,6 +11,20 @@ import { useApp } from "@/contexts/AppContext";
 export function ExploreTab() {
   const [filter, setFilter] = useState("All");
   const { joinedMatches: joined, setJoinedMatches: setJoined, setBookings } = useApp();
+  
+  const [showToast, setShowToast] = useState(false);
+  const prevJoinedSize = useRef(joined.size);
+
+  useEffect(() => {
+    if (joined.size > prevJoinedSize.current) {
+      setShowToast(true);
+      const timer = setTimeout(() => setShowToast(false), 4000);
+      prevJoinedSize.current = joined.size;
+      return () => clearTimeout(timer);
+    }
+    prevJoinedSize.current = joined.size;
+  }, [joined.size]);
+
   const levels = ["All", "Beginner", "Intermediate", "Advanced"];
   const filtered = filter === "All" ? OPEN_MATCHES : OPEN_MATCHES.filter(m => m.level === filter);
   return (
@@ -78,7 +92,7 @@ export function ExploreTab() {
 
       {/* Floating Success Snackbar */}
       <AnimatePresence>
-        {joined.size > 0 && (
+        {showToast && joined.size > 0 && (
           <motion.div initial={{ opacity: 0, y: 50, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.9 }} transition={{ type: "spring", bounce: 0.4 }} 
             className="fixed bottom-[96px] left-4 right-4 md:left-auto md:right-8 md:w-auto flex items-center gap-3 px-4 py-3.5 rounded-[20px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5)] z-50 backdrop-blur-3xl"
             style={{ background: "rgba(10, 25, 20, 0.85)", border: "1px solid rgba(34,197,94,0.3)" }}>
