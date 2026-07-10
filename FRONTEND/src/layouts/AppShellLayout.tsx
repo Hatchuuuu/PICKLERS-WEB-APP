@@ -77,16 +77,11 @@ export function AppShellLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20"
-        style={{
-          background: "rgba(10, 22, 40, 0.75)",
-          backdropFilter: "blur(24px) saturate(1.2)",
-          borderColor: "var(--border-subtle)"
-        }}>
+      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20 bg-surface-base/75 backdrop-blur-2xl border-border">
         <div className="px-6 py-5 border-b border-solid flex items-center justify-between" style={{ borderColor: "var(--border-subtle)" }}>
           <div className="flex items-center gap-1">
             <PicklersLogo size={36} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           
           {/* Notifications Dropdown */}
@@ -150,8 +145,7 @@ export function AppShellLayout() {
         <div className="p-5 border-t border-solid flex items-center gap-3" style={{ borderColor: "var(--border-subtle)", background: "rgba(0,0,0,0.1)" }}>
           <div className="relative w-10 h-10 rounded-full flex items-center justify-center p-[2px]"
             style={{ background: "conic-gradient(from 180deg at 50% 50%, var(--accent-primary) 0deg, var(--accent-secondary) 180deg, var(--accent-primary) 360deg)" }}>
-            <div className="w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase"
-              style={{ background: "var(--surface-base)", color: "var(--accent-primary)" }}>{user?.name?.[0] || "P"}</div>
+            <div className="w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase bg-background text-accent-primary">{user?.name?.[0] || "P"}</div>
           </div>
           <div className="min-w-0">
             <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink-primary)" }}>{user?.name || "Player"}</div>
@@ -165,11 +159,10 @@ export function AppShellLayout() {
         <motion.div 
           animate={{ y: isHeaderVisible ? 0 : "-100%" }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="md:hidden sticky top-0 z-30 flex items-center justify-between px-[15px] py-[6px] border-b border-white/[0.08]"
-          style={{ background: "rgba(10, 22, 40, 0.75)", backdropFilter: "blur(40px) saturate(200%)" }}>
+          className="md:hidden sticky top-0 z-[100] isolate flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/75 backdrop-blur-3xl saturate-200">
           <div className="flex items-center gap-1">
             <PicklersLogo size={36} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="flex items-center gap-4 relative">
             <div className="relative" ref={notifRef}>
@@ -187,8 +180,7 @@ export function AppShellLayout() {
             
             <button onClick={() => setShowLogoutConfirm(true)} className="relative w-8 h-8 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform"
               style={{ background: "conic-gradient(from 180deg at 50% 50%, var(--accent-primary) 0deg, var(--accent-secondary) 180deg, var(--accent-primary) 360deg)" }}>
-              <div className="w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none"
-                style={{ background: "var(--surface-base)", color: "var(--accent-primary)" }}>{user?.name?.[0] || "P"}</div>
+              <div className="w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none bg-background text-accent-primary">{user?.name?.[0] || "P"}</div>
             </button>
           </div>
         </motion.div>
@@ -204,8 +196,7 @@ export function AppShellLayout() {
         </div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-solid z-40 pb-safe"
-        style={{ background: "rgba(10, 22, 40, 0.85)", backdropFilter: "blur(24px) saturate(1.2)", borderColor: "var(--border-subtle)" }}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-border z-40 pb-safe bg-surface-base/85 backdrop-blur-2xl saturate-150">
         {PLAYER_TABS.map(tab => {
           const active = view === tab.id;
           const Icon = tab.icon;
@@ -235,21 +226,21 @@ export function AppShellLayout() {
             <motion.div initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[320px] bg-gradient-to-b from-[#1c1c1e]/95 to-[#141415]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-white/[0.08]">
+              <div className="w-[320px] bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
                  <div className="p-8 text-center pb-6">
                    <div className="w-16 h-16 rounded-full bg-[#FF3B30]/10 flex items-center justify-center mx-auto mb-5 border border-[#FF3B30]/20 shadow-[0_0_24px_rgba(255,59,48,0.2)]">
                      <LogOut className="w-7 h-7 text-[#FF3B30]" style={{ marginLeft: "-2px" }} />
                    </div>
-                   <h3 className="text-[22px] font-black text-white tracking-tight" >Sign Out</h3>
-                   <p className="text-[15px] text-white/60 mt-3 leading-relaxed">
+                   <h3 className="text-[22px] font-black text-foreground tracking-tight" >Sign Out</h3>
+                   <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
                      You will need to sign in again to access your bookings and profile.
                    </p>
                  </div>
                  <div className="flex flex-col p-5 pt-0 gap-3">
-                   <button onClick={() => { logout(); navigate("/"); }} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-white bg-[#FF3B30] hover:bg-[#FF3B30]/90 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(255,59,48,0.3)]">
+                   <button onClick={() => { logout(); navigate("/"); }} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-foreground bg-[#FF3B30] hover:bg-[#FF3B30]/90 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(255,59,48,0.3)]">
                      Sign Out
                    </button>
-                   <button onClick={() => setShowLogoutConfirm(false)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-white/80 bg-white/[0.06] hover:bg-white/[0.1] active:scale-[0.98] transition-all">
+                   <button onClick={() => setShowLogoutConfirm(false)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-foreground/80 bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-[0.98] transition-all">
                      Cancel
                    </button>
                  </div>
