@@ -44,7 +44,7 @@ export function OwnerStaff() {
                  onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-lg font-bold tracking-tight">Add Staff</h2>
-                <button onClick={() => setAddStaffOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
+                <button onClick={() => setAddStaffOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-interactive/80"
                   style={{ border: "1px solid var(--border-default)", color: "var(--ink-muted)" }}><X className="w-4 h-4" /></button>
               </div>
               <div className="space-y-4">
@@ -76,8 +76,7 @@ export function OwnerStaff() {
                 </div>
               </div>
               <button onClick={addStaff} disabled={!newStaffName.trim() || !newStaffEmail.trim()}
-                className="w-full mt-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.97] disabled:opacity-40"
-                style={{ background: "var(--accent-success)", color: "#fff", transition: "opacity 150ms ease-out" }}>
+                className="w-full mt-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.97] disabled:opacity-40 bg-accent-success text-white" style={{ transition: "opacity 150ms ease-out" }}>
                 Add Staff Member
               </button>
             </div>
@@ -109,7 +108,7 @@ export function OwnerStaff() {
               <div className="text-xs text-muted-foreground">{s.email}</div>
             </div>
             <div className="shrink-0 text-center hidden sm:block">
-              <div className={cn("text-xs px-2 py-0.5 rounded-full font-medium", s.role === "manager" ? "bg-cyan-500/20 text-cyan-400" : "bg-white/10 text-muted-foreground")}>
+              <div className={cn("text-xs px-2 py-0.5 rounded-full font-medium", s.role === "manager" ? "bg-cyan-500/20 text-cyan-400" : "bg-surface-interactive text-muted-foreground")}>
                 {s.role}
               </div>
               <div className="text-xs text-muted-foreground mt-1">{s.joined}</div>
@@ -124,8 +123,7 @@ export function OwnerStaff() {
       </div>
 
       <button onClick={() => setAddStaffOpen(true)}
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm shadow-2xl active:scale-[0.97] z-30"
-        style={{ background: "var(--accent-success)", color: "#fff", boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
+        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm shadow-2xl active:scale-[0.97] z-30 bg-accent-success text-white" style={{ boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
         onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
         onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
         <Plus className="w-5 h-5" />Add Staff
@@ -133,19 +131,17 @@ export function OwnerStaff() {
 
       <AnimatePresence>
         {confirm !== null && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
                onClick={() => { setConfirm(null); setConfirmText(""); }}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
-              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">Revoke Staff Access?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">This will immediately remove this user's access to the facility dashboard and management system.</p>
+              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-border text-center bg-surface-base/95 dark:bg-[#1e1e20]/75 backdrop-blur-[40px] saturate-150 dark:border-white/[0.15]">
+              <h3 className="text-xl font-bold text-foreground mb-2">Revoke Staff Access?</h3>
+              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">This will immediately remove this user's access to the facility dashboard and management system.</p>
               <div className="flex flex-col gap-3">
                 <button onClick={() => handleDelete(confirm!)} 
-                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
-                  style={{ background: "#ef4444", color: "#ffffff" }}>
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg bg-accent-danger text-white" >
                   Revoke Access
                 </button>
                 <button onClick={() => { setConfirm(null); setConfirmText(""); }} 

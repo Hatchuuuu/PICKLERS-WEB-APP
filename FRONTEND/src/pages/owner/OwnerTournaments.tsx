@@ -56,7 +56,7 @@ export function OwnerTournaments() {
               <div className="flex items-center gap-1"><Users className="w-3 h-3" />{t.teams}/{t.maxTeams} Teams · {t.division}</div>
               <div className="flex items-center gap-1"><CreditCard className="w-3 h-3" />Prize: {t.prize}</div>
             </div>
-            <div className="w-full h-1.5 rounded-full mb-4" style={{ background: "rgba(255,255,255,0.06)" }}>
+            <div className="w-full h-1.5 rounded-full mb-4 bg-black/5 dark:bg-white/5">
               <div className="h-1.5 rounded-full" style={{ width: `${(t.teams / t.maxTeams) * 100}%`, background: "var(--accent-primary)" }} />
             </div>
             <button className="w-full py-2 rounded-lg text-xs font-medium active:scale-[0.97] transition-all"
@@ -68,8 +68,7 @@ export function OwnerTournaments() {
       </div>
 
       <button
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm shadow-2xl active:scale-[0.97] z-30"
-        style={{ background: "var(--accent-success)", color: "#fff", boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
+        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm shadow-2xl active:scale-[0.97] z-30 bg-accent-success text-white" style={{ boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
         onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
         onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
         <Plus className="w-5 h-5" />Create

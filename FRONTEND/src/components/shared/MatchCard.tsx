@@ -19,7 +19,7 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
       if (joinTimeoutRef.current) clearTimeout(joinTimeoutRef.current);
     };
   }, []);
-  
+
   const filled = joined ? m.slots + 1 : m.slots;
   const full = filled >= m.max;
 
@@ -31,12 +31,12 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
   function confirmJoin() {
     if (isSimulating || simSuccess) return;
     setIsSimulating(true);
-    
+
     // Simulate high-concurrency network latency
-    joinTimeoutRef.current = setTimeout(() => { 
-      setIsSimulating(false); 
+    joinTimeoutRef.current = setTimeout(() => {
+      setIsSimulating(false);
       setSimSuccess(true);
-      
+
       // Give the user 600ms to visually register the satisfying checkmark before closing
       setTimeout(() => {
         setShowJoinConfirm(false);
@@ -48,26 +48,14 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
   }
 
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="rounded-[24px] border border-solid p-5 flex gap-5 items-center cursor-default h-full"
-      style={{ 
-        background: joined ? "rgba(52,211,153,0.05)" : "linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)",
-        borderColor: joined ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.08)", 
-        boxShadow: joined ? "0 8px 32px rgba(52,211,153,0.15), inset 0 1px 1px rgba(255,255,255,0.1)" : "0 8px 32px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.06)",
-        backdropFilter: "blur(20px)"
-      }}>
+      className={`p-5 flex gap-5 items-center cursor-default h-full rounded-[24px] backdrop-blur-[20px] shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${joined ? 'bg-emerald-500/5 border border-emerald-500/30' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
       <CapacityRing filled={filled} max={m.max} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-[12px] px-3 py-1 rounded-full font-bold tracking-wide" 
-            style={{ 
-              background: "rgba(255,255,255,0.06)", 
-              color: "var(--accent-primary)",
-              border: "1px solid rgba(255,255,255,0.05)",
-              backdropFilter: "blur(8px)"
-            }}>
+          <span className="text-[12px] px-3 py-1 rounded-full font-bold tracking-wide bg-black/5 text-accent-primary border border-border dark:bg-white/5 dark:border-white/5 backdrop-blur-[8px]">
             {m.level}
           </span>
           {joined && (
@@ -90,33 +78,15 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
         <div className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-muted)" }}>your share</div>
         {publicMode ? (
           <button onClick={onJoin} disabled={joined || full}
-            className="text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{
-              background: joined ? "transparent" : full ? "rgba(255,255,255,0.05)" : "var(--accent-secondary)",
-              color: joined ? "var(--accent-success)" : full ? "var(--ink-muted)" : "#ffffff",
-              border: joined ? "1.5px solid var(--accent-success)" : "none",
-              boxShadow: (!joined && !full) ? "0 4px 16px rgba(59, 130, 246, 0.35)" : "none",
-              minWidth: "72px",
-              transition: "all 150ms ease-out" }}
-            onMouseEnter={e => { if (!joined && !full) e.currentTarget.style.opacity = "0.9"; }}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+            className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-150 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-accent-success border-[1.5px] border-accent-success' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none' : 'bg-accent-secondary text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
             {joined ? "Joined" : full ? "Full" : "Join"}
           </button>
         ) : (
           <VerificationGate disabled={joined || full} onVerifiedClick={handleJoin}>
             <button disabled={joined || full}
-              className="text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{
-                background: joined ? "transparent" : full ? "rgba(255,255,255,0.05)" : "var(--accent-secondary)",
-                color: joined ? "var(--accent-success)" : full ? "var(--ink-muted)" : "#ffffff",
-                border: joined ? "1.5px solid var(--accent-success)" : "none",
-                boxShadow: (!joined && !full) ? "0 4px 16px rgba(59, 130, 246, 0.35)" : "none",
-                minWidth: "72px",
-                transition: "all 150ms ease-out" }}
-              onMouseEnter={e => { if (!joined && !full) e.currentTarget.style.opacity = "0.9"; }}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+              className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-150 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-accent-success border-[1.5px] border-accent-success' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none' : 'bg-accent-secondary text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
               {loading ? (
-                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }} 
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
                   className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full" />
               ) : joined ? "Joined" : full ? "Full" : "Join"}
             </button>
@@ -129,50 +99,50 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
         {showJoinConfirm && (
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 pb-8">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
               onClick={() => setShowJoinConfirm(false)} />
-            
+
             <motion.div initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-full max-w-sm bg-gradient-to-b from-[#1c1c1e]/95 to-[#141415]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-white/[0.08] pb-safe">
-                 <div className="p-8 text-center pb-6">
-                   <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-5 border border-emerald-500/20 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
-                     <span className="text-[28px]">🤝</span>
-                   </div>
-                   <h3 className="text-[22px] font-black text-white tracking-tight" >Join Match?</h3>
-                   <p className="text-[15px] text-white/60 mt-3 leading-relaxed">
-                     Join <span className="font-bold text-white">{m.level}</span> match at <span className="font-bold text-white">{m.facility}</span> on <span className="font-bold text-white">{m.date}</span> for <span className="font-bold text-emerald-400">₱{m.price}</span>?
-                   </p>
-                 </div>
-                 <div className="flex flex-col p-5 pt-0 gap-3">
-                   <button 
-                     onClick={confirmJoin} 
-                     disabled={isSimulating || simSuccess}
-                     className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-black flex items-center justify-center gap-2 transition-all shadow-[0_8px_24px_rgba(52,211,153,0.3)]"
-                     style={{
-                       background: simSuccess ? "var(--accent-success)" : "var(--accent-primary)",
-                       opacity: isSimulating ? 0.8 : 1,
-                       transform: (isSimulating || simSuccess) ? "scale(0.98)" : "scale(1)",
-                     }}>
-                     {isSimulating ? (
-                       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }} 
-                         className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full" />
-                     ) : simSuccess ? (
-                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-                         <Check className="w-6 h-6 text-white" />
-                       </motion.div>
-                     ) : (
-                       "Confirm & Join"
-                     )}
-                   </button>
-                   <button 
-                     onClick={() => setShowJoinConfirm(false)} 
-                     disabled={isSimulating || simSuccess}
-                     className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-white/80 bg-white/[0.06] hover:bg-white/[0.1] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none">
-                     Cancel
-                   </button>
-                 </div>
+              <div className="w-full max-w-sm bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-2xl dark:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border pb-safe">
+                <div className="p-8 text-center pb-6">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-5 border border-emerald-500/20 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
+                    <span className="text-[28px]">🤝</span>
+                  </div>
+                  <h3 className="text-[22px] font-black text-foreground tracking-tight" >Join Match?</h3>
+                  <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
+                    Join <span className="font-bold text-foreground">{m.level}</span> match at <span className="font-bold text-foreground">{m.facility}</span> on <span className="font-bold text-foreground">{m.date}</span> for <span className="font-bold text-emerald-400">₱{m.price}</span>?
+                  </p>
+                </div>
+                <div className="flex flex-col p-5 pt-0 gap-3">
+                  <button
+                    onClick={confirmJoin}
+                    disabled={isSimulating || simSuccess}
+                    className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-black flex items-center justify-center gap-2 transition-all shadow-[0_8px_24px_rgba(52,211,153,0.3)]"
+                    style={{
+                      background: simSuccess ? "var(--accent-success)" : "var(--accent-primary)",
+                      opacity: isSimulating ? 0.8 : 1,
+                      transform: (isSimulating || simSuccess) ? "scale(0.98)" : "scale(1)",
+                    }}>
+                    {isSimulating ? (
+                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
+                        className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full" />
+                    ) : simSuccess ? (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                        <Check className="w-6 h-6 text-foreground" />
+                      </motion.div>
+                    ) : (
+                      "Confirm & Join"
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowJoinConfirm(false)}
+                    disabled={isSimulating || simSuccess}
+                    className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-foreground/80 bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none">
+                    Cancel
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
