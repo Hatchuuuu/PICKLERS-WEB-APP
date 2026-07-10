@@ -22,6 +22,22 @@ CREATE TABLE profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Trigger to prevent users from escalating their own roles via API
+CREATE OR REPLACE FUNCTION prevent_role_escalation()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.role IS DISTINCT FROM OLD.role THEN
+    RAISE EXCEPTION 'Unauthorized: Role modification is strictly prohibited via client API.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER enforce_role_security
+BEFORE UPDATE ON profiles
+FOR EACH ROW
+EXECUTE FUNCTION prevent_role_escalation();
+
 -- FACILITIES
 CREATE TABLE facilities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -95,6 +111,7 @@ CREATE INDEX idx_bookings_court_id ON bookings(court_id);
 CREATE INDEX idx_bookings_user_id ON bookings(user_id);
 CREATE INDEX idx_bookings_time_range ON bookings USING gist (tsrange(start_time, end_time));
 CREATE INDEX idx_open_matches_facility ON open_matches(facility_id);
+CREATE INDEX idx_open_matches_active ON open_matches(date, status) WHERE status = 'open';
 
 -- ====================================================================
 -- 4. ROW LEVEL SECURITY (RLS)

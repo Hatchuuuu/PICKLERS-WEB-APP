@@ -4,12 +4,13 @@ import { Check
 } from "lucide-react";
 import { OPEN_MATCHES } from "@/data/mockData";
 import { MatchCard } from "@/components/shared/MatchCard";
-
-
+import { useTheme } from "next-themes";
 import { useApp } from "@/contexts/AppContext";
 
 export function ExploreTab() {
   const [filter, setFilter] = useState("All");
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const { joinedMatches: joined, setJoinedMatches: setJoined, setBookings } = useApp();
   
   const [showToast, setShowToast] = useState(false);
@@ -50,9 +51,9 @@ export function ExploreTab() {
           <motion.button key={l} onClick={() => setFilter(l)}
             whileTap={{ scale: 0.95 }}
             animate={{ 
-              backgroundColor: filter === l ? "var(--accent-primary)" : "rgba(255, 255, 255, 0.04)",
+              backgroundColor: filter === l ? "var(--accent-primary)" : (isDark ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)"),
               color: filter === l ? "var(--surface-base)" : "var(--ink-secondary)",
-              borderColor: filter === l ? "var(--accent-primary)" : "rgba(255, 255, 255, 0.08)",
+              borderColor: filter === l ? "var(--accent-primary)" : (isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.1)"),
               boxShadow: filter === l ? "0 4px 12px rgba(0, 217, 139, 0.3)" : "0 0px 0px rgba(0,0,0,0)"
             }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
