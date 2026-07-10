@@ -31,7 +31,14 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[
     <motion.div ref={ref}
       whileHover={{ y: -6, boxShadow: "0 24px 48px -12px rgba(0,0,0,0.5)" }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="rounded-[28px] overflow-hidden flex flex-col group relative cursor-pointer h-full bg-surface-raised border border-border shadow-md"
+      className="rounded-[28px] overflow-hidden flex flex-col group relative cursor-pointer h-full border border-solid"
+      style={{
+        background: "linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)",
+        borderColor: "rgba(255,255,255,0.08)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.06)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)"
+      }}
       onClick={onViewCourts}>
 
       {/* Flush Edge-to-Edge Image */}
