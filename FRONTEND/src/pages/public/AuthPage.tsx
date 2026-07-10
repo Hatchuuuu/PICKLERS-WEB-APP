@@ -163,10 +163,10 @@ export function AuthPage() {
 
       <div className="w-full flex justify-center scale-[0.95] sm:scale-100 origin-center">
         <motion.div layout initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ ease: [0.23, 1, 0.32, 1], duration: 0.6, layout: { type: "spring", bounce: 0.2, duration: 0.6 } }}
-          className="w-full max-w-[440px] rounded-[24px] p-5 sm:p-8 relative z-10 overflow-hidden bg-white/80 dark:bg-[#111f3a]/60 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-[0_24px_48px_rgba(0,0,0,0.4)]">
+          className="w-full max-w-[440px] rounded-[24px] px-5 py-4 sm:px-8 sm:py-6 relative z-10 overflow-hidden bg-white/80 dark:bg-[#111f3a]/60 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-[0_24px_48px_rgba(0,0,0,0.4)]">
 
-        <div className="text-center mb-4 sm:mb-6">
-          <div className="flex items-center justify-center mb-4 mt-2">
+        <div className="text-center mb-3 sm:mb-5">
+          <div className="flex items-center justify-center mb-2 mt-0">
             <PicklersLogo size={68} />
           </div>
           <AnimatePresence mode="wait">
@@ -181,7 +181,7 @@ export function AuthPage() {
           </AnimatePresence>
         </div>
 
-        <div className="flex relative mb-5 sm:mb-6 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
+        <div className="flex relative mb-4 sm:mb-5 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
           {(["signin", "signup"] as const).map((val) => (
             <button key={val} onClick={() => setTab(val)} className="flex-1 py-2.5 text-[15px] font-semibold transition-colors z-10"
               style={{ color: tab === val ? "var(--accent-primary)" : "var(--ink-secondary)" }}>
@@ -193,7 +193,7 @@ export function AuthPage() {
             transition={{ type: "spring", stiffness: 500, damping: 35 }} />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 sm:gap-3.5">
           <AnimatePresence mode="popLayout">
             {tab === "signup" && otpState === "idle" && (
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
