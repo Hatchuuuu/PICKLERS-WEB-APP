@@ -89,7 +89,7 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[
 
         <div className="flex items-center justify-between mt-auto gap-2">
           <div className="flex flex-col min-w-0">
-            <span className="text-[8.5px] font-medium uppercase tracking-widest mb-0.5 shrink-0" style={{ color: "var(--ink-muted)" }}>Court Fee</span>
+            <span className="text-[8.5px] font-medium uppercase tracking-widest mb-0.5 shrink-0" style={{ color: "var(--ink-muted)" }}>Court Price</span>
             <span className="font-bold text-[13px] xl:text-[14px] tracking-tight leading-none flex items-baseline gap-0.5 truncate"
               style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" }}>
               <span className="truncate" style={{ color: "var(--ink-primary)" }}>
