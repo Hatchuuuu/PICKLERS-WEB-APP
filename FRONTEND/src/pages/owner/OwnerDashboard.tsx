@@ -160,7 +160,7 @@ export function OwnerDashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
               {isFetchingMetrics ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={`skeleton-${i}`} className="rounded-xl p-4 overflow-hidden relative bg-surface-raised border border-border dark:border-white/[0.05]">
+                  <div key={`skeleton-${i}`} className={`rounded-xl p-4 overflow-hidden relative bg-surface-raised border border-border dark:border-white/[0.05] ${i === 4 ? 'col-span-2 lg:col-span-1' : ''}`}>
                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                     <div className="w-20 h-3 bg-surface-interactive rounded-full mb-3" />
                     <div className="w-28 h-6 bg-surface-interactive hover:bg-surface-interactive/80 rounded-full mb-2" />
@@ -174,8 +174,15 @@ export function OwnerDashboard() {
                   { label: "Active Bookings", value: "12", change: "now" },
                   { label: "New Players", value: "8", change: "today" },
                   { label: "Repeaters", value: "45%", change: "+3%" },
-                ].map((m, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4" style={{ background: "var(--surface-raised)", border: "1px solid var(--accent-primary-muted)" }}>
+                ].map((m, index) => (
+                  <motion.div 
+                    key={index} 
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ delay: index * 0.05 }} 
+                    className={`rounded-[24px] p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group ${index === 4 ? 'col-span-2 lg:col-span-1' : ''}`}
+                    style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
+                  >
                     <div className="text-xs text-muted-foreground mb-1">{m.label}</div>
                     <div className="text-xl font-bold font-mono text-foreground">{m.value}</div>
                     <div className="text-xs mt-0.5 text-emerald-400">{m.change}</div>

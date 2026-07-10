@@ -110,6 +110,44 @@ ALTER TABLE open_matches ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
+-- ====================================================================
+-- SECURE BOOKING RPC
+-- ====================================================================
+-- Users cannot directly INSERT into the bookings table to prevent price spoofing.
+-- They must call this RPC, which fetches the immutable base_price from the facility.
+
+CREATE OR REPLACE FUNCTION create_secure_booking(
+  p_court_id UUID, 
+  p_time_range tsrange
+) RETURNS UUID AS $$
+DECLARE
+  v_base_price NUMERIC;
+  v_duration_hours NUMERIC;
+  v_total_amount NUMERIC;
+  v_booking_id UUID;
+BEGIN
+  -- Fetch the real base_price from the facility
+  SELECT f.base_price INTO v_base_price 
+  FROM courts c JOIN facilities f ON c.facility_id = f.id 
+  WHERE c.id = p_court_id;
+
+  IF v_base_price IS NULL THEN
+    RAISE EXCEPTION 'Invalid court or facility not found';
+  END IF;
+
+  -- Calculate precise hours from tsrange
+  v_duration_hours := EXTRACT(EPOCH FROM upper(p_time_range) - lower(p_time_range)) / 3600;
+  v_total_amount := v_base_price * v_duration_hours;
+
+  -- Safely insert the booking
+  INSERT INTO bookings (user_id, court_id, start_time, end_time, total_amount, status)
+  VALUES (auth.uid(), p_court_id, lower(p_time_range), upper(p_time_range), v_total_amount, 'upcoming')
+  RETURNING id INTO v_booking_id;
+
+  RETURN v_booking_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Facilities: Anyone can view, only Owners can insert/update.
 CREATE POLICY "Facilities are viewable by everyone" ON facilities FOR SELECT USING (true);
 CREATE POLICY "Owners can manage their facilities" ON facilities FOR ALL USING (auth.uid() = owner_id);
@@ -129,7 +167,7 @@ CREATE POLICY "Owners can view bookings for their facilities" ON bookings FOR SE
         WHERE c.id = bookings.court_id AND f.owner_id = auth.uid()
     )
 );
-CREATE POLICY "Users can insert own bookings" ON bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- INSERT access removed for direct queries to prevent price spoofing. Bookings MUST go through `create_secure_booking` RPC.
 CREATE POLICY "Users can only cancel upcoming bookings" ON bookings FOR UPDATE 
 USING (auth.uid() = user_id AND status = 'upcoming') 
 WITH CHECK (status = 'cancelled');
