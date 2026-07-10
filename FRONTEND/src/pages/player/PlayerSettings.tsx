@@ -110,83 +110,83 @@ export function PlayerSettingsTab() {
           </div>
         </div>
       ) : (
-        <div className="rounded-[20px] p-5 mb-8 relative overflow-hidden cursor-pointer"
-          onClick={() => navigate("/app/owner-application")}
-          style={{ background: "var(--surface-raised)" }}>
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: "rgba(255,255,255,0.05)" }}>
-              <ShieldCheck className="w-6 h-6 text-cyan-400" />
+        user?.role === "player" && (
+          <div onClick={() => navigate("/app/owner-onboarding")} 
+            className="mb-8 rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-cyan-500/20 text-cyan-500 shadow-inner">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[16px] font-bold text-foreground mb-0.5">Own a court?</div>
+                <div className="text-[14px] text-foreground/60 font-medium">Apply to list your facility</div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-foreground/30" />
             </div>
-            <div className="flex-1">
-              <div className="text-[15px] font-bold text-foreground mb-0.5">Own a court?</div>
-              <div className="text-[13px] text-foreground/50">Apply to list your facility</div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-foreground/30" />
           </div>
-        </div>
+        )
       )}
 
       {/* Profile Section */}
       <div className="mb-8">
-        <h3 className="text-[12px] font-bold text-foreground/40 uppercase tracking-widest mb-2 px-4">Profile</h3>
-        <div className="rounded-[16px] overflow-hidden" style={{ background: "var(--surface-raised)" }}>
+        <h3 className="text-[13px] font-bold text-foreground/50 uppercase tracking-widest mb-2.5 px-4">Profile</h3>
+        <div className="rounded-[16px] overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-xl">
           
-          <button onClick={() => handleEditClick("profile", "name", "Full Name", profile.name)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-surface-interactive/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-blue-500">
-                <User className="w-4 h-4 text-foreground" />
+          <button onClick={() => handleEditClick("profile", "name", "Full Name", profile.name)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:bg-black/10 dark:active:bg-white/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <User className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Name</span>
+              <span className="text-[16px] font-medium text-foreground">Name</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[15px] text-foreground/50">{profile.name}</span>
-              <ChevronRight className="w-4 h-4 text-foreground/20" />
+              <ChevronRight className="w-[18px] h-[18px] text-foreground/30" />
             </div>
           </button>
           
-          <div className="h-px w-full bg-surface-interactive/80 ml-14" />
+          <div className="h-[1px] w-full bg-black/5 dark:bg-white/5 ml-[56px]" />
           
-          <button onClick={() => handleEditClick("profile", "email", "Email Address", profile.email)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-surface-interactive/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-orange-500">
-                <Mail className="w-4 h-4 text-foreground" />
+          <button onClick={() => handleEditClick("profile", "email", "Email Address", profile.email)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:bg-black/10 dark:active:bg-white/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-500 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Mail className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Email</span>
+              <span className="text-[16px] font-medium text-foreground">Email</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[15px] text-foreground/50">{profile.email}</span>
-              <ChevronRight className="w-4 h-4 text-foreground/20" />
+              <span className="text-[15px] text-foreground/50 truncate max-w-[150px] sm:max-w-[200px]">{profile.email}</span>
+              <ChevronRight className="w-[18px] h-[18px] text-foreground/30" />
             </div>
           </button>
 
-          <div className="h-px w-full bg-surface-interactive/80 ml-14" />
+          <div className="h-[1px] w-full bg-black/5 dark:bg-white/5 ml-[56px]" />
           
-          <button onClick={() => handleEditClick("profile", "phone", "Phone Number", profile.phone)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-surface-interactive/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-green-500">
-                <Phone className="w-4 h-4 text-foreground" />
+          <button onClick={() => handleEditClick("profile", "phone", "Phone Number", profile.phone)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:bg-black/10 dark:active:bg-white/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-green-400 to-green-600 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Phone className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Phone</span>
+              <span className="text-[16px] font-medium text-foreground">Phone</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[15px] text-foreground/50">{profile.phone}</span>
-              <ChevronRight className="w-4 h-4 text-foreground/20" />
+              <ChevronRight className="w-[18px] h-[18px] text-foreground/30" />
             </div>
           </button>
 
-          <div className="h-px w-full bg-surface-interactive/80 ml-14" />
+          <div className="h-[1px] w-full bg-black/5 dark:bg-white/5 ml-[56px]" />
           
-          <button onClick={() => handleEditClick("profile", "skill", "Skill Level", profile.skill)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-surface-interactive/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-purple-500">
-                <Trophy className="w-4 h-4 text-foreground" />
+          <button onClick={() => handleEditClick("profile", "skill", "Skill Level", profile.skill)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:bg-black/10 dark:active:bg-white/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-purple-400 to-purple-600 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Trophy className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Skill Level</span>
+              <span className="text-[16px] font-medium text-foreground">Skill Level</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[15px] text-foreground/50">{profile.skill}</span>
-              <ChevronRight className="w-4 h-4 text-foreground/20" />
+              <ChevronRight className="w-[18px] h-[18px] text-foreground/30" />
             </div>
           </button>
 
@@ -195,39 +195,39 @@ export function PlayerSettingsTab() {
 
       {/* Notifications Section */}
       <div className="mb-8">
-        <h3 className="text-[12px] font-bold text-foreground/40 uppercase tracking-widest mb-2 px-4">Notifications</h3>
-        <div className="rounded-[16px] overflow-hidden" style={{ background: "var(--surface-raised)" }}>
+        <h3 className="text-[13px] font-bold text-foreground/50 uppercase tracking-widest mb-2.5 px-4">Notifications</h3>
+        <div className="rounded-[16px] overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-xl">
           
           <div className="w-full flex items-center justify-between px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-red-500">
-                <Bell className="w-4 h-4 text-foreground" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-red-400 to-red-500 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Bell className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Booking Confirmations</span>
+              <span className="text-[16px] font-medium text-foreground">Booking Confirmations</span>
             </div>
             <Toggle checked={notifications.booking} onChange={() => setNotifications({ ...notifications, booking: !notifications.booking })} />
           </div>
           
-          <div className="h-px w-full bg-surface-interactive/80 ml-14" />
+          <div className="h-[1px] w-full bg-black/5 dark:bg-white/5 ml-[56px]" />
           
           <div className="w-full flex items-center justify-between px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-cyan-500">
-                <Smartphone className="w-4 h-4 text-foreground" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-cyan-400 to-cyan-500 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Smartphone className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Open Match Alerts</span>
+              <span className="text-[16px] font-medium text-foreground">Open Match Alerts</span>
             </div>
             <Toggle checked={notifications.matches} onChange={() => setNotifications({ ...notifications, matches: !notifications.matches })} />
           </div>
 
-          <div className="h-px w-full bg-surface-interactive/80 ml-14" />
+          <div className="h-[1px] w-full bg-black/5 dark:bg-white/5 ml-[56px]" />
           
           <div className="w-full flex items-center justify-between px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-indigo-500">
-                <Users className="w-4 h-4 text-foreground" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-indigo-400 to-indigo-500 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Users className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Community Updates</span>
+              <span className="text-[16px] font-medium text-foreground">Community Updates</span>
             </div>
             <Toggle checked={notifications.community} onChange={() => setNotifications({ ...notifications, community: !notifications.community })} />
           </div>
@@ -237,19 +237,19 @@ export function PlayerSettingsTab() {
 
       {/* Appearance Section */}
       <div className="mb-8">
-        <h3 className="text-[12px] font-bold text-foreground/40 uppercase tracking-widest mb-2 px-4">Appearance</h3>
-        <div className="rounded-[16px] overflow-hidden" style={{ background: "var(--surface-raised)" }}>
+        <h3 className="text-[13px] font-bold text-foreground/50 uppercase tracking-widest mb-2.5 px-4">Appearance</h3>
+        <div className="rounded-[16px] overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-xl">
           
           <div className="w-full flex items-center justify-between px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-zinc-700">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-800 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
                   <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
                 </svg>
               </div>
-              <span className="text-[16px] text-foreground">Dark Mode</span>
+              <span className="text-[16px] font-medium text-foreground">Dark Mode</span>
             </div>
-            <Toggle checked={darkMode} onChange={() => setTheme(darkMode ? "light" : "dark")} />
+            <Toggle checked={theme === "dark"} onChange={() => setTheme(theme === "dark" ? "light" : "dark")} />
           </div>
 
         </div>
@@ -257,49 +257,49 @@ export function PlayerSettingsTab() {
 
       {/* Payment Methods Section */}
       <div className="mb-8">
-        <h3 className="text-[12px] font-bold text-foreground/40 uppercase tracking-widest mb-2 px-4">Payment Methods</h3>
-        <div className="rounded-[16px] overflow-hidden" style={{ background: "var(--surface-raised)" }}>
+        <h3 className="text-[13px] font-bold text-foreground/50 uppercase tracking-widest mb-2.5 px-4">Payment Methods</h3>
+        <div className="rounded-[16px] overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-xl">
           
-          <button onClick={() => handleEditClick("payment", "gcash", "GCash Number", payments.gcash)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-surface-interactive/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: "#0055FE" }}>
-                <CreditCard className="w-4 h-4 text-foreground" />
+          <button onClick={() => handleEditClick("payment", "gcash", "GCash Number", payments.gcash)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:bg-black/10 dark:active:bg-white/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-[#0055FE] to-blue-700 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <CreditCard className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">GCash</span>
+              <span className="text-[16px] font-medium text-foreground">GCash</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[15px] text-foreground/50">{payments.gcash}</span>
-              <ChevronRight className="w-4 h-4 text-foreground/20" />
+              <ChevronRight className="w-[18px] h-[18px] text-foreground/30" />
             </div>
           </button>
           
-          <div className="h-px w-full bg-surface-interactive/80 ml-14" />
+          <div className="h-[1px] w-full bg-black/5 dark:bg-white/5 ml-[56px]" />
           
-          <button onClick={() => handleEditClick("payment", "cash", "Cash Preference", payments.cash)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-surface-interactive/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-emerald-600">
-                <Banknote className="w-4 h-4 text-foreground" />
+          <button onClick={() => handleEditClick("payment", "cash", "Cash Preference", payments.cash)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:bg-black/10 dark:active:bg-white/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Banknote className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Cash on Site</span>
+              <span className="text-[16px] font-medium text-foreground">Cash on Site</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[15px] text-foreground/50">{payments.cash}</span>
-              <ChevronRight className="w-4 h-4 text-foreground/20" />
+              <ChevronRight className="w-[18px] h-[18px] text-foreground/30" />
             </div>
           </button>
 
-          <div className="h-px w-full bg-surface-interactive/80 ml-14" />
+          <div className="h-[1px] w-full bg-black/5 dark:bg-white/5 ml-[56px]" />
           
-          <button onClick={() => handleEditClick("payment", "credits", "Pickle Credits", payments.credits)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-surface-interactive/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-yellow-500">
-                <Coins className="w-4 h-4 text-foreground" />
+          <button onClick={() => handleEditClick("payment", "credits", "Pickle Credits", payments.credits)} className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:bg-black/10 dark:active:bg-white/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-sm border border-black/10 dark:border-white/10 shrink-0">
+                <Coins className="w-[18px] h-[18px] text-white stroke-[2.5]" />
               </div>
-              <span className="text-[16px] text-foreground">Pickle Credits</span>
+              <span className="text-[16px] font-medium text-foreground">Pickle Credits</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[15px] text-foreground/50">{payments.credits}</span>
-              <ChevronRight className="w-4 h-4 text-foreground/20" />
+              <ChevronRight className="w-[18px] h-[18px] text-foreground/30" />
             </div>
           </button>
 
@@ -307,12 +307,11 @@ export function PlayerSettingsTab() {
       </div>
 
       {/* Sign Out Section */}
-      <div className="mb-8">
+      <div className="mb-12">
         <button 
           onClick={() => setShowLogoutConfirm(true)}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-[16px] text-[17px] font-normal text-[#FF453A] hover:bg-surface-interactive/80 transition-colors"
-          style={{ background: "var(--surface-raised)" }}>
-          <LogOut className="w-5 h-5" />
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-[16px] text-[17px] font-medium text-[#FF453A] hover:bg-black/5 dark:hover:bg-white/5 transition-colors active:scale-[0.98] bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-xl">
+          <LogOut className="w-5 h-5 stroke-[2.5]" />
           Sign Out
         </button>
       </div>
