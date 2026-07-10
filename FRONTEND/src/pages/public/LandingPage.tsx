@@ -248,20 +248,21 @@ export function LandingPage() {
           </div>
 
           <button onClick={() => navigate("/auth?intent=owner")}
-            className="group flex items-center gap-2 sm:gap-3 pr-4 sm:pr-5 pl-1.5 sm:pl-2 py-1.5 sm:py-2 rounded-full mx-auto transition-all hover:bg-surface-interactive/80 active:scale-95 mt-2 max-w-[95vw]"
+            className="relative overflow-hidden group flex items-center gap-2 sm:gap-3 pr-4 sm:pr-5 pl-1.5 sm:pl-2 py-1.5 sm:py-2 rounded-full mx-auto transition-all hover:bg-surface-interactive/80 active:scale-95 mt-2 max-w-[95vw]"
             style={{
               border: "1px solid rgba(0, 217, 139, 0.3)",
               boxShadow: "0 0 24px -6px rgba(0, 217, 139, 0.4), inset 0 0 12px -6px rgba(0, 217, 139, 0.2)"
             }}>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0"
+            <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-[-20deg]" style={{ animation: "button-shine 8s ease infinite", animationDelay: "3.5s" }} />
+            <div className="relative z-10 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0"
               style={{ background: "var(--accent-primary-muted)", color: "var(--accent-primary)" }}>
               <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
-            <div className="flex items-center gap-1 sm:gap-1.5 text-[12px] sm:text-[14px] font-medium tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+            <div className="relative z-10 flex items-center gap-1 sm:gap-1.5 text-[12px] sm:text-[14px] font-medium tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
               <span style={{ color: "var(--ink-primary)" }}>Are you a Court Owner?</span>
               <span style={{ color: "var(--accent-primary)" }}>List your court</span>
             </div>
-            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" style={{ color: "var(--accent-primary)" }} />
+            <ArrowRight className="relative z-10 w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" style={{ color: "var(--accent-primary)" }} />
           </button>
         </motion.div>
       </section>
