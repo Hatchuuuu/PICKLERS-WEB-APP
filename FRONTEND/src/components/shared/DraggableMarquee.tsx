@@ -27,6 +27,7 @@ export function DraggableMarquee() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastXRef = useRef<number | null>(null);
 
   // We wrap between -25% and 0% so there is always content to the left when flowing right
   const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
@@ -38,16 +39,34 @@ export function DraggableMarquee() {
     baseX.set(baseX.get() + moveBy);
   });
 
-  const handleDragStart = () => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     setIsDragging(true);
+    lastXRef.current = e.clientX;
     if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
-  const handleDragEnd = () => {
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging || lastXRef.current === null) return;
+    const deltaX = e.clientX - lastXRef.current;
+    lastXRef.current = e.clientX;
+    
+    const containerWidth = containerRef.current?.offsetWidth || 1000;
+    const percentageDelta = (deltaX / containerWidth) * 100;
+    baseX.set(baseX.get() + percentageDelta);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    lastXRef.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
     dragTimeoutRef.current = setTimeout(() => {
       setIsDragging(false);
     }, 2000);
   };
+
+
 
   useEffect(() => {
     return () => {
@@ -61,18 +80,10 @@ export function DraggableMarquee() {
         ref={containerRef}
         className="flex min-w-max items-center gap-16 md:gap-32 px-8 group will-change-transform"
         style={{ x }}
-        drag="x"
-        dragElastic={0.1}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDrag={(e, info) => {
-          const currentX = baseX.get();
-          // Convert pixel delta to percentage for perfect 1:1 tracking
-          const containerWidth = containerRef.current?.offsetWidth || 1000;
-          const percentageDelta = (info.delta.x / containerWidth) * 100;
-          baseX.set(currentX + percentageDelta); 
-        }}
-        dragConstraints={{ left: 0, right: 0 }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
         {[1, 2, 3, 4].map((set) => (
           <div key={set} className="flex items-center gap-16 md:gap-32">
