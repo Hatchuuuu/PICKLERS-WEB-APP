@@ -101,13 +101,13 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
       {createPortal(
         <AnimatePresence>
           {showJoinConfirm && (
-            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 pb-8">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pb-8">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl"
                 onClick={() => setShowJoinConfirm(false)} />
-              <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "100%", opacity: 0 }}
-                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 400 }}
                 className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
                 <div className="w-full max-w-[340px] bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[28px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
                   <div className="p-6 text-center pb-5">
