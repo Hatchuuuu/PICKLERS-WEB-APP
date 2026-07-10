@@ -35,7 +35,7 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[
       onClick={onViewCourts}>
 
       {/* Flush Edge-to-Edge Image */}
-      <div className="relative overflow-hidden h-[210px] w-full shrink-0">
+      <div className="relative overflow-hidden h-[170px] w-full shrink-0">
         <img src={f.image} alt={f.name} className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.04]" />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
@@ -57,9 +57,9 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[
       </div>
 
       {/* Classic iOS Content Area */}
-      <div className="flex flex-col flex-1 p-5 bg-transparent">
-        <div className="flex items-start justify-between gap-3 mb-1">
-          <h2 className="font-semibold tracking-tight leading-tight text-[18px] xl:text-[20px] text-foreground line-clamp-1" title={f.name}>
+      <div className="flex flex-col flex-1 p-4 xl:p-5 bg-transparent">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h2 className="font-semibold tracking-tight leading-tight text-[17px] xl:text-[18px] text-foreground line-clamp-1" title={f.name}>
             {f.name}
           </h2>
           <div className="flex items-center gap-1 shrink-0 mt-0.5">
@@ -68,31 +68,31 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[
           </div>
         </div>
 
-        <div className="space-y-2 mt-2 mb-6">
-          <div className="flex items-center gap-2 text-[13px] xl:text-[14px] text-foreground/60 font-medium truncate">
-            <MapPin className="w-4 h-4 shrink-0" /><span className="truncate">{f.location}</span>
+        <div className="space-y-1.5 mt-2 mb-4">
+          <div className="flex items-center gap-1.5 text-[12px] xl:text-[13px] text-foreground/60 font-medium truncate">
+            <MapPin className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{f.location}</span>
           </div>
-          <div className="flex items-center justify-between text-[13px] xl:text-[14px] text-foreground/60 font-medium gap-3">
-            <div className="flex items-center gap-2 truncate">
-              <Clock className="w-4 h-4 shrink-0" /><span className="truncate">{f.hours}</span>
+          <div className="flex items-center justify-between text-[12px] xl:text-[13px] text-foreground/60 font-medium gap-2">
+            <div className="flex items-center gap-1.5 truncate">
+              <Clock className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{f.hours}</span>
             </div>
-            <span className="text-[12px] shrink-0 whitespace-nowrap opacity-80">🏍 {f.moto} · 🚗 {f.car}</span>
+            <span className="text-[11px] shrink-0 whitespace-nowrap opacity-80">🏍 {f.moto} · 🚗 {f.car}</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-auto gap-3">
+        <div className="flex items-center justify-between mt-auto gap-2">
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-medium text-foreground/50 uppercase tracking-widest mb-0.5 shrink-0">Court Fee</span>
-            <span className="font-semibold text-[17px] xl:text-[21px] tracking-tight leading-none flex items-baseline gap-1 truncate"
+            <span className="text-[9px] font-semibold text-foreground/50 uppercase tracking-widest mb-0.5 shrink-0">Court Fee</span>
+            <span className="font-semibold text-[15px] xl:text-[17px] tracking-tight leading-none flex items-baseline gap-0.5 truncate"
               style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" }}>
               <span className="text-foreground truncate">
                 {minPrice === maxPrice ? `₱${minPrice}` : `₱${minPrice} - ₱${maxPrice}`}
               </span>
-              <span className="font-medium text-[12px] xl:text-[14px] text-foreground/50 shrink-0">/hr</span>
+              <span className="font-medium text-[11px] xl:text-[12px] text-foreground/50 shrink-0">/hr</span>
             </span>
           </div>
           <div
-            className="text-[13px] xl:text-[14px] px-4 xl:px-5 py-2 xl:py-2.5 rounded-[10px] font-semibold whitespace-nowrap shrink-0 active:scale-[0.96] transition-all flex items-center justify-center"
+            className="text-[12px] xl:text-[13px] px-3.5 xl:px-4 py-1.5 xl:py-2 rounded-[8px] font-semibold whitespace-nowrap shrink-0 active:scale-[0.96] transition-all flex items-center justify-center"
             style={{ background: "var(--accent-primary)", color: "#080f2e", boxShadow: "0 4px 12px rgba(0,212,255,0.2)" }}>
             View Courts
           </div>
