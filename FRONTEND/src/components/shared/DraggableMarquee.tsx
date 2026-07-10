@@ -73,9 +73,12 @@ export function DraggableMarquee() {
                     className="h-8 md:h-10 w-auto object-contain drop-shadow-md rounded-sm" 
                     onError={(e) => { 
                       e.currentTarget.style.display = 'none'; 
+                      if (e.currentTarget.nextElementSibling) {
+                        e.currentTarget.nextElementSibling.classList.remove('hidden');
+                      }
                     }} 
                   />
-                  {brand.label}
+                  <span className="hidden">{brand.label}</span>
                 </div>
               ))}
             </div>
