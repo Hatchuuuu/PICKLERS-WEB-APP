@@ -223,7 +223,7 @@ export function AuthPage() {
                       </label>
                       <motion.div animate={isShaking && emailError ? { x: [-5, 5, -5, 5, 0] } : {}} transition={{ duration: 0.4 }} className="relative">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-muted transition-colors group-focus-within:text-accent-primary" />
-                        <input type="email" value={email} onChange={e => { setEmail(e.target.value); if (emailError) validateEmail(e.target.value); }} placeholder="you@example.com" className={cn(`${inputClassName} pl-12`, emailError && "border-accent-danger text-accent-danger")} style={tab === "signup" ? { ...inputStyle, paddingRight: "100px" } : inputStyle}
+                        <input type="email" value={email} onChange={e => { setEmail(e.target.value); if (emailError) validateEmail(e.target.value); }} placeholder="you@example.com" className={cn(`${inputClassName} pl-12 text-ellipsis`, emailError && "border-accent-danger text-accent-danger")} style={tab === "signup" ? { ...inputStyle, paddingRight: "115px" } : inputStyle}
                           onFocus={e => (e.currentTarget.style.borderColor = "var(--border-emphasis)")}
                           onBlur={e => (e.currentTarget.style.borderColor = emailError ? "var(--accent-danger)" : "var(--border-default)")} />
                         {tab === "signup" && (
@@ -280,7 +280,7 @@ export function AuthPage() {
                       </label>
                       <div className="relative">
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-muted transition-colors group-focus-within:text-accent-primary" />
-                        <input type="tel" placeholder="+63 912 345 6789" className={`${inputClassName} pl-12`} style={tab === "signup" ? { ...inputStyle, paddingRight: "100px" } : inputStyle}
+                        <input type="tel" placeholder="+63 912 345 6789" className={`${inputClassName} pl-12 text-ellipsis`} style={tab === "signup" ? { ...inputStyle, paddingRight: "115px" } : inputStyle}
                           value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)}
                           onFocus={e => (e.currentTarget.style.borderColor = "var(--border-emphasis)")}
                           onBlur={e => (e.currentTarget.style.borderColor = "var(--border-default)")} />
