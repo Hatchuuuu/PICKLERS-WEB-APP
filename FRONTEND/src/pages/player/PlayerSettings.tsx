@@ -379,21 +379,21 @@ export function PlayerSettingsTab() {
               onClick={() => setShowLogoutConfirm(false)} />
             <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-              <div className="w-full max-w-sm bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
-                 <div className="p-8 text-center pb-6">
-                   <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-red-500/10 to-red-500/5 flex items-center justify-center mx-auto mb-6 ring-1 ring-red-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                     <LogOut className="w-8 h-8 text-red-500 drop-shadow-[0_2px_8px_rgba(239,68,68,0.4)]" style={{ marginLeft: "-2px" }} strokeWidth={1.5} />
+              <div className="w-full max-w-[340px] bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[28px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
+                 <div className="p-6 text-center pb-5">
+                   <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-red-500/10 to-red-500/5 flex items-center justify-center mx-auto mb-4 ring-1 ring-red-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                     <LogOut className="w-7 h-7 text-red-500 drop-shadow-[0_2px_8px_rgba(239,68,68,0.4)]" style={{ marginLeft: "-2px" }} strokeWidth={1.5} />
                    </div>
-                   <h3 className="text-[22px] font-bold text-foreground tracking-tight mb-2">Sign Out</h3>
-                   <p className="text-[15px] text-foreground/70 leading-relaxed font-medium">
+                   <h3 className="text-[20px] font-bold text-foreground tracking-tight mb-2">Sign Out</h3>
+                   <p className="text-[14px] text-foreground/70 leading-relaxed font-medium px-2">
                      You will need to sign in again to access your bookings and profile.
                    </p>
                  </div>
-                 <div className="p-5 pt-0 flex gap-3">
-                   <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-4 rounded-[20px] text-[16px] font-semibold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
+                 <div className="p-5 pt-0 flex gap-2.5">
+                   <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-3.5 rounded-[16px] text-[15px] font-semibold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
                      Cancel
                    </button>
-                   <button onClick={() => { logout(); navigate("/"); }} className="flex-[1.5] py-4 rounded-[20px] text-[16px] font-bold text-white bg-gradient-to-r from-red-500 to-red-400 hover:from-red-400 hover:to-red-400 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(239,68,68,0.25)] ring-1 ring-red-400/50">
+                   <button onClick={() => { logout(); navigate("/"); }} className="flex-[1.5] py-3.5 rounded-[16px] text-[15px] font-bold text-white bg-gradient-to-r from-red-500 to-red-400 hover:from-red-400 hover:to-red-400 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(239,68,68,0.25)] ring-1 ring-red-400/50">
                      Sign Out
                    </button>
                  </div>
