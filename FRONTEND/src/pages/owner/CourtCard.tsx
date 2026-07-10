@@ -29,9 +29,9 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
 
   return (
     <div className={`rounded-3xl p-5 transition-all relative overflow-hidden backdrop-blur-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${isAlert ? 'border border-red-500/60 dark:border-t-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.15),inset_0_0_20px_rgba(239,68,68,0.05)] bg-red-500/5' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-[15px] font-bold text-foreground tracking-tight">{court.name}</span>
-        <span className={cn("text-[11px] px-2.5 py-1 rounded-full font-bold tracking-wide shadow-sm",
+      <div className="flex items-start justify-between gap-3 mb-5">
+        <span className="text-[16px] font-bold text-foreground tracking-tight leading-tight">{court.name}</span>
+        <span className={cn("text-[10px] px-2.5 py-1 rounded-full font-bold tracking-wider shadow-sm shrink-0",
           court.status === "occupied" ? "bg-cyan-50 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 dark:border-cyan-500/30" :
           court.status === "available" ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30" : "bg-surface-interactive text-muted-foreground border border-border")}>
           {court.status.toUpperCase()}
@@ -39,8 +39,8 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
       </div>
       {court.status === "occupied" && (
         <>
-          <div className="text-[13px] text-muted-foreground mb-1.5 truncate">{court.player}</div>
-          <div className={cn("text-2xl font-mono mb-3", isAlert ? "flex items-center gap-2 font-medium" : "font-bold text-cyan-600 dark:text-cyan-400 dark:drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]")}
+          <div className="text-[13px] text-muted-foreground mb-2 truncate">{court.player}</div>
+          <div className={cn("text-[28px] tracking-tight font-mono mb-4", isAlert ? "flex items-center gap-2 font-semibold" : "font-semibold text-cyan-600 dark:text-cyan-400 dark:drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]")}
                style={isAlert ? { color: "#ff4b4b", textShadow: "0 0 12px rgba(255, 75, 75, 0.5)" } : {}}>
             {isAlert ? (
               <>
@@ -55,12 +55,12 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
               formatTime(seconds)
             )}
           </div>
-          <div className="w-full h-1.5 rounded-full mb-4 shadow-inner bg-black/5 dark:bg-black/30">
+          <div className="w-full h-1.5 rounded-full mb-5 shadow-inner bg-black/5 dark:bg-black/30">
             <div className="h-1.5 rounded-full transition-all duration-1000 dark:shadow-[0_0_8px_currentColor]"
               style={{ width: `${pct * 100}%`, background: pct > 0.2 ? "var(--accent-primary)" : "var(--accent-danger)", color: pct > 0.2 ? "var(--accent-primary)" : "var(--accent-danger)" }} />
           </div>
           <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowEndConfirm(true); }}
-            className="w-full text-[13px] font-semibold mt-1.5 py-2.5 rounded-full active:scale-[0.97] transition-all bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 dark:bg-[#ff3b30]/10 dark:hover:bg-[#ff3b30]/15 dark:border-[#ff3b30]/15 dark:text-[#ff3b30] relative z-10">
+            className="w-full text-[14px] font-bold mt-2 py-3 rounded-full active:scale-[0.97] transition-all bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 dark:bg-[#ff3b30]/10 dark:hover:bg-[#ff3b30]/15 dark:border-[#ff3b30]/15 dark:text-[#ff3b30] relative z-10">
             {isAlert ? "Clear Court" : "End Session Early"}
           </button>
         </>
