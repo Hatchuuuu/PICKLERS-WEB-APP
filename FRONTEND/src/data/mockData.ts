@@ -112,6 +112,8 @@ export const OPEN_MATCHES = [
   { id: 2, level: "Intermediate", facility: "SM Southmall Picklepark", date: "Jul 8, 2026", time: "10:00 AM – 12:00 PM", slots: 3, max: 6, host: "Juan Dela Cruz", price: 280 },
   { id: 3, level: "Advanced", facility: "Ayala Center Cebu Courts", date: "Jul 9, 2026", time: "6:00 AM – 8:00 AM", slots: 1, max: 4, host: "Ana Reyes", price: 450 },
   { id: 4, level: "Beginner", facility: "Eastwood City Pickledome", date: "Jul 9, 2026", time: "3:00 PM – 5:00 PM", slots: 6, max: 8, host: "Carlo Mendoza", price: 190 },
+  { id: 5, level: "Intermediate", facility: "Robinsons Dumaguete Sports", date: "Jul 10, 2026", time: "5:00 PM – 7:00 PM", slots: 4, max: 6, host: "Leo Tolentino", price: 250 },
+  { id: 6, level: "All Levels", facility: "Iloilo Sports Complex", date: "Jul 10, 2026", time: "7:00 AM – 9:00 AM", slots: 8, max: 12, host: "Sophia Lim", price: 150 },
 ];
 
 export const BOOKINGS = [
