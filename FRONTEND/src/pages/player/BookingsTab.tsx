@@ -57,7 +57,7 @@ export function BookingsTab() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <div className="flex gap-1.5 mb-6 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex gap-1.5 mb-6 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
         {tabs.map(t => (
           <motion.button key={t} onClick={() => setTab(t)}
             whileTap={{ scale: 0.95 }}
