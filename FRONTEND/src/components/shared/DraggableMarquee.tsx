@@ -66,19 +66,34 @@ export function DraggableMarquee() {
           {[1, 2, 3].map((set) => (
             <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-24 pl-16 md:pl-24 group">
               {brands.map((brand, i) => (
-                <div key={i} className="flex items-center gap-3.5 text-foreground/40 font-semibold text-lg md:text-xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_16px_rgba(255,255,255,0.2)] select-none">
-                  <img 
-                    src={brand.logoUrl} 
-                    alt={brand.label}
-                    className="h-8 md:h-10 w-auto object-contain drop-shadow-md rounded-sm" 
-                    onError={(e) => { 
-                      e.currentTarget.style.display = 'none'; 
-                      if (e.currentTarget.nextElementSibling) {
-                        e.currentTarget.nextElementSibling.classList.remove('hidden');
-                      }
-                    }} 
-                  />
-                  <span className="hidden">{brand.label}</span>
+                <div key={i} className="flex items-center gap-3.5 text-foreground/40 font-semibold text-lg md:text-xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 select-none">
+                  
+                  <div className="relative flex items-center justify-center w-28 h-10 md:w-36 md:h-12 group/logo">
+                    {/* Contrast Halo: Creates a soft white glow behind all logos, ensuring black logos are visible on dark backgrounds */}
+                    <img 
+                      src={brand.logoUrl} 
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain brightness-0 invert blur-[6px] opacity-30 group-hover/logo:opacity-60 transition-opacity duration-500 pointer-events-none select-none" 
+                    />
+                    
+                    {/* Main Logo */}
+                    <img 
+                      src={brand.logoUrl} 
+                      alt={brand.label}
+                      className="relative z-10 w-full h-full object-contain filter grayscale opacity-70 group-hover/logo:grayscale-0 group-hover/logo:opacity-100 group-hover/logo:drop-shadow-[0_4px_12px_rgba(255,255,255,0.15)] transition-all duration-500" 
+                      onError={(e) => { 
+                        if (e.currentTarget.parentElement) {
+                           e.currentTarget.parentElement.style.display = 'none'; 
+                           if (e.currentTarget.parentElement.nextElementSibling) {
+                             e.currentTarget.parentElement.nextElementSibling.classList.remove('hidden');
+                           }
+                        }
+                      }} 
+                    />
+                  </div>
+
+                  {/* Fallback Text if Logo Fails */}
+                  <span className="hidden whitespace-nowrap">{brand.label}</span>
                 </div>
               ))}
             </div>
