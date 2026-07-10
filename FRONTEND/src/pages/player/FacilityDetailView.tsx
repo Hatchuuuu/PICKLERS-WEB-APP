@@ -96,6 +96,13 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
           Discover
         </button>
 
+        {/* Rating Badge */}
+        <div className="absolute top-6 right-6 flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+          style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.18)" }}>
+          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+          <span className="text-[14px] font-bold text-foreground">{facility.rating}</span>
+        </div>
+
         {/* Facility name overlay */}
         <div className="absolute bottom-6 left-0 right-0 px-6 sm:px-8">
           <div className="flex items-end justify-between gap-4 max-w-6xl mx-auto w-full">
@@ -105,10 +112,6 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
                   style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" }}>
                   {facility.type}
                 </span>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full shadow-lg" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  <span className="text-[13px] font-bold text-foreground leading-none">{facility.rating}</span>
-                </div>
               </div>
               <h1 className="text-[22px] sm:text-4xl font-bold leading-none text-foreground drop-shadow-xl tracking-tight truncate" title={facility.name}>
                 {facility.name}
