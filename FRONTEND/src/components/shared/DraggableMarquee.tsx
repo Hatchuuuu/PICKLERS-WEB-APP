@@ -16,7 +16,7 @@ const logos = [
 ];
 
 export function DraggableMarquee() {
-  const baseVelocity = 1.5; // Positive velocity flows RIGHT
+  const baseVelocity = 0.03; // Much slower, premium ambient speed
   const baseX = useMotionValue(0);
   const scrollVelocity = useMotionValue(baseVelocity);
   const smoothVelocity = useSpring(scrollVelocity, {
