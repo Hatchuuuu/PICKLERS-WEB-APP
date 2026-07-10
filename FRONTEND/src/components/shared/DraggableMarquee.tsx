@@ -1,11 +1,6 @@
-import { useRef, useState, useEffect } from "react";
-import { motion, useAnimationFrame, useMotionValue, useSpring, useTransform } from "motion/react";
 import { Trophy, MapPin, ShieldCheck, Building, Zap } from "lucide-react";
-
-const wrap = (min: number, max: number, v: number) => {
-  const rangeSize = max - min;
-  return ((((v - min) % rangeSize) + rangeSize) % rangeSize) + min;
-};
+import useEmblaCarousel from "embla-carousel-react";
+import AutoScroll from "embla-carousel-auto-scroll";
 
 const logos = [
   { icon: Trophy, label: "DUPR" },
@@ -16,85 +11,33 @@ const logos = [
 ];
 
 export function DraggableMarquee() {
-  const baseVelocity = 0.02; // Normal speed (matches original CSS animation)
-  const baseX = useMotionValue(0);
-  const scrollVelocity = useMotionValue(baseVelocity);
-  const smoothVelocity = useSpring(scrollVelocity, {
-    damping: 50,
-    stiffness: 400
-  });
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastXRef = useRef<number | null>(null);
-
-  // We wrap between -25% and 0% so there is always content to the left when flowing right
-  const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
-
-  useAnimationFrame((t, delta) => {
-    if (isDragging) return;
-    
-    let moveBy = smoothVelocity.get() * (delta / 16);
-    baseX.set(baseX.get() + moveBy);
-  });
-
-  const handlePointerDown = (e: React.PointerEvent) => {
-    setIsDragging(true);
-    lastXRef.current = e.clientX;
-    if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging || lastXRef.current === null) return;
-    const deltaX = e.clientX - lastXRef.current;
-    lastXRef.current = e.clientX;
-    
-    const containerWidth = containerRef.current?.offsetWidth || 1000;
-    const percentageDelta = (deltaX / containerWidth) * 100;
-    baseX.set(baseX.get() + percentageDelta);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    lastXRef.current = null;
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    dragTimeoutRef.current = setTimeout(() => {
-      setIsDragging(false);
-    }, 2000);
-  };
-
-
-
-  useEffect(() => {
-    return () => {
-      if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
-    };
-  }, []);
+  const [emblaRef] = useEmblaCarousel(
+    { loop: true, dragFree: true },
+    [
+      AutoScroll({
+        playOnInit: true,
+        speed: 0.8, // Smooth ambient speed
+        stopOnInteraction: false, // Automatically resumes after drag!
+        direction: "backward", // Flows to the RIGHT
+      })
+    ]
+  );
 
   return (
-    <div className="flex w-full max-w-[2000px] overflow-hidden cursor-grab active:cursor-grabbing" style={{ maskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)" }}>
-      <motion.div 
-        ref={containerRef}
-        className="flex min-w-max items-center gap-16 md:gap-32 px-8 group will-change-transform"
-        style={{ x }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-      >
-        {[1, 2, 3, 4].map((set) => (
-          <div key={set} className="flex items-center gap-16 md:gap-32">
-            {logos.map((logo, i) => (
-              <div key={i} className="flex items-center gap-3 text-foreground/40 font-semibold text-xl md:text-2xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.15)] select-none">
-                <logo.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} /> {logo.label}
-              </div>
-            ))}
-          </div>
-        ))}
-      </motion.div>
+    <div className="w-full max-w-[2000px] overflow-hidden cursor-grab active:cursor-grabbing" style={{ maskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent)" }}>
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex touch-pan-y">
+          {[1, 2, 3, 4, 5, 6].map((set) => (
+            <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-32 pl-16 md:pl-32 group">
+              {logos.map((logo, i) => (
+                <div key={i} className="flex items-center gap-3 text-foreground/40 font-semibold text-xl md:text-2xl tracking-tight transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:!text-foreground hover:!opacity-100 group-hover:opacity-30 hover:scale-110 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.15)] select-none">
+                  <logo.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} /> {logo.label}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
