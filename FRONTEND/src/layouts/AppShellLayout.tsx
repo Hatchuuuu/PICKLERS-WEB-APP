@@ -24,8 +24,8 @@ interface PlayerTab {
 export const PLAYER_TABS: PlayerTab[] = [
   { id: "player-play", label: "Play", icon: Building2 },
   { id: "player-explore", label: "Explore", icon: Flame },
-  { id: "player-bookings", label: "Bookings", icon: CalendarDays },
   { id: "player-community", label: "Community", icon: Users },
+  { id: "player-bookings", label: "Bookings", icon: CalendarDays },
   { id: "player-settings", label: "Settings", icon: Settings },
 ];
 
