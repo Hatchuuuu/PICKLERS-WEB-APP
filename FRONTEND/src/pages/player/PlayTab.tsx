@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, MapPin, X, SlidersHorizontal, Loader2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { Search, MapPin, X, SlidersHorizontal } from "lucide-react";
+import { FACILITIES } from "@/data/mockData";
 import { FacilityCard } from "@/components/shared/FacilityCard";
 import { FacilityDetailView } from "@/pages/player/FacilityDetailView";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -11,40 +10,19 @@ import { useApp } from "@/contexts/AppContext";
 export function PlayTab() {
   const [search, setSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const { favoritedFacilities, setFavoritedFacilities } = useApp();
-  const [selectedFacility, setSelectedFacility] = useState<any>(null);
+  const { facilities, favoritedFacilities, setFavoritedFacilities } = useApp();
+  const [selectedFacility, setSelectedFacility] = useState<typeof FACILITIES[0] | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const { data: dbFacilities, isLoading } = useQuery({
-    queryKey: ['facilities'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('facilities').select('*');
-      if (error) throw error;
-      
-      // Map DB fields to frontend format
-      return data.map(f => ({
-        id: f.id,
-        name: f.name,
-        location: f.location,
-        type: f.type,
-        rating: Number(f.rating),
-        price: Number(f.base_price),
-        hours: f.operating_hours,
-        distance: "2.5 km", // Hardcoded for now
-        image: f.image_url,
-        favorited: false,
-      }));
-    }
-  });
-
-  const facilities = dbFacilities || [];
+  const [isLoading, setIsLoading] = useState(true);
   
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterType, setFilterType] = useState<"All" | "Indoor" | "Outdoor">("All");
   const [filterSort, setFilterSort] = useState<"Recommended" | "Price (Low to High)" | "Rating (High to Low)">("Recommended");
 
   useEffect(() => {
-    // Component mounted
+    // Simulate network latency for loading skeleton showcase
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
   }, []);
 
   const filtered = facilities

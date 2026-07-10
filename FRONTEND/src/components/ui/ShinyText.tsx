@@ -131,7 +131,7 @@ const ShinyText = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {text}
+      {text}&#8202;
     </motion.span>
   );
 };

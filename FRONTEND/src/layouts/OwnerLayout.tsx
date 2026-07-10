@@ -60,16 +60,11 @@ export function OwnerLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20"
-        style={{
-          background: "rgba(10, 22, 40, 0.75)",
-          backdropFilter: "blur(24px) saturate(1.2)",
-          borderColor: "var(--border-subtle)"
-        }}>
+      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20 bg-surface-base/75 backdrop-blur-2xl border-border">
         <div className="px-6 py-5 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
           <div className="flex items-center gap-2 mb-1">
             <PicklersLogo size={24} />
-            <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="text-[12px] font-medium" style={{ color: "var(--accent-success)" }}>Owner Portal</div>
         </div>
@@ -128,11 +123,10 @@ export function OwnerLayout() {
       <main className="flex-1 overflow-y-auto pb-20 md:pb-0 relative bg-background flex flex-col">
         {/* Mobile Premium Header */}
         <div 
-          className="md:hidden sticky top-0 z-30 flex items-center justify-between px-[15px] py-[6px] border-b border-white/[0.08]"
-          style={{ background: "rgba(10, 22, 40, 0.75)", backdropFilter: "blur(40px) saturate(200%)" }}>
+          className="md:hidden sticky top-0 z-30 flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/75 backdrop-blur-3xl saturate-200">
           <div className="flex items-center gap-1">
             <PicklersLogo size={36} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="flex items-center gap-4 relative">
 
@@ -157,8 +151,7 @@ export function OwnerLayout() {
         </div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-solid z-40 pb-safe"
-        style={{ background: "rgba(10, 22, 40, 0.85)", backdropFilter: "blur(24px) saturate(1.2)", borderColor: "var(--border-subtle)" }}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-solid z-40 pb-safe bg-surface-base/85 backdrop-blur-2xl border-border">
         {OWNER_TABS.map(tab => {
           const active = view === tab.id;
           const Icon = tab.icon;
@@ -184,8 +177,8 @@ export function OwnerLayout() {
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
               className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
               style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
-              <h3 className="text-xl font-bold text-white mb-2">Log Out?</h3>
-              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">You are about to securely log out of the Facility Dashboard. You will need to sign in again to manage your courts.</p>
+              <h3 className="text-xl font-bold text-foreground mb-2">Log Out?</h3>
+              <p className="text-[14px] text-foreground/60 mb-6 leading-relaxed">You are about to securely log out of the Facility Dashboard. You will need to sign in again to manage your courts.</p>
               <div className="flex flex-col gap-3">
                 <button onClick={() => { logout(); navigate("/"); }} 
                   className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"

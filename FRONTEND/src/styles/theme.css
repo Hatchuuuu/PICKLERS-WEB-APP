@@ -1,47 +1,73 @@
 @custom-variant dark (&:is(.dark *));
 
-:root,
-.dark {
+:root {
   /* =========================================
-     PICKLERS BRAND IDENTITY — COLOR TOKENS
-     =========================================
-     Brand Green: Vibrant emerald (#00D98B)
-     Dark Mode:   Cool charcoal with green undertone
+     PICKLERS BRAND IDENTITY — LIGHT MODE
      ========================================= */
+  --surface-base: #FAFAFA;
+  --surface-raised: #FFFFFF;
+  --surface-overlay: #FFFFFF;
+  --surface-interactive: #F4F4F5;
 
-  /* Surfaces — deep navy */
-  --surface-base: #0A1628;
-  --surface-raised: #111F3A;
-  --surface-overlay: #162849;
-  --surface-interactive: #1C3258;
+  --ink-primary: #18181B;
+  --ink-secondary: #52525B;
+  --ink-muted: #71717A;
+  --ink-inverse: #FFFFFF;
 
-  /* Ink / Text */
-  --ink-primary: #E8ECF0;
-  --ink-secondary: #8B99A8;
-  --ink-muted: #556270;
-  --ink-inverse: #0A1628;
-
-  /* Brand Accent — Picklers Emerald */
   --accent-primary: #00D98B;
   --accent-primary-hover: #00C47E;
   --accent-primary-muted: rgba(0, 217, 139, 0.12);
 
-  /* Supporting Accents */
   --accent-secondary: #3B82F6;
   --accent-success: #00D98B;
   --accent-warning: #FFBA3B;
   --accent-danger: #F04848;
 
-  /* Borders — tinted toward the green undertone */
+  --border-subtle: rgba(24, 24, 27, 0.08);
+  --border-default: rgba(24, 24, 27, 0.15);
+  --border-emphasis: rgba(0, 217, 139, 0.28);
+
+  --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.05);
+  --shadow-md: 0 4px 12px rgba(24, 24, 27, 0.05), 0 1px 3px rgba(24, 24, 27, 0.03);
+  --shadow-lg: 0 12px 40px rgba(24, 24, 27, 0.08), 0 4px 12px rgba(24, 24, 27, 0.04);
+  --shadow-glow: 0 0 24px rgba(0, 217, 139, 0.18);
+}
+
+.dark {
+  /* =========================================
+     PICKLERS BRAND IDENTITY — DARK MODE
+     ========================================= */
+  --surface-base: #0A1628;
+  --surface-raised: #111F3A;
+  --surface-overlay: #162849;
+  --surface-interactive: #1C3258;
+
+  --ink-primary: #E8ECF0;
+  --ink-secondary: #8B99A8;
+  --ink-muted: #556270;
+  --ink-inverse: #0A1628;
+
+  --accent-primary: #00D98B;
+  --accent-primary-hover: #00C47E;
+  --accent-primary-muted: rgba(0, 217, 139, 0.12);
+
+  --accent-secondary: #3B82F6;
+  --accent-success: #00D98B;
+  --accent-warning: #FFBA3B;
+  --accent-danger: #F04848;
+
   --border-subtle: rgba(139, 153, 168, 0.08);
   --border-default: rgba(139, 153, 168, 0.15);
   --border-emphasis: rgba(0, 217, 139, 0.28);
 
-  /* Multi-layered Soft Shadows */
   --shadow-sm: 0 1px 2px rgba(10, 22, 40, 0.35);
   --shadow-md: 0 4px 12px rgba(10, 22, 40, 0.30), 0 1px 3px rgba(10, 22, 40, 0.18);
   --shadow-lg: 0 12px 40px rgba(10, 22, 40, 0.40), 0 4px 12px rgba(10, 22, 40, 0.22);
   --shadow-glow: 0 0 24px rgba(0, 217, 139, 0.18);
+}
+
+:root,
+.dark {
 
   /* Spacing Scale (8px Grid) */
   --space-1: 4px;
@@ -218,31 +244,40 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
 }
 
 @keyframes kid-jump {
-  0%, 12%, 100% {
+
+  0%,
+  12%,
+  100% {
     transform: translateY(0);
   }
+
   1% {
     /* Quick anticipate */
     transform: translateY(4px);
   }
+
   3% {
     /* Fast explode up */
     transform: translateY(-24px);
   }
+
   6% {
     /* Slam down */
     transform: translateY(0);
   }
+
   8% {
     /* Quick secondary bounce */
     transform: translateY(-6px);
   }
+
   10% {
     /* Final land */
     transform: translateY(0);
@@ -258,9 +293,11 @@
   0% {
     left: -100%;
   }
+
   15% {
     left: 100%;
   }
+
   100% {
     left: 100%;
   }
@@ -273,12 +310,10 @@
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%);
   transform: skewX(-20deg);
   animation: button-shine 8s ease infinite;
 }
