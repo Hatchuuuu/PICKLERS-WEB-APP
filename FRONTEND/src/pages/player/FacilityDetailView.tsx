@@ -110,7 +110,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
                   <span className="text-[13px] font-bold text-foreground leading-none">{facility.rating}</span>
                 </div>
               </div>
-              <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight text-foreground drop-shadow-xl" style={{ letterSpacing: "-0.03em" }}>
+              <h1 className="text-3xl sm:text-5xl font-bold leading-tight text-foreground drop-shadow-xl tracking-tight">
                 {facility.name}
               </h1>
               <div className="flex items-center gap-1.5 mt-2 text-[14px] font-medium text-foreground/80 drop-shadow-md">
