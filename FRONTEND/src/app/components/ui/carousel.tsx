@@ -115,8 +115,7 @@ function Carousel({
         scrollPrev,
         scrollNext,
         canScrollPrev,
-        canScrollNext,
-      }}
+        canScrollNext }}
     >
       <div
         onKeyDownCapture={handleKeyDown}

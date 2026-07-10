@@ -25,18 +25,3 @@ export function statusColor(status: string) {
   if (status === "cancelled") return "bg-red-500/20 text-red-400";
   return "bg-amber-500/20 text-amber-400";
 }
-
-export function useCountUp(target: number, duration = 1400) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    let start = 0;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) { setValue(target); clearInterval(timer); }
-      else setValue(Math.floor(start));
-    }, 16);
-    return () => clearInterval(timer);
-  }, [target, duration]);
-  return value;
-}

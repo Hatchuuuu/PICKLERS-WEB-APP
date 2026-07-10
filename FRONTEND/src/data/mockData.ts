@@ -1,6 +1,24 @@
+export type ChatMessage = { from: "me" | "them"; text: string; ts: string };
 
-
-
+export const MOCK_CHATS: Record<number, ChatMessage[]> = {
+  1: [
+    { from: "them", text: "Hey! Good game yesterday 🏓", ts: "2:14 PM" },
+    { from: "me", text: "Thanks! Your backhand is insane haha", ts: "2:15 PM" },
+    { from: "them", text: "Rematch this Saturday?", ts: "2:16 PM" },
+  ],
+  2: [
+    { from: "them", text: "Are you joining the BGC open play?", ts: "Yesterday" },
+    { from: "me", text: "Yes! Booked Court 2 at 7AM", ts: "Yesterday" },
+  ],
+  3: [],
+  4: [
+    { from: "them", text: "Hi! Looking for a doubles partner 🤝", ts: "Mon" },
+  ],
+  5: [
+    { from: "them", text: "Congrats on the tournament win!", ts: "Last week" },
+    { from: "me", text: "Thank you! You should join next time", ts: "Last week" },
+  ],
+};
 
 export const FACILITIES = [
   {
@@ -97,6 +115,8 @@ export const OPEN_MATCHES = [
 ];
 
 export const BOOKINGS = [
+  { id: "PKL-20260712", court: "Center Court (Premium)", facility: "BGC Pickleball Hub", date: "Jul 12, 2026", time: "6:00 PM – 8:00 PM", total: 1500, status: "upcoming", payment: "Credit Card" },
+  { id: "PKL-20260715", court: "Court A (Outdoor)", facility: "Eastwood City Pickledome", date: "Jul 15, 2026", time: "7:00 AM – 9:00 AM", total: 760, status: "upcoming", payment: "GCash" },
   { id: "PKL-20260701", court: "Court 3 (Indoor)", facility: "SM Southmall Picklepark", date: "Jul 10, 2026", time: "10:00 AM – 12:00 PM", total: 1000, status: "upcoming", payment: "GCash" },
   { id: "PKL-20260628", court: "Center Court (Outdoor)", facility: "BGC Pickleball Hub", date: "Jun 28, 2026", time: "7:00 AM – 9:00 AM", total: 800, status: "completed", payment: "Pickle Credits" },
   { id: "PKL-20260615", court: "Court 1 (Indoor)", facility: "Iloilo Sports Complex", date: "Jun 15, 2026", time: "4:00 PM – 6:00 PM", total: 640, status: "completed", payment: "Cash on Site" },

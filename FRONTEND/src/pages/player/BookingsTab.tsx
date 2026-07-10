@@ -1,34 +1,77 @@
 import { useState } from "react";
-import { motion } from "motion/react";
-import { CalendarDays,
-  Wallet
-} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { CalendarDays, Wallet, AlertTriangle, Clock, Navigation } from "lucide-react";
 import { cn, statusColor } from "@/lib/utils";
-import { BOOKINGS } from "@/data/mockData";
-
+import { useApp } from "@/contexts/AppContext";
+import { NavigationOverlay } from "@/components/shared/NavigationOverlay";
 
 export function BookingsTab() {
+  const { bookings, setBookings, setJoinedMatches } = useApp();
+  type BookingType = typeof bookings[0];
+  
   const [tab, setTab] = useState("Upcoming");
-  const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
-  const [bookings, setBookings] = useState(BOOKINGS);
+  const [cancelModal, setCancelModal] = useState<BookingType | null>(null);
+  const [navigatingTo, setNavigatingTo] = useState<BookingType | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  
   const tabs = ["Upcoming", "Completed", "Refunds", "Cancelled", "Wallet"];
   const filtered = tab === "Wallet" || tab === "Refunds" ? [] : bookings.filter(b => b.status === tab.toLowerCase());
 
-  function handleCancelConfirm(id: string) {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: "cancelled" } : b));
-    setCancelConfirm(null);
+  function handleCancelConfirm() {
+    if (!cancelModal) return;
+    setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: "cancelled" } : b));
+    
+    // Clear joinedMatches for open play
+    if (cancelModal.id.startsWith("PKL-OP-")) {
+      const matchId = parseInt(cancelModal.id.replace("PKL-OP-", "").slice(0, -3));
+      if (!isNaN(matchId)) {
+        setJoinedMatches(prev => {
+          const next = new Set(prev);
+          next.delete(matchId);
+          return next;
+        });
+      }
+    }
+
+    // Show toast
+    setToast(`Booking cancelled. ₱${cancelModal.total} Pickle Credits refunded.`);
+    setTimeout(() => setToast(null), 4000);
+    setCancelModal(null);
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Montserrat', sans-serif" }}>MY BOOKINGS</h1>
-      <div className="flex gap-1 overflow-x-auto pb-1 mb-6 border-b border-border">
+    <div className="p-4 relative max-w-6xl mx-auto w-full">
+      <div className="relative h-[68px] mb-4 -mt-[1px] flex items-center justify-between">
+        <AnimatePresence>
+          <motion.div 
+            key="title" 
+            initial={{ opacity: 0, x: -20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: -20 }}
+            className="absolute left-0 top-0"
+          >
+            <h1 className="text-[32px] font-extrabold tracking-tight leading-none mb-1.5" style={{ color: "var(--ink-primary)" }}>
+              Bookings
+            </h1>
+            <p className="text-sm text-muted-foreground">Manage your upcoming matches and reservations</p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="flex gap-1.5 mb-6 overflow-x-auto pb-2 scrollbar-none">
         {tabs.map(t => (
-          <button key={t} onClick={() => setTab(t)} className="shrink-0 px-4 py-2.5 text-sm font-medium transition-colors relative"
-            style={{ color: tab === t ? "#00d4ff" : "#6b82b8" }}>
+          <motion.button key={t} onClick={() => setTab(t)}
+            whileTap={{ scale: 0.95 }}
+            animate={{ 
+              backgroundColor: tab === t ? "var(--accent-primary)" : "rgba(255, 255, 255, 0.04)",
+              color: tab === t ? "var(--surface-base)" : "var(--ink-secondary)",
+              borderColor: tab === t ? "var(--accent-primary)" : "rgba(255, 255, 255, 0.08)",
+              boxShadow: tab === t ? "0 4px 12px rgba(0, 217, 139, 0.3)" : "0 0px 0px rgba(0,0,0,0)"
+            }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            className="shrink-0 px-3.5 py-1.5 rounded-full text-[12px] font-semibold tracking-wide border border-solid relative overflow-hidden"
+            style={{ backdropFilter: "blur(12px)" }}>
             {t}
-            {tab === t && <motion.div layoutId="booking-ul" className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full" style={{ background: "#00d4ff" }} />}
-          </button>
+          </motion.button>
         ))}
       </div>
 
@@ -40,7 +83,7 @@ export function BookingsTab() {
         </div>
       ) : tab === "Wallet" ? (
         <div className="max-w-sm">
-          <div className="rounded-2xl p-6 mb-6" style={{ background: "linear-gradient(135deg, #1a2d6e 0%, #0f1d47 100%)", border: "1px solid rgba(0,212,255,0.2)" }}>
+          <div className="rounded-2xl p-6 mb-6" style={{ background: "linear-gradient(135deg, var(--surface-interactive) 0%, var(--surface-raised) 100%)", border: "1px solid var(--border-emphasis)" }}>
             <div className="text-xs text-muted-foreground mb-1">Pickle Credits Balance</div>
             <div className="text-4xl font-bold text-cyan-400 font-mono">₱1,200</div>
             <div className="text-xs text-muted-foreground mt-1">~≈ 3 court sessions</div>
@@ -66,55 +109,121 @@ export function BookingsTab() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {filtered.map((b, i) => (
-            <motion.div key={b.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, ease: "easeOut" }}
-              className="rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
-              style={{ background: "#0f1d47", border: "1px solid rgba(0,212,255,0.1)" }}>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-mono text-muted-foreground">{b.id}</span>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusColor(b.status))}>
-                    {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
+          <AnimatePresence mode="popLayout">
+            {filtered.map((b, i) => (
+              <motion.div key={b.id} layout initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95, y: -16 }} transition={{ delay: i * 0.04, ease: [0.23, 1, 0.32, 1], duration: 0.6 }}
+                className="rounded-[24px] p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-transform duration-500 hover:-translate-y-1 relative"
+                style={{ 
+                  background: "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(40px)"
+                }}>
+                {("isNew" in b && b.isNew) && (
+                  <motion.div className="absolute inset-0 rounded-[24px] border border-emerald-400 pointer-events-none"
+                    initial={{ opacity: 0, boxShadow: "inset 0 0 0px rgba(52,211,139,0)" }}
+                    animate={{ opacity: [0, 1, 0, 1, 0], boxShadow: ["inset 0 0 0px rgba(52,211,139,0)", "inset 0 0 20px rgba(52,211,139,0.2)", "inset 0 0 0px rgba(52,211,139,0)", "inset 0 0 20px rgba(52,211,139,0.2)", "inset 0 0 0px rgba(52,211,139,0)"] }}
+                    transition={{ duration: 4, times: [0, 0.1, 0.5, 0.6, 1] }}
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-xs font-mono text-muted-foreground mr-1">{b.id}</span>
+                  <span className={cn("text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider", statusColor(b.status))}
+                    style={{ border: "1px solid rgba(255,255,255,0.05)", backdropFilter: "blur(8px)" }}>
+                    {b.status}
                   </span>
+                  {b.status === "upcoming" && (
+                    <button onClick={() => setNavigatingTo(b)}
+                      className="text-[12px] px-3 py-1 ml-auto rounded-full font-bold active:scale-[0.95] transition-all duration-300 shadow-md flex items-center gap-1.5"
+                      style={{ 
+                        background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)", 
+                        color: "white",
+                        boxShadow: "0 4px 12px rgba(37,99,235,0.3)"
+                      }}>
+                      <Navigation className="w-3 h-3" fill="currentColor" />
+                      Navigate
+                    </button>
+                  )}
                 </div>
-                <div className="text-sm font-semibold text-foreground">{b.court}</div>
-                <div className="text-xs text-muted-foreground">{b.facility}</div>
-                <div className="text-xs text-muted-foreground mt-1">{b.date} · {b.time}</div>
+                <div className="text-[17px] font-bold tracking-tight text-foreground">{b.court}</div>
+                <div className="text-[13px] font-medium text-muted-foreground mt-0.5">{b.facility}</div>
+                <div className="text-[12px] font-medium text-muted-foreground mt-1">{b.date} · {b.time}</div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="text-right">
-                  <div className="text-cyan-400 font-bold font-mono">₱{b.total.toLocaleString()}</div>
+              <div className="flex items-center justify-between w-full sm:w-auto gap-3 shrink-0 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-white/5 sm:border-0">
+                <div className="text-left sm:text-right">
+                  <div className="text-cyan-400 font-bold font-mono text-[16px]">₱{b.total.toLocaleString()}</div>
                   <div className="text-xs text-muted-foreground">{b.payment}</div>
                 </div>
                 {b.status === "upcoming" && (
-                  cancelConfirm === b.id ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-red-400 whitespace-nowrap">Sure?</span>
-                      <button onClick={() => setCancelConfirm(null)}
-                        className="text-xs px-2.5 py-2 rounded-lg active:scale-[0.97]"
-                        style={{ background: "rgba(255,255,255,0.06)", color: "#a0b4e0", transition: "background-color 150ms ease-out" }}>
-                        No
-                      </button>
-                      <button onClick={() => handleCancelConfirm(b.id)}
-                        className="text-xs px-2.5 py-2 rounded-lg active:scale-[0.97]"
-                        style={{ background: "rgba(239,68,68,0.18)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", transition: "background-color 150ms ease-out" }}>
-                        Yes
-                      </button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setCancelConfirm(b.id)}
-                      className="text-xs px-3 py-2.5 rounded-lg active:scale-[0.97]"
-                      style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", transition: "background-color 150ms ease-out" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.08)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                      Cancel
-                    </button>
-                  )
+                  <button onClick={() => setCancelModal(b)}
+                    className="text-[13px] px-5 py-2 rounded-full font-bold active:scale-[0.95] transition-all duration-300 bg-red-500/10"
+                    style={{ border: "1px solid rgba(239,68,68,0.2)", color: "var(--accent-danger)" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.2)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.2)"; }}>
+                    Cancel
+                  </button>
                 )}
               </div>
             </motion.div>
           ))}
+          </AnimatePresence>
         </div>
+      )}
+
+      {/* Cancellation Modal */}
+      <AnimatePresence>
+        {cancelModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setCancelModal(null)}
+            />
+            
+            <motion.div 
+              initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 400 }}>
+              <div className="w-[320px] bg-gradient-to-b from-[#1c1c1e]/95 to-[#141415]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-white/[0.08]">
+                 <div className="p-8 text-center pb-6">
+                   <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-5 border border-red-500/20 shadow-[0_0_24px_rgba(239,68,68,0.2)]">
+                     <span className="text-[24px] font-black text-red-400">!</span>
+                   </div>
+                   <h3 className="text-[22px] font-black text-white tracking-tight" >Cancel Booking?</h3>
+                   <p className="text-[15px] text-white/60 mt-3 leading-relaxed">
+                     Cancel reservation for <span className="font-bold text-white">{cancelModal.court}</span>? You will be refunded <span className="font-bold text-white">₱{cancelModal.total.toLocaleString()}</span>.
+                   </p>
+                 </div>
+                 <div className="flex flex-col p-5 pt-0 gap-3">
+                   <button onClick={handleCancelConfirm} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-red-400 bg-red-500/10 hover:bg-red-500/20 active:scale-[0.98] transition-all border border-red-500/20">
+                     Cancel Booking
+                   </button>
+                   <button onClick={() => setCancelModal(null)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-black bg-white hover:bg-white/90 active:scale-[0.98] transition-all">
+                     Keep Booking
+                   </button>
+                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl border border-solid shadow-lg z-50 flex items-center gap-3"
+            style={{ background: "rgba(10,22,40,0.95)", borderColor: "rgba(0,217,139,0.3)", backdropFilter: "blur(12px)" }}>
+            <div className="w-2 h-2 rounded-full" style={{ background: "var(--accent-success)" }} />
+            <span className="text-sm font-medium" style={{ color: "var(--ink-primary)" }}>{toast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {navigatingTo && (
+        <NavigationOverlay 
+          destination={navigatingTo.facility} 
+          onClose={() => setNavigatingTo(null)} 
+        />
       )}
     </div>
   );

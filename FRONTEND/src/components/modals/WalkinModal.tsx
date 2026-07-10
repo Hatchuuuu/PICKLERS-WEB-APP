@@ -28,14 +28,14 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
         transition={{ ease: "easeOut", duration: 0.2 }}
         className="fixed inset-0 z-50 flex items-center justify-center px-4">
         <div className="w-full max-w-md rounded-2xl p-6"
-          style={{ background: "#0b1640", border: "1px solid rgba(0,212,255,0.2)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
+          style={{ background: "var(--surface-base)", border: "1px solid var(--border-emphasis)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-lg font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>LOG WALK-IN</h2>
+              <h2 className="text-lg font-bold" >LOG WALK-IN</h2>
               <p className="text-xs text-muted-foreground">Register a front-desk booking instantly</p>
             </div>
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
-              style={{ border: "1px solid rgba(0,212,255,0.15)", color: "#6b82b8" }}>
+              style={{ border: "1px solid var(--border-default)", color: "var(--ink-muted)" }}>
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -44,13 +44,13 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Player Name</label>
               <input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="e.g. Juan Dela Cruz (or leave blank)"
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring"
-                style={{ background: "rgba(26,45,110,0.5)", border: "1px solid rgba(0,212,255,0.15)", color: "#e8eeff" }} />
+                style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Court</label>
               <select value={court} onChange={e => setCourt(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring appearance-none"
-                style={{ background: "rgba(26,45,110,0.5)", border: "1px solid rgba(0,212,255,0.15)", color: "#e8eeff", colorScheme: "dark" }}>
+                style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)", colorScheme: "dark" }}>
                 {courts.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -59,7 +59,7 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Start</label>
                 <select value={startTime} onChange={e => { setStartTime(e.target.value); setEndTime(TIME_SLOTS[slotIndex(e.target.value) + 2] ?? TIME_SLOTS[slotIndex(e.target.value) + 1]); }}
                   className="w-full px-3 py-3 rounded-xl text-sm outline-none appearance-none"
-                  style={{ background: "rgba(26,45,110,0.5)", border: "1px solid rgba(0,212,255,0.15)", color: "#e8eeff", colorScheme: "dark" }}>
+                  style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)", colorScheme: "dark" }}>
                   {TIME_SLOTS.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
@@ -67,7 +67,7 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">End</label>
                 <select value={endTime} onChange={e => setEndTime(e.target.value)}
                   className="w-full px-3 py-3 rounded-xl text-sm outline-none appearance-none"
-                  style={{ background: "rgba(26,45,110,0.5)", border: "1px solid rgba(0,212,255,0.15)", color: "#e8eeff", colorScheme: "dark" }}>
+                  style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)", colorScheme: "dark" }}>
                   {endSlots.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
@@ -79,11 +79,10 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
                   <button key={m} onClick={() => setPayMethod(m)}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium active:scale-[0.97]"
                     style={{
-                      background: payMethod === m ? "rgba(0,212,255,0.15)" : "rgba(26,45,110,0.4)",
-                      border: payMethod === m ? "1px solid rgba(0,212,255,0.4)" : "1px solid rgba(0,212,255,0.12)",
-                      color: payMethod === m ? "#00d4ff" : "#6b82b8",
-                      transition: "all 150ms ease-out",
-                    }}>
+                      background: payMethod === m ? "var(--border-default)" : "var(--surface-interactive)",
+                      border: payMethod === m ? "1px solid rgba(0,212,255,0.4)" : "1px solid var(--border-subtle)",
+                      color: payMethod === m ? "var(--accent-primary)" : "var(--ink-muted)",
+                      transition: "all 150ms ease-out" }}>
                     {m === "cash" ? "Cash on Site" : "GCash (Counter)"}
                   </button>
                 ))}
@@ -92,7 +91,7 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
           </div>
           <button onClick={handleConfirm}
             className="w-full mt-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.97] flex items-center justify-center gap-2"
-            style={{ background: "#22c55e", color: "#fff", boxShadow: "0 6px 24px rgba(34,197,94,0.3)", transition: "opacity 150ms ease-out" }}
+            style={{ background: "var(--accent-success)", color: "#fff", boxShadow: "0 6px 24px rgba(52,211,153,0.3)", transition: "opacity 150ms ease-out" }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
             <Check className="w-4 h-4" /> Confirm Walk-in

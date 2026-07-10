@@ -19,11 +19,9 @@ export function OwnerStaff() {
   const [newStaffRole, setNewStaffRole] = useState<"desk" | "manager">("desk");
 
   function handleDelete(id: number) {
-    if (confirmText === "delete this staff") {
-      setStaff(prev => prev.filter(s => s.id !== id));
-      setConfirm(null);
-      setConfirmText("");
-    }
+    setStaff(prev => prev.filter(s => s.id !== id));
+    setConfirm(null);
+    setConfirmText("");
   }
 
   function addStaff() {
@@ -34,31 +32,33 @@ export function OwnerStaff() {
   }
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-4 max-w-6xl mx-auto w-full max-w-2xl">
       {addStaffOpen && (
         <>
           <motion.div key="staff-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setAddStaffOpen(false)} className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }} />
+            className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }} />
           <motion.div key="staff-modal" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ ease: "easeOut", duration: 0.2 }} className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: "#0b1640", border: "1px solid rgba(0,212,255,0.2)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
+            transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            onClick={() => setAddStaffOpen(false)}>
+            <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: "var(--surface-base)", border: "1px solid var(--border-emphasis)", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}
+                 onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>ADD STAFF</h2>
+                <h2 className="text-lg font-bold tracking-tight">Add Staff</h2>
                 <button onClick={() => setAddStaffOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
-                  style={{ border: "1px solid rgba(0,212,255,0.15)", color: "#6b82b8" }}><X className="w-4 h-4" /></button>
+                  style={{ border: "1px solid var(--border-default)", color: "var(--ink-muted)" }}><X className="w-4 h-4" /></button>
               </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Full Name</label>
                   <input value={newStaffName} onChange={e => setNewStaffName(e.target.value)} placeholder="e.g. Maria Santos"
                     className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring"
-                    style={{ background: "rgba(26,45,110,0.5)", border: "1px solid rgba(0,212,255,0.15)", color: "#e8eeff" }} />
+                    style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Email</label>
                   <input value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} type="email" placeholder="staff@facility.com"
                     className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-ring"
-                    style={{ background: "rgba(26,45,110,0.5)", border: "1px solid rgba(0,212,255,0.15)", color: "#e8eeff" }} />
+                    style={{ background: "rgba(26,45,110,0.5)", border: "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Role</label>
@@ -67,43 +67,43 @@ export function OwnerStaff() {
                       <button key={r} onClick={() => setNewStaffRole(r)}
                         className="flex-1 py-2.5 rounded-xl text-sm font-medium active:scale-[0.97] capitalize"
                         style={{
-                          background: newStaffRole === r ? "rgba(0,212,255,0.15)" : "rgba(26,45,110,0.4)",
-                          border: newStaffRole === r ? "1px solid rgba(0,212,255,0.4)" : "1px solid rgba(0,212,255,0.12)",
-                          color: newStaffRole === r ? "#00d4ff" : "#6b82b8",
-                          transition: "all 150ms ease-out",
-                        }}>{r}</button>
+                          background: newStaffRole === r ? "var(--border-default)" : "var(--surface-interactive)",
+                          border: newStaffRole === r ? "1px solid rgba(0,212,255,0.4)" : "1px solid var(--border-subtle)",
+                          color: newStaffRole === r ? "var(--accent-primary)" : "var(--ink-muted)",
+                          transition: "all 150ms ease-out" }}>{r}</button>
                     ))}
                   </div>
                 </div>
               </div>
               <button onClick={addStaff} disabled={!newStaffName.trim() || !newStaffEmail.trim()}
                 className="w-full mt-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.97] disabled:opacity-40"
-                style={{ background: "#22c55e", color: "#fff", transition: "opacity 150ms ease-out" }}>
+                style={{ background: "var(--accent-success)", color: "#fff", transition: "opacity 150ms ease-out" }}>
                 Add Staff Member
               </button>
             </div>
           </motion.div>
         </>
       )}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>STAFF</h1>
-          <p className="text-sm text-muted-foreground">Delegate daily operations</p>
-        </div>
-        <button onClick={() => setAddStaffOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium active:scale-[0.97]"
-          style={{ background: "#22c55e", color: "#fff", transition: "opacity 150ms ease-out" }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-          <Plus className="w-4 h-4" /> Add Staff
-        </button>
+      <div className="relative h-[68px] mb-4 -mt-[1px] flex items-center justify-between">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          >
+            <h1 className="text-[26px] min-[390px]:text-[28px] md:text-[32px] font-extrabold tracking-tight leading-none mb-1.5 whitespace-nowrap" style={{ color: "var(--ink-primary)" }}>
+              Staff Management
+            </h1>
+            <p className="text-[13px] font-medium leading-relaxed" style={{ color: "var(--ink-muted)" }}>
+              Delegate daily operations
+            </p>
+          </motion.div>
       </div>
       <div className="flex flex-col gap-3">
         {staff.map(s => (
           <div key={s.id} className="rounded-xl p-4 flex items-center gap-4"
-            style={{ background: "#0f1d47", border: "1px solid rgba(0,212,255,0.1)" }}>
+            style={{ background: "var(--surface-raised)", border: "1px solid var(--accent-primary-muted)" }}>
             <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
-              style={{ background: "#1a2d6e", color: s.role === "manager" ? "#00d4ff" : "#6b82b8" }}>{s.name[0]}</div>
+              style={{ background: "var(--surface-interactive)", color: s.role === "manager" ? "var(--accent-primary)" : "var(--ink-muted)" }}>{s.name[0]}</div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-foreground">{s.name}</div>
               <div className="text-xs text-muted-foreground">{s.email}</div>
@@ -116,45 +116,46 @@ export function OwnerStaff() {
             </div>
             <button onClick={() => setConfirm(s.id)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-red-500/15 active:scale-[0.97] shrink-0"
-              style={{ border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444" }}>
+              style={{ border: "1px solid rgba(239,68,68,0.2)", color: "var(--accent-danger)" }}>
               <X className="w-4 h-4" />
             </button>
           </div>
         ))}
       </div>
 
+      <button onClick={() => setAddStaffOpen(true)}
+        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm shadow-2xl active:scale-[0.97] z-30"
+        style={{ background: "var(--accent-success)", color: "#fff", boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
+        onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+        <Plus className="w-5 h-5" />Add Staff
+      </button>
+
       <AnimatePresence>
         {confirm !== null && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center px-4"
-            style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-sm rounded-2xl p-6"
-              style={{ background: "#0f1d47", border: "1px solid rgba(239,68,68,0.3)" }}>
-              <div className="flex items-center gap-3 mb-4">
-                <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
-                <h3 className="font-semibold text-foreground">Remove Staff Member</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                This action cannot be undone. Type <span className="font-mono text-red-400">delete this staff</span> to confirm.
-              </p>
-              <input value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="delete this staff"
-                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-4 font-mono"
-                style={{ background: "rgba(26,45,110,0.6)", border: "1px solid rgba(239,68,68,0.3)", color: "#e8eeff" }} />
-              <div className="flex gap-3">
-                <button onClick={() => { setConfirm(null); setConfirmText(""); }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium active:scale-[0.97] transition-all"
-                  style={{ background: "rgba(26,45,110,0.6)", border: "1px solid rgba(0,212,255,0.15)", color: "#a0b4e0" }}>
-                  Cancel
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+               onClick={() => { setConfirm(null); setConfirmText(""); }}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border text-center"
+              style={{ background: "rgba(30, 30, 32, 0.75)", backdropFilter: "blur(40px) saturate(150%)", borderColor: "rgba(255,255,255,0.15)" }}>
+              <h3 className="text-xl font-bold text-white mb-2">Revoke Staff Access?</h3>
+              <p className="text-[14px] text-white/60 mb-6 leading-relaxed">This will immediately remove this user's access to the facility dashboard and management system.</p>
+              <div className="flex flex-col gap-3">
+                <button onClick={() => handleDelete(confirm!)} 
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
+                  style={{ background: "#ef4444", color: "#ffffff" }}>
+                  Revoke Access
                 </button>
-                <button onClick={() => handleDelete(confirm!)} disabled={confirmText !== "delete this staff"}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium active:scale-[0.97] disabled:opacity-40 transition-all"
-                  style={{ background: "#ef4444", color: "#fff" }}>
-                  Remove
+                <button onClick={() => { setConfirm(null); setConfirmText(""); }} 
+                  className="w-full py-3.5 rounded-full font-bold active:scale-[0.98] transition-opacity hover:opacity-90 shadow-lg"
+                  style={{ background: "rgba(34, 197, 94, 0.15)", color: "#4ade80", border: "1px solid rgba(34, 197, 94, 0.25)" }}>
+                  Cancel
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
