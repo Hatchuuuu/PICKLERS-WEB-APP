@@ -118,14 +118,14 @@ export function LandingPage() {
             <button
               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
               className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 ${
-                resolvedTheme === "dark" ? "bg-slate-700" : "bg-slate-300"
+                resolvedTheme === "dark" ? "bg-slate-700" : "bg-accent-primary"
               }`}
               aria-label="Toggle Theme"
             >
               <span className="sr-only">Toggle theme</span>
               <span
-                className={`pointer-events-none relative inline-block h-6 w-6 transform rounded-full shadow-md ring-0 transition-transform duration-300 ease-in-out flex items-center justify-center ${
-                  resolvedTheme === "dark" ? "translate-x-7 bg-slate-950" : "translate-x-1 bg-white"
+                className={`pointer-events-none relative inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-300 ease-in-out flex items-center justify-center ${
+                  resolvedTheme === "dark" ? "translate-x-1" : "translate-x-7"
                 }`}
               >
                 <AnimatePresence mode="wait" initial={false}>
@@ -138,7 +138,7 @@ export function LandingPage() {
                     className="absolute inset-0 flex items-center justify-center"
                   >
                     {resolvedTheme === "dark" ? (
-                      <Moon className="h-3.5 w-3.5 text-slate-200" />
+                      <Moon className="h-3.5 w-3.5 text-slate-700" />
                     ) : (
                       <Sun className="h-3.5 w-3.5 text-amber-500" />
                     )}
