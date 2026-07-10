@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, Check, CreditCard, Banknote, Coins } from "lucide-react";
 import { slotHours } from "@/lib/timeUtils";
@@ -11,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 
 export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBack: () => void; onDone: () => void }) {
+  const navigate = useNavigate();
   const { setBookings } = useApp();
   const queryClient = useQueryClient();
   const [method, setMethod] = useState<"gcash" | "maya" | "cash" | "credits">("gcash");
@@ -96,12 +98,15 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
             <span className="text-emerald-400 text-sm font-medium">Total paid:</span>
             <span className="text-emerald-400 font-bold font-mono text-lg">₱{total.toLocaleString()}</span>
           </div>
-          <button onClick={onDone}
+          <button onClick={() => {
+              navigate("/app/bookings");
+              onDone();
+            }}
             className="px-8 py-3.5 rounded-xl font-semibold text-sm active:scale-[0.97]"
             style={{ background: "var(--accent-success)", color: "#fff", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-            Back to Courts
+            View Bookings
           </button>
         </motion.div>
       </motion.div>
