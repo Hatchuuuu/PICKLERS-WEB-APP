@@ -117,7 +117,7 @@ export function AuthPage() {
       } else {
         navigate("/app");
       }
-    }, 400); // Wait for success morph animation
+    }, 800); // Wait for success morph animation and let the user see it
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -139,7 +139,7 @@ export function AuthPage() {
     handleFinalSubmit();
   }
 
-  const inputClassName = "w-full rounded-[10px] px-4 py-2.5 text-[15px] outline-none transition-all duration-200 border border-solid focus:scale-[1.005] focus:shadow-[0_0_0_3px_rgba(0,217,139,0.15)] focus:-translate-y-[1px]";
+  const inputClassName = "w-full rounded-[10px] px-4 py-2 sm:py-2.5 text-[14px] sm:text-[15px] outline-none transition-all duration-200 border border-solid focus:scale-[1.005] focus:shadow-[0_0_0_3px_rgba(0,217,139,0.15)] focus:-translate-y-[1px]";
   const inputStyle = {
     background: "var(--surface-interactive)",
     borderColor: "var(--border-default)",
@@ -147,8 +147,8 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8 bg-background relative overflow-y-auto selection:bg-accent-primary/20">
-      <div className="w-full max-w-[440px] flex justify-start mb-4 sm:absolute sm:top-6 sm:left-6 sm:mb-0 z-20 shrink-0">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-4 sm:py-8 bg-background relative overflow-y-auto selection:bg-accent-primary/20">
+      <div className="w-full max-w-[440px] flex justify-start mb-2 sm:absolute sm:top-6 sm:left-6 sm:mb-0 z-20 shrink-0">
         <button onClick={() => navigate("/")} 
           className="flex items-center gap-2 text-[14px] font-bold transition-colors"
           style={{ color: "var(--ink-secondary)" }}
@@ -166,8 +166,8 @@ export function AuthPage() {
           className="w-full max-w-[440px] rounded-[24px] px-5 py-4 sm:px-8 sm:py-6 relative z-10 overflow-hidden bg-white/80 dark:bg-[#111f3a]/60 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-[0_24px_48px_rgba(0,0,0,0.4)]">
 
         <div className="text-center mb-3 sm:mb-5">
-          <div className="flex items-center justify-center mb-2 mt-0">
-            <PicklersLogo size={68} />
+          <div className="flex items-center justify-center mb-1 mt-0">
+            <PicklersLogo size={56} />
           </div>
           <AnimatePresence mode="wait">
             <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
@@ -181,7 +181,7 @@ export function AuthPage() {
           </AnimatePresence>
         </div>
 
-        <div className="flex relative mb-5 sm:mb-6 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
+        <div className="flex relative mb-4 sm:mb-6 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
           {(["signin", "signup"] as const).map((val) => (
             <button key={val} onClick={() => setTab(val)} className="flex-1 py-2.5 text-[15px] font-semibold transition-colors z-10"
               style={{ color: tab === val ? "var(--accent-primary)" : "var(--ink-secondary)" }}>
@@ -193,7 +193,7 @@ export function AuthPage() {
             transition={{ type: "spring", stiffness: 500, damping: 35 }} />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 sm:gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 sm:gap-4">
           <AnimatePresence mode="popLayout">
             {tab === "signup" && otpState === "idle" && (
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
@@ -212,7 +212,7 @@ export function AuthPage() {
 
           <AnimatePresence mode="popLayout">
             {otpState === "idle" ? (
-              <motion.div key="inputs" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex flex-col gap-3 sm:gap-4">
+              <motion.div key="inputs" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex flex-col gap-2.5 sm:gap-4">
                 {loginMethod === "email" ? (
                   <>
                     <div className="group">
@@ -365,15 +365,16 @@ export function AuthPage() {
           <motion.button type="submit" disabled={loading || isSuccess || (otpState === "sent" && otpCode.length < 6)}
             animate={isSuccess ? { width: "48px", borderRadius: "24px" } : { width: "100%", borderRadius: "10px" }}
             className={cn(
-              "mt-2 font-semibold text-[15px] active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 relative overflow-hidden group mx-auto",
-              isSuccess ? "h-12" : "py-3"
+              "mt-1 font-semibold text-[14px] sm:text-[15px] active:scale-[0.98] flex items-center justify-center gap-2 relative overflow-hidden group mx-auto",
+              (!isSuccess && (loading || (otpState === "sent" && otpCode.length < 6))) && "opacity-60",
+              isSuccess ? "h-12" : "py-2.5 sm:py-3"
             )}
             style={{ background: "var(--accent-primary)", color: "var(--ink-inverse)", boxShadow: "var(--shadow-sm)", transition: "all 150ms ease-out" }}>
             <div className="absolute inset-0 bg-surface-interactive hover:bg-surface-interactive/80 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
             <AnimatePresence mode="wait">
               {isSuccess ? (
                 <motion.div key="check" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1, type: "spring" }}>
-                  <svg className="w-6 h-6 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </motion.div>
@@ -393,7 +394,7 @@ export function AuthPage() {
             </AnimatePresence>
           </motion.button>
 
-          <div className="flex items-center gap-4 my-5">
+          <div className="flex items-center gap-4 my-3 sm:my-5">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-black/10 to-black/10 dark:via-white/10 dark:to-white/10" />
             <span className="text-[11px] font-bold tracking-widest text-foreground/40 uppercase">OR CONTINUE WITH</span>
             <div className="flex-1 h-px bg-gradient-to-l from-transparent via-black/10 to-black/10 dark:via-white/10 dark:to-white/10" />
@@ -402,7 +403,7 @@ export function AuthPage() {
           <div className="flex gap-3 pb-1">
             {["Google", "Facebook"].map(provider => (
               <button key={provider} type="button"
-                className="flex-1 h-[48px] rounded-[16px] text-[15px] font-semibold tracking-tight transition-all duration-300 flex items-center justify-center gap-2.5 active:scale-[0.97] bg-white dark:bg-white/5 border border-black/[0.04] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-[1px] text-foreground"
+                className="flex-1 h-[44px] sm:h-[48px] rounded-[14px] sm:rounded-[16px] text-[14px] sm:text-[15px] font-semibold tracking-tight transition-all duration-300 flex items-center justify-center gap-2.5 active:scale-[0.97] bg-white dark:bg-white/5 border border-black/[0.04] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-[1px] text-foreground"
               >
                 {provider === "Google" ? (
                   <svg className="w-4 h-4" viewBox="0 0 24 24">

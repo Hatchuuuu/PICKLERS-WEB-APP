@@ -1,25 +1,24 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Plus, X, Check, Loader2 } from "lucide-react";
+import { Search, Plus, X, Check, Loader2, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WalkInModal } from "@/components/modals/WalkInModal";
+import { ManageAvailabilityModal } from "@/components/owner/ManageAvailabilityModal";
 import { useOwner } from "@/contexts/OwnerContext";
 
 export function OwnerCourts() {
   const { ownerCourts: courts, updateCourt, addCourt: addCourtContext } = useOwner();
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [disableConfirmId, setDisableConfirmId] = useState<number | null>(null);
-  const [enableConfirmId, setEnableConfirmId] = useState<number | null>(null);
-  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [manageAvailabilityId, setManageAvailabilityId] = useState<number | null>(null);
   const [lastSavedId, setLastSavedId] = useState<number | null>(null);
-  const [actionStatus, setActionStatus] = useState<"idle" | "loading" | "success">("idle");
   const [editId, setEditId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newSurface, setNewSurface] = useState("Indoor · Hard");
   const [newPrice, setNewPrice] = useState("400");
   const [walkInOpen, setWalkInOpen] = useState(false);
   const [walkInSuccess, setWalkInSuccess] = useState<string | null>(null);
+  const [isWalkInExpanded, setIsWalkInExpanded] = useState(false);
 
   const filtered = courts.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -29,41 +28,7 @@ export function OwnerCourts() {
     setTimeout(() => setWalkInSuccess(null), 3000);
   }
 
-  function toggleAvailable(id: number) {
-    const target = courts.find(c => c.id === id);
-    if (target) {
-      updateCourt(id, { available: !target.available });
-    }
-  }
 
-  function handleActionConfirm(action: "enable" | "disable" | "save", id?: number) {
-    setActionStatus("loading");
-    setTimeout(() => {
-      setActionStatus("success");
-      setTimeout(() => {
-        if (action === "save") {
-          const parsedPrice = parseInt(newPrice, 10);
-          if (editId !== null) {
-            updateCourt(editId, { 
-              name: newName, 
-              surface: newSurface, 
-              price: (!isNaN(parsedPrice) && parsedPrice > 0) ? parsedPrice : courts.find(c => c.id === editId)?.price 
-            });
-            const savedId = editId;
-            setEditId(null);
-            setShowSaveConfirm(false);
-            setLastSavedId(savedId);
-            setTimeout(() => setLastSavedId(null), 1000);
-          }
-        } else if (id !== undefined) {
-          toggleAvailable(id);
-          if (action === "enable") setEnableConfirmId(null);
-          if (action === "disable") setDisableConfirmId(null);
-        }
-        setActionStatus("idle");
-      }, 500);
-    }, 600);
-  }
 
   function startEdit(c: typeof courts[0]) {
     setEditId(c.id);
@@ -80,7 +45,10 @@ export function OwnerCourts() {
         surface: newSurface, 
         price: (!isNaN(parsedPrice) && parsedPrice > 0) ? parsedPrice : courts.find(c => c.id === editId)?.price 
       });
+      const savedId = editId;
       setEditId(null);
+      setLastSavedId(savedId);
+      setTimeout(() => setLastSavedId(null), 1000);
     }
   }
 
@@ -91,7 +59,7 @@ export function OwnerCourts() {
       // Avoid silent fail, return early (or show toast if we had one)
       return;
     }
-    addCourtContext({ id: Date.now(), name: newName, surface: newSurface, price: parsedPrice, available: true });
+    addCourtContext({ id: Date.now(), name: newName, surface: newSurface, price: parsedPrice, available: true, blockedDates: [] });
     setShowAddModal(false);
     setNewName(""); setNewSurface("Indoor · Hard"); setNewPrice("400");
   }
@@ -140,7 +108,7 @@ export function OwnerCourts() {
       {filtered.length === 0 && <div className="text-center py-16 text-muted-foreground text-sm">No courts match "{search}"</div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(c => (
-          <div key={c.id} className="rounded-3xl p-5 shadow-xl bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl" 
+          <div key={c.id} className="rounded-2xl p-5 shadow-xl bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl" 
             style={{ 
               boxShadow: lastSavedId === c.id ? "0 0 32px rgba(34,197,94,0.4)" : undefined,
               borderColor: lastSavedId === c.id ? "rgba(34,197,94,0.5)" : undefined,
@@ -158,7 +126,7 @@ export function OwnerCourts() {
                   <span className="text-[14px] font-bold text-muted-foreground pr-1">/hr</span>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button onClick={() => setShowSaveConfirm(true)} className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-accent-success text-white" style={{ boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}>Save</button>
+                  <button onClick={() => saveEdit()} className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-accent-success text-white" style={{ boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}>Save</button>
                   <button onClick={() => setEditId(null)} className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-surface-interactive border border-border text-foreground hover:bg-surface-interactive/80">Cancel</button>
                 </div>
               </div>
@@ -168,28 +136,48 @@ export function OwnerCourts() {
                   <span className="font-bold text-foreground text-[15px] tracking-tight">{c.name}</span>
                   <div className="flex items-center gap-1.5">
                     <motion.div layout className={cn("text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest", 
-                      c.available ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 shadow-[0_0_12px_rgba(52,211,153,0.15)]" : "bg-red-500/15 text-red-400 border border-red-500/25 shadow-[0_0_12px_rgba(248,113,113,0.15)]"
+                      c.currentBooking
+                        ? "bg-amber-500/15 text-amber-500 border border-amber-500/25 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                        : c.available 
+                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 shadow-[0_0_12px_rgba(52,211,153,0.15)]" 
+                          : "bg-red-500/15 text-red-400 border border-red-500/25 shadow-[0_0_12px_rgba(248,113,113,0.15)]"
                     )}>
-                      {c.available ? "Available" : "Unavailable"}
+                      {c.currentBooking ? "Occupied" : c.available ? "Available" : "Unavailable"}
                     </motion.div>
                   </div>
                 </div>
                 <div className="text-[13px] text-muted-foreground mb-2">{c.surface}</div>
                 <div className="text-cyan-400 font-bold font-mono text-[15px] mb-4 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]">₱{c.price}/hr</div>
+                
+                {c.currentBooking && (
+                  <div className="mb-4 p-3 rounded-[14px] bg-amber-500/5 border border-amber-500/10">
+                    <div className="text-[11px] font-bold text-amber-500/70 uppercase tracking-widest mb-1">Currently Booked</div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-amber-500" />
+                      </div>
+                      <div>
+                        <div className="text-[14px] font-bold text-foreground">{c.currentBooking.userName}</div>
+                        <div className="text-[12px] font-medium text-muted-foreground">{c.currentBooking.time}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-3 mt-4">
                   <button onClick={() => startEdit(c)} 
-                    className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-surface-interactive border border-border text-foreground hover:bg-surface-interactive/80">
+                    className="flex-1 py-3 rounded-full text-sm font-bold active:scale-[0.97] transition-all hover:opacity-90 bg-surface-interactive border border-border text-foreground hover:bg-surface-interactive/80">
                     Edit
                   </button>
-                  <button onClick={() => c.available ? setDisableConfirmId(c.id) : setEnableConfirmId(c.id)} 
-                    className="flex-1 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all hover:opacity-90"
+                  <button onClick={() => setManageAvailabilityId(c.id)} 
+                    className="flex-1 py-3 rounded-full text-sm font-bold active:scale-[0.97] transition-all hover:opacity-90"
                     style={{ 
-                      background: c.available ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)", 
-                      color: c.available ? "#ef4444" : "#22c55e", 
-                      border: `1px solid ${c.available ? "rgba(239,68,68,0.3)" : "rgba(34,197,94,0.3)"}`,
-                      boxShadow: c.available ? "0 4px 12px rgba(239,68,68,0.15)" : "0 4px 12px rgba(34,197,94,0.15)"
+                      background: "rgba(239,68,68,0.15)", 
+                      color: "#ef4444", 
+                      border: "1px solid rgba(239,68,68,0.3)",
+                      boxShadow: "0 4px 12px rgba(239,68,68,0.15)"
                     }}>
-                    {c.available ? "Disable" : "Enable"}
+                    Schedule
                   </button>
                 </div>
               </>
@@ -246,98 +234,82 @@ export function OwnerCourts() {
         )}
       </AnimatePresence>
 
-      <button onClick={() => setWalkInOpen(true)}
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2.5 px-6 py-3.5 rounded-full font-bold text-[15px] shadow-2xl active:scale-[0.97] z-30 bg-accent-success text-white" style={{ boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
-        onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
-        onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-        <Plus className="w-5 h-5" />Log Walk-in
-      </button>
+      <AnimatePresence>
+        {isWalkInExpanded && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-20 bg-transparent"
+            onClick={() => setIsWalkInExpanded(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.button 
+        onClick={() => {
+          if (!isWalkInExpanded) {
+            setIsWalkInExpanded(true);
+          } else {
+            setWalkInOpen(true);
+            setIsWalkInExpanded(false);
+          }
+        }}
+        initial={false}
+        animate={{ 
+          width: isWalkInExpanded ? 160 : 40,
+          backgroundColor: "var(--accent-success)",
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: 0,
+          borderTopLeftRadius: 12,
+          borderBottomLeftRadius: 12,
+          x: 0,
+          boxShadow: "-4px 0 24px rgba(0,0,0,0.4)"
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className={cn(
+          "fixed right-0 bottom-[110px] md:bottom-8 h-[52px] flex items-center justify-center font-bold text-[15px] z-30 overflow-hidden cursor-pointer backdrop-blur-xl border border-white/10 border-r-0 origin-right"
+        )}
+      >
+        <AnimatePresence>
+          {isWalkInExpanded ? (
+            <motion.div 
+              key="expanded"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-y-0 right-0 w-[160px] flex items-center justify-center gap-2 text-white whitespace-nowrap"
+            >
+              <Plus className="w-5 h-5 shrink-0" />
+              <span>Log Walk-in</span>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="collapsed"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-y-0 right-0 w-[40px] text-[#080d1c] flex items-center justify-center"
+            >
+              <ChevronLeft className="w-5 h-5 -ml-1 stroke-[3]" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
 
       <AnimatePresence>
         {walkInOpen && <WalkInModal onClose={() => setWalkInOpen(false)} onConfirm={handleWalkIn} />}
       </AnimatePresence>
 
       <AnimatePresence>
-        {disableConfirmId !== null && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
-               onClick={() => setDisableConfirmId(null)}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
-              <div className="mb-6">
-                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Disable Court?</h3>
-                <p className="text-[14px] text-foreground/60 leading-relaxed">This will immediately remove this court from the booking schedule. Players will not be able to reserve it until it is re-enabled.</p>
-              </div>
-              <div className="flex flex-col gap-3">
-                <button onClick={() => handleActionConfirm("disable", disableConfirmId)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-[#FF3B30] shadow-[0_4px_12px_rgba(255,59,48,0.3)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
-                  {actionStatus === "idle" && "Disable Court"}
-                  {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
-                  {actionStatus === "success" && <Check className="w-5 h-5" />}
-                </button>
-                <button onClick={() => setDisableConfirmId(null)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15 active:scale-[0.98] transition-all">
-                  Keep Available
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {enableConfirmId !== null && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
-               onClick={() => setEnableConfirmId(null)}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
-              <div className="mb-6">
-                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Enable Court?</h3>
-                <p className="text-[14px] text-foreground/60 leading-relaxed">Are you sure you want to enable this court? It will immediately become available for players to book.</p>
-              </div>
-              <div className="flex flex-col gap-3">
-                <button onClick={() => handleActionConfirm("enable", enableConfirmId)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-accent-success shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
-                  {actionStatus === "idle" && "Enable Court"}
-                  {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
-                  {actionStatus === "success" && <Check className="w-5 h-5" />}
-                </button>
-                <button onClick={() => setEnableConfirmId(null)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showSaveConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface-base/60 backdrop-blur-sm"
-               onClick={() => setShowSaveConfirm(false)}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
-              <div className="mb-6">
-                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Save Changes?</h3>
-                <p className="text-[14px] text-foreground/60 leading-relaxed">Are you sure you want to save these changes? The updated details will be immediately visible to players.</p>
-              </div>
-              <div className="flex flex-col gap-3">
-                <button onClick={() => handleActionConfirm("save")} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-accent-success shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" style={{ opacity: actionStatus !== "idle" ? 0.8 : 1 }}>
-                  {actionStatus === "idle" && "Save Changes"}
-                  {actionStatus === "loading" && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 className="w-5 h-5" /></motion.div>}
-                  {actionStatus === "success" && <Check className="w-5 h-5" />}
-                </button>
-                <button onClick={() => setShowSaveConfirm(false)} disabled={actionStatus !== "idle"}
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-foreground bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all">
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          </div>
+        {manageAvailabilityId !== null && (
+          <ManageAvailabilityModal 
+            courtId={manageAvailabilityId} 
+            onClose={() => setManageAvailabilityId(null)} 
+          />
         )}
       </AnimatePresence>
     </div>

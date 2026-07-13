@@ -48,31 +48,35 @@ export function BookingsTab() {
             initial={{ opacity: 0, x: -20 }} 
             animate={{ opacity: 1, x: 0 }} 
             exit={{ opacity: 0, x: -20 }}
-            className="absolute left-0 top-0"
+            className="absolute left-0 top-0 max-w-[calc(100%-20px)]"
           >
             <h1 className="text-[32px] font-extrabold tracking-tight leading-none mb-1.5" style={{ color: "var(--ink-primary)" }}>
               Bookings
             </h1>
-            <p className="text-sm text-muted-foreground">Manage your upcoming matches and reservations</p>
+            <p className="text-sm text-muted-foreground truncate">Manage your bookings</p>
           </motion.div>
         </AnimatePresence>
       </div>
-      <div className="flex gap-1.5 mb-6 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
-        {tabs.map(t => (
-          <motion.button key={t} onClick={() => setTab(t)}
-            whileTap={{ scale: 0.95 }}
-            animate={{ 
-              backgroundColor: tab === t ? "var(--accent-primary)" : "var(--surface-interactive)",
-              color: tab === t ? "var(--surface-base)" : "var(--ink-secondary)",
-              borderColor: tab === t ? "var(--accent-primary)" : "var(--border-subtle)",
-              boxShadow: tab === t ? "0 4px 12px rgba(0, 217, 139, 0.3)" : "0 0px 0px rgba(0,0,0,0)"
-            }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className="shrink-0 px-4 py-2.5 rounded-full text-[14px] font-semibold tracking-wide border border-solid relative overflow-hidden"
-            style={{ backdropFilter: "blur(12px)" }}>
-            {t}
-          </motion.button>
-        ))}
+      <div className="flex gap-6 mb-6 overflow-x-auto pb-0 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0 border-b border-border">
+        {tabs.map(t => {
+          const active = tab === t;
+          return (
+            <button key={t} onClick={() => setTab(t)}
+              className={cn(
+                "relative pb-3 text-[14px] font-bold tracking-wide transition-colors whitespace-nowrap",
+                active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}>
+              {t}
+              {active && (
+                <motion.div
+                  layoutId="bookings-tab-underline"
+                  className="absolute left-0 right-0 bottom-0 h-[3px] bg-emerald-500 rounded-t-full"
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+          );
+        })}
         {/* Spacer to fix right padding on horizontal scroll */}
         <div className="w-3 shrink-0 md:hidden" />
       </div>
@@ -177,24 +181,29 @@ export function BookingsTab() {
             <motion.div 
               initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[320px] bg-white/95 dark:bg-[#111F3A]/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
-                 <div className="p-8 text-center pb-6">
-                   <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-5 border border-red-500/20 shadow-[0_0_24px_rgba(239,68,68,0.2)]">
-                     <span className="text-[24px] font-black text-red-400">!</span>
+              <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-[28px] overflow-hidden shadow-xl dark:shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)] ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF453A]/20 via-transparent to-transparent opacity-50"></div>
+                <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                   <div className="relative mb-5 mt-2">
+                     <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
+                     <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+                       <AlertTriangle className="w-6 h-6 text-[#FF453A]" strokeWidth={2.5} />
+                     </div>
                    </div>
-                   <h3 className="text-[22px] font-black text-foreground tracking-tight" >Cancel Booking?</h3>
-                   <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
-                     Cancel reservation for <span className="font-bold text-foreground">{cancelModal.court}</span>? You will be refunded <span className="font-bold text-foreground">₱{cancelModal.total.toLocaleString()}</span>.
+                   <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Cancel Booking?</h3>
+                   <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
+                     Cancel reservation for <span className="text-white font-semibold">{cancelModal.court}</span>? You will be refunded <span className="text-white font-semibold">₱{cancelModal.total.toLocaleString()}</span>.
                    </p>
-                 </div>
-                 <div className="flex flex-col p-5 pt-0 gap-3">
-                   <button onClick={handleCancelConfirm} className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-red-400 bg-red-500/10 hover:bg-red-500/20 active:scale-[0.98] transition-all border border-red-500/20">
-                     Cancel Booking
-                   </button>
-                   <button onClick={() => setCancelModal(null)} className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-black bg-surface-raised border border-border hover:bg-surface-raised border border-border/90 active:scale-[0.98] transition-all">
-                     Keep Booking
-                   </button>
-                 </div>
+                   <div className="flex gap-3 w-full mt-7">
+                     <button onClick={() => setCancelModal(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
+                       Keep It
+                     </button>
+                     <button onClick={handleCancelConfirm} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
+                       Cancel
+                     </button>
+                   </div>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -205,7 +214,7 @@ export function BookingsTab() {
       <AnimatePresence>
         {toast && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl border border-solid shadow-lg z-50 flex items-center gap-3 bg-surface-base/95 border-emerald-500/30 backdrop-blur-md">
+            className="fixed bottom-[110px] left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl border border-solid shadow-lg z-50 flex items-center gap-3 bg-surface-base/95 border-emerald-500/30 backdrop-blur-md">
             <div className="w-2 h-2 rounded-full" style={{ background: "var(--accent-success)" }} />
             <span className="text-sm font-medium" style={{ color: "var(--ink-primary)" }}>{toast}</span>
           </motion.div>

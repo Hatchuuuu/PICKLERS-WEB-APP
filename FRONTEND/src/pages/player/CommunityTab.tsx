@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, Search, Users, MessageCircle, Send, ChevronLeft, X
+import { Heart, Search, Users, MessageCircle, Send, ChevronLeft, X, Medal
 } from "lucide-react";
 
 
@@ -10,19 +10,20 @@ import { useApp } from "@/contexts/AppContext";
 export function CommunityTab() {
   const [search, setSearch] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { chatMessages: messages, setChatMessages: setMessages, likedPlayers: liked, setLikedPlayers: setLiked, playerLikes: likes, setPlayerLikes: setLikes } = useApp();
+  const { 
+    chatMessages: messages, 
+    setChatMessages: setMessages, 
+    likedPlayers: liked, 
+    setLikedPlayers: setLiked, 
+    playerLikes: likes, 
+    setPlayerLikes: setLikes,
+    players,
+    setPlayers
+  } = useApp();
   const [chatOpen, setChatOpen] = useState<number | null>(null);
 
   const [draft, setDraft] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const [players, setPlayers] = useState([
-    { id: 1, name: "Juan Dela Cruz", level: "4.0+", gold: 4, silver: 1, bronze: 7, online: true },
-    { id: 2, name: "Ana Reyes", level: "3.5", gold: 2, silver: 3, bronze: 5, online: true },
-    { id: 3, name: "Carlo Mendoza", level: "3.0", gold: 0, silver: 2, bronze: 8, online: false },
-    { id: 4, name: "Grace Villanueva", level: "3.5", gold: 1, silver: 4, bronze: 3, online: true },
-    { id: 5, name: "Bennie Alcantara", level: "4.0+", gold: 6, silver: 2, bronze: 9, online: false },
-  ]);
 
   useEffect(() => {
     // --- Phase 2: Real-Time WebSocket Flood Simulation ---
@@ -104,7 +105,7 @@ export function CommunityTab() {
           <div>
             <div className="text-sm font-semibold text-foreground">{chatPlayer.name}</div>
             <div className="text-xs" style={{ color: chatPlayer.online ? "var(--accent-success)" : "var(--ink-muted)" }}>
-              {chatPlayer.online ? "Online" : "Offline"} · Level {chatPlayer.level}
+              {chatPlayer.online ? "Online" : "Offline"}
             </div>
           </div>
         </div>
@@ -166,54 +167,66 @@ export function CommunityTab() {
       <div className="relative h-[68px] mb-4 -mt-[1px] flex items-center justify-between">
         <AnimatePresence>
           {!isSearchOpen ? (
-            <>
-              <motion.div 
-                key="title" 
-                initial={{ opacity: 0, x: -20 }} 
-                animate={{ opacity: 1, x: 0 }} 
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="absolute left-0 top-0"
-              >
-                <h1 className="text-[32px] font-extrabold tracking-tight leading-none mb-1.5" style={{ color: "var(--ink-primary)" }}>
-                  Community
-                </h1>
-                <p className="text-sm text-muted-foreground">Chat and connect with players near you</p>
-              </motion.div>
-              
-              <div className="absolute -right-2 top-0 flex items-start gap-3">
-                <button onClick={() => setIsSearchOpen(true)} className="w-[52px] h-[52px] flex items-center justify-center rounded-[18px] hover:bg-surface-raised transition-colors group relative z-10" aria-label="Search">
-                  <Search className="w-8 h-8 -mt-[18px] transition-colors group-hover:text-accent-primary" style={{ color: "var(--ink-primary)" }} />
-                </button>
-              </div>
-            </>
+            <motion.div 
+              key="title"
+              initial={{ opacity: 0, x: -20, filter: "blur(8px)" }} 
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} 
+              exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute left-0 top-0 flex flex-col mt-[-10px]"
+            >
+              <h1 className="text-[32px] font-extrabold tracking-tight leading-none mb-1.5" style={{ color: "var(--ink-primary)" }}>
+                Community
+              </h1>
+              <p className="text-sm text-muted-foreground">Chat and connect with players near you</p>
+            </motion.div>
           ) : (
             <motion.div 
               key="search"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="flex items-center w-full gap-2 mt-1 z-10"
+              initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: 20, filter: "blur(8px)" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute left-0 right-[64px] top-0"
             >
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input 
-                  autoFocus
-                  type="text" 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search players..." 
-                  className="w-full pl-10 pr-4 py-3 rounded-xl outline-none"
-                  style={{ background: "var(--surface-raised)", border: "1px solid var(--border-default)", color: "var(--ink-primary)" }}
-                />
-              </div>
-              <button onClick={() => { setIsSearchOpen(false); setSearch(""); }} className="p-2 shrink-0 rounded-full hover:bg-surface-raised transition-colors" aria-label="Close Search">
-                <X className="w-6 h-6" style={{ color: "var(--ink-primary)" }} />
-              </button>
+              <input 
+                autoFocus
+                type="text" 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search players..." 
+                className="w-full h-[52px] pl-5 pr-12 rounded-[18px] outline-none font-medium text-[16px] transition-all shadow-sm focus:shadow-[0_0_20px_rgba(0,217,139,0.15)] focus:border-emerald-500/50"
+                style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)", color: "var(--ink-primary)" }}
+              />
+              <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             </motion.div>
           )}
         </AnimatePresence>
+
+        <div className="absolute -right-2 top-0 flex items-start gap-3">
+          <div className="flex flex-col items-center gap-1 z-10">
+            <button 
+              onClick={() => {
+                setIsSearchOpen(!isSearchOpen);
+                if (isSearchOpen) setSearch("");
+              }} 
+              className="w-[52px] h-[52px] flex items-center justify-center rounded-[18px] hover:bg-surface-raised transition-colors group relative" 
+              aria-label="Search"
+            >
+              <AnimatePresence mode="popLayout">
+                {!isSearchOpen ? (
+                  <motion.div key="icon-search" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <Search className="w-8 h-8 -mt-[18px] transition-colors group-hover:text-accent-primary" style={{ color: "var(--ink-primary)" }} />
+                  </motion.div>
+                ) : (
+                  <motion.div key="icon-x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <X className="w-8 h-8 -mt-[18px] transition-colors group-hover:text-red-500" style={{ color: "var(--ink-primary)" }} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
+        </div>
       </div>
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
@@ -252,14 +265,28 @@ export function CommunityTab() {
                 </div>
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-foreground">{p.name}</span>
-                    <span className="text-[11px] px-2.5 py-0.5 rounded-full font-bold tracking-wide whitespace-nowrap flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 backdrop-blur-sm">
-                      <span className="opacity-60 text-[9px] uppercase tracking-wider">Lv</span> {p.level}
-                    </span>
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <span className="text-[15px] font-bold text-foreground leading-tight whitespace-nowrap">{p.name}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground truncate mt-0.5">
-                    {lastMsg ? lastMsg.text : "🥇 " + p.gold + "  🥈 " + p.silver + "  🥉 " + p.bronze}
+                  <div className="text-xs text-muted-foreground mt-1.5 h-[24px]">
+                    {lastMsg ? (
+                      <span className="truncate block">{lastMsg.text}</span>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1.5 pr-1">
+                           <Medal className="w-3.5 h-3.5 text-amber-500 drop-shadow-[0_2px_6px_rgba(245,158,11,0.3)]" strokeWidth={1.5} />
+                           <span className="text-[12px] font-medium text-foreground/90">{p.gold}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-1">
+                           <Medal className="w-3.5 h-3.5 text-slate-300 drop-shadow-[0_2px_6px_rgba(203,213,225,0.3)]" strokeWidth={1.5} />
+                           <span className="text-[12px] font-medium text-foreground/90">{p.silver}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 pl-1">
+                           <Medal className="w-3.5 h-3.5 text-orange-500 drop-shadow-[0_2px_6px_rgba(249,115,22,0.3)]" strokeWidth={1.5} />
+                           <span className="text-[12px] font-medium text-foreground/90">{p.bronze}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Actions */}

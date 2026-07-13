@@ -71,13 +71,13 @@ export function DraggableMarquee() {
                   <img 
                     src={brand.logoUrl} 
                     alt={brand.label}
-                    className="h-8 md:h-10 w-auto max-w-[90px] md:max-w-[120px] object-contain transition-transform duration-500 group-hover/item:scale-105" 
+                    className="h-10 md:h-14 w-auto max-w-[110px] md:max-w-[140px] object-contain transition-transform duration-500 group-hover/item:scale-105" 
                     onError={(e) => { 
                       e.currentTarget.style.display = 'none'; 
                     }} 
                   />
                   
-                  <span className="text-foreground/50 group-hover/item:text-foreground/80 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase transition-colors duration-300 text-center">
+                  <span className="text-foreground/50 group-hover/item:text-foreground/80 font-bold text-xs md:text-sm tracking-[0.2em] uppercase transition-colors duration-300 text-center">
                     {brand.label}
                   </span>
                 </div>

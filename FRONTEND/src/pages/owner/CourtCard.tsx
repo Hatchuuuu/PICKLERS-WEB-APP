@@ -28,7 +28,7 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
   const pct = court.maxTime > 0 ? seconds / court.maxTime : 0;
 
   return (
-    <div className={`rounded-3xl p-5 transition-all relative overflow-hidden backdrop-blur-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${isAlert ? 'border border-red-500/60 dark:border-t-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.15),inset_0_0_20px_rgba(239,68,68,0.05)] bg-red-500/5' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
+    <div className={`rounded-2xl p-5 transition-all relative overflow-hidden backdrop-blur-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] ${isAlert ? 'border border-red-500/60 dark:border-t-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.15),inset_0_0_20px_rgba(239,68,68,0.05)] bg-red-500/5 animate-pulse' : 'bg-surface-base border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10'}`}>
       <div className="flex items-center justify-between gap-3 mb-5">
         <span className="text-[16px] font-bold text-foreground tracking-tight leading-tight truncate whitespace-nowrap">{court.name}</span>
         <motion.div 
@@ -44,16 +44,11 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
       {court.status === "occupied" && (
         <>
           <div className="text-[13px] text-muted-foreground mb-2 truncate">{court.player}</div>
-          <div className={cn("text-[28px] tracking-tight font-mono mb-4", isAlert ? "flex items-center gap-2 font-semibold" : "font-semibold text-cyan-600 dark:text-cyan-400 dark:drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]")}
+          <div className={cn("tracking-tight font-mono mb-4", isAlert ? "flex items-center gap-2 text-[24px] xl:text-[26px] font-semibold" : "text-[28px] font-semibold text-cyan-600 dark:text-cyan-400 dark:drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]")}
                style={isAlert ? { color: "#ff4b4b", textShadow: "0 0 12px rgba(255, 75, 75, 0.5)" } : {}}>
             {isAlert ? (
               <>
-                <motion.span 
-                  animate={{ opacity: [1, 0.4, 1] }} 
-                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                  className="w-2.5 h-2.5 rounded-full bg-[#ff4b4b] shadow-[0_0_8px_#ff4b4b]"
-                />
-                TIME UP
+                <span className="whitespace-nowrap">TIME'S UP</span>
               </>
             ) : (
               formatTime(seconds)
@@ -64,7 +59,7 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
               style={{ width: `${pct * 100}%`, background: pct > 0.2 ? "var(--accent-primary)" : "var(--accent-danger)", color: pct > 0.2 ? "var(--accent-primary)" : "var(--accent-danger)" }} />
           </div>
           <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowEndConfirm(true); }}
-            className="w-full text-[14px] font-bold mt-2 py-3 rounded-full active:scale-[0.97] transition-all bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 dark:bg-[#ff3b30]/10 dark:hover:bg-[#ff3b30]/15 dark:border-[#ff3b30]/15 dark:text-[#ff3b30] relative z-10">
+            className="w-full text-[13px] font-bold mt-2 py-2 rounded-xl active:scale-[0.97] transition-all bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 dark:bg-red-500/10 dark:hover:bg-red-500/15 dark:border-red-500/20 dark:text-red-500 relative z-10">
             {isAlert ? "Clear Court" : "End Session Early"}
           </button>
         </>
@@ -86,26 +81,36 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: typeof LIVE_
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {showEndConfirm && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-                 onClick={(e) => { e.stopPropagation(); setShowEndConfirm(false); }}>
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl"
+                onClick={(e) => { e.stopPropagation(); setShowEndConfirm(false); }} />
+              <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
-                <div className="mb-6">
-                  <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">{isAlert ? "Clear Court?" : "End Session Early?"}</h3>
-                  <p className="text-[14px] text-foreground/60 leading-relaxed">
-                    {isAlert ? "Are you sure you want to clear this court and make it available again?" : "Are you sure you want to terminate this active session? The players will be notified that their court time has ended."}
-                  </p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <button onClick={(e) => { e.stopPropagation(); onEnd?.(); setShowEndConfirm(false); }} 
-                    className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-[#FF3B30] shadow-[0_4px_12px_rgba(255,59,48,0.3)] hover:opacity-90 active:scale-[0.98] transition-all" >
-                    {isAlert ? "Clear Court" : "End Session"}
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); setShowEndConfirm(false); }} 
-                    className="w-full py-3.5 rounded-full text-[15px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15 active:scale-[0.98] transition-all">
-                    {isAlert ? "Cancel" : "Keep Playing"}
-                  </button>
+                className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
+                <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-[28px] overflow-hidden shadow-xl dark:shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)] ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#FF453A]/20 via-transparent to-transparent opacity-50"></div>
+                  <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
+                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                     <div className="relative mb-5 mt-2">
+                       <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
+                       <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+                         <AlertTriangle className="w-6 h-6 text-[#FF453A]" strokeWidth={2.5} />
+                       </div>
+                     </div>
+                     <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">{isAlert ? "Clear Court?" : "End Session Early?"}</h3>
+                     <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
+                       {isAlert ? "Are you sure you want to clear this court and make it available again?" : "Are you sure you want to terminate this active session? The players will be notified that their court time has ended."}
+                     </p>
+                     <div className="flex gap-3 w-full mt-7">
+                       <button onClick={(e) => { e.stopPropagation(); setShowEndConfirm(false); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
+                         {isAlert ? "Cancel" : "Keep Playing"}
+                       </button>
+                       <button onClick={(e) => { e.stopPropagation(); onEnd?.(); setShowEndConfirm(false); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
+                         {isAlert ? "Clear Court" : "End Session"}
+                       </button>
+                     </div>
+                  </div>
                 </div>
               </motion.div>
             </div>

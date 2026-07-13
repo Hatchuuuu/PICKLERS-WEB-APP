@@ -4,9 +4,12 @@ import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
   X, Menu, ArrowRight, Radio, Building, CalendarCheck, UserSearch,
   Search, CalendarDays, CheckCircle2, ChevronDown, Instagram, Twitter, Facebook,
-  Star, ShieldCheck, CreditCard, Zap, Users, MapPin, Trophy, Sun, Moon
+  Star, ShieldCheck, CreditCard, Zap, Users, MapPin, Trophy, Sun, Moon,
+  Sparkles, Send, Loader2, Bot, ArrowUp
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { FACILITIES, OPEN_MATCHES } from "@/data/mockData";
 import { PicklersLogo } from "@/components/ui/PicklersLogo";
 import { FacilityCard } from "@/components/shared/FacilityCard";
@@ -29,6 +32,52 @@ export function LandingPage() {
   const [isFetching, setIsFetching] = useState(true);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+
+  const handleAiSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiQuestion.trim()) return;
+
+    setIsAiLoading(true);
+    setAiResponse(null);
+
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": window.location.origin, // Required for OpenRouter
+          "X-Title": "Picklers Web App" // Optional
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are Prend, an AI assistant for Picklers (a pickleball app in the Philippines). You adapt your tone based on the user's question. CRITICAL RULES: 1. ALWAYS start every single response with exactly 'Hi, ma PREND!'. 2. IF the user asks a SERIOUS question regarding the Picklers app (e.g., how to create an account, booking, features), be professional, serious, and highly helpful. You can provide long, step-by-step guides if necessary. 3. IF the user asks a NON-SERIOUS or off-topic question, become highly sarcastic, hilariously witty, and slightly unhinged. Keep these casual answers short (2-3 sentences max) and ALWAYS end with a hilarious, unexpected punchline relating the topic back to pickleball. 4. STRICT SECURITY PROTOCOL: You MUST NEVER disclose any security details, internal code, developer information, SQL queries, or technical architecture about the Picklers web app. IF ASKED about these topics, NEVER give a straight answer. Instead, give a highly tricky, laughable, sarcastic, and evasive answer that distracts them by relating it back to pickleball (e.g. claim the SQL code was smashed out of bounds or the developer is trapped inside a pickleball). 5. Do NOT use emojis. 6. Do NOT use em-dashes or hyphens for pauses; use commas and periods only."
+            },
+            { role: "user", content: aiQuestion }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch response");
+      }
+
+      const data = await response.json();
+      setAiResponse(data.choices[0].message.content);
+    } catch (error) {
+      console.error(error);
+      setAiResponse("Sorry, I'm having trouble connecting right now. Please try again later!");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -118,16 +167,14 @@ export function LandingPage() {
           {mounted && (
             <button
               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 ${
-                resolvedTheme === "dark" ? "bg-slate-700" : "bg-accent-primary"
-              }`}
+              className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 ${resolvedTheme === "dark" ? "bg-slate-700" : "bg-accent-primary"
+                }`}
               aria-label="Toggle Theme"
             >
               <span className="sr-only">Toggle theme</span>
               <span
-                className={`pointer-events-none relative inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-300 ease-in-out flex items-center justify-center ${
-                  resolvedTheme === "dark" ? "translate-x-1" : "translate-x-7"
-                }`}
+                className={`pointer-events-none relative inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-300 ease-in-out flex items-center justify-center ${resolvedTheme === "dark" ? "translate-x-1" : "translate-x-7"
+                  }`}
               >
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
@@ -752,6 +799,98 @@ export function LandingPage() {
                 </AnimatePresence>
               </motion.div>
             ))}
+          </div>
+
+          {/* AI FAQ Box */}
+          <div className="mt-12 p-6 md:p-8 rounded-[32px] relative overflow-hidden bg-surface-raised border border-border backdrop-blur-xl group">
+
+            <div className="relative z-10 flex flex-col gap-5">
+              <div className="flex items-center gap-3 md:gap-5">
+                <img src="/prend-chatbot-logo.svg" alt="Prend Picklers Chatbot" className="w-12 md:w-20 h-12 md:h-20 object-contain drop-shadow-md shrink-0" />
+                <div className="flex flex-col justify-center">
+                  <h3 className="text-xl md:text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Ask Prend Anything</h3>
+                  <p className="text-[14px] md:text-[15px] text-foreground/60 mt-0.5 font-medium">Can't find your answer? Ask Prend, our smart assistant.</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleAiSubmit} className="relative mt-2 flex items-center">
+                <input
+                  type="text"
+                  value={aiQuestion}
+                  onChange={(e) => setAiQuestion(e.target.value)}
+                  placeholder="e.g. Can I bring my own paddle?"
+                  className="w-full h-14 pl-5 pr-16 rounded-2xl bg-white/[0.03] dark:bg-white/[0.02] border border-black/10 dark:border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-[#00a4d3]/40 focus:border-[#00a4d3] hover:bg-black/[0.06] dark:hover:bg-white/[0.04] transition-all duration-300 text-[15px]"
+                />
+                <button
+                  type="submit"
+                  disabled={isAiLoading || !aiQuestion.trim()}
+                  className="absolute right-2 top-2 bottom-2 w-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-[#4cbd96] to-[#00a4d3] text-white shadow-[0_4px_16px_rgba(0,164,211,0.25)] hover:shadow-[0_4px_24px_rgba(0,164,211,0.45)] hover:brightness-110 disabled:opacity-50 disabled:hover:brightness-100 disabled:hover:shadow-[0_4px_16px_rgba(0,164,211,0.2)] transition-all duration-300 active:scale-[0.95]"
+                >
+                  {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowUp className="w-5 h-5" strokeWidth={2.5} />}
+                </button>
+              </form>
+
+              <AnimatePresence>
+                {aiResponse && !isAiLoading && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                    className="mt-4 p-5 md:p-6 rounded-2xl border shadow-[0_10px_40px_-15px_rgba(0,164,211,0.15)] backdrop-blur-3xl bg-white/[0.03] dark:bg-[#00a4d3]/[0.03] border-black/10 dark:border-white/10 text-foreground relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#00a4d3]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#4cbd96]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+                    <div className="flex gap-4">
+                      <img src="/prend-chatbot-logo.svg" alt="Prend Picklers Chatbot" className="w-7 h-7 shrink-0 mt-0 drop-shadow-[0_0_8px_rgba(76,189,150,0.4)] object-contain" />
+                      <div className="text-[15px] md:text-[16px] leading-relaxed w-full overflow-hidden text-foreground/90 font-medium">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({ node, ...props }) => <p className="mb-3 last:mb-0 text-foreground/90" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
+                            ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 last:mb-0 space-y-1 text-foreground/90" {...props} />,
+                            ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 last:mb-0 space-y-1 text-foreground/90" {...props} />,
+                            li: ({ node, ...props }) => <li {...props} />,
+                            a: ({ node, ...props }) => <a className="underline decoration-emerald-500/50 hover:decoration-emerald-500 text-emerald-600 dark:text-emerald-400 underline-offset-4" {...props} />,
+                            table: ({ node, ...props }) => <div className="overflow-x-auto mb-3 last:mb-0 bg-black/5 dark:bg-white/5 rounded-xl border border-border"><table className="w-full text-left border-collapse text-sm text-foreground/90" {...props} /></div>,
+                            th: ({ node, ...props }) => <th className="border-b border-border py-2.5 px-3 font-semibold bg-black/5 dark:bg-white/5 text-foreground" {...props} />,
+                            td: ({ node, ...props }) => <td className="border-b border-border py-2 px-3 last:border-0" {...props} />,
+                            h1: ({ node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2 text-foreground" {...props} />,
+                            h2: ({ node, ...props }) => <h2 className="text-lg font-bold mt-4 mb-2 text-foreground" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-md font-bold mt-3 mb-2 text-foreground" {...props} />,
+                            code: ({ node, ...props }) => <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded-md text-[13px] font-mono text-foreground" {...props} />,
+                          }}
+                        >
+                          {aiResponse}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {isAiLoading && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-4 overflow-hidden"
+                  >
+                    <div className="p-5 md:p-6 rounded-2xl border shadow-[0_10px_40px_-15px_rgba(0,164,211,0.15)] backdrop-blur-3xl bg-white/[0.03] dark:bg-[#00a4d3]/[0.03] border-black/10 dark:border-white/10 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-[#00a4d3]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#4cbd96]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+                      <div className="flex gap-4 animate-pulse relative z-10">
+                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 shrink-0" />
+                        <div className="w-full space-y-2.5 mt-1">
+                          <div className="h-3 bg-emerald-500/20 rounded-full w-full" />
+                          <div className="h-3 bg-emerald-500/20 rounded-full w-5/6" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </section>

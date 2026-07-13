@@ -191,9 +191,9 @@ export const LIVE_COURTS = [
 ];
 
 export const BOOKING_REQUESTS = [
-  { id: "R001", player: "Bennie Alcantara", court: "Court 1 (Indoor)", time: "10:00 AM – 1:00 PM", total: 960 },
-  { id: "R002", player: "Grace Villanueva", court: "Center Court", time: "2:00 PM – 4:00 PM", total: 1280 },
-  { id: "R003", player: "Marco Tan", court: "Court 3 (Indoor)", time: "4:00 PM – 6:00 PM", total: 640 },
+  { id: "R001", player: "Bennie Alcantara", court: "Court 1 (Indoor)", time: "10:00 AM – 1:00 PM", total: 960, paymentMethod: "GCash" },
+  { id: "R002", player: "Grace Villanueva", court: "Center Court", time: "2:00 PM – 4:00 PM", total: 1280, paymentMethod: "Cash" },
+  { id: "R003", player: "Marco Tan", court: "Court 3 (Indoor)", time: "4:00 PM – 6:00 PM", total: 640, paymentMethod: "Picklers Credit" },
 ];
 
 export const FACILITY_COURTS: Record<number, Array<{

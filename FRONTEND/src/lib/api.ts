@@ -98,18 +98,18 @@ export const apiClient = {
     
     // 2. Intercept 401 Unauthorized
     if (response.status === 401) {
-      console.warn("🔒 [Security Interceptor] JWT Expired. Executing silent refresh...");
+      if (import.meta.env.DEV) console.warn("🔒 [Security Interceptor] JWT Expired. Executing silent refresh...");
       
       // 3. Attempt silent refresh in background via HttpOnly cookie
       const refreshSuccess = await mockSilentRefresh();
       
       if (refreshSuccess) {
-         console.log("✅ [Security Interceptor] Token refreshed! Replaying original request seamlessly.");
+         if (import.meta.env.DEV) console.log("✅ [Security Interceptor] Token refreshed! Replaying original request seamlessly.");
          // 4. Replay original request
          response = await mockNetworkCall(url, { ...options, _retry: true });
       } else {
          // 5. Force logout only if refresh token is also expired/revoked
-         console.error("❌ [Security Interceptor] Refresh failed. Forcing logout.");
+         if (import.meta.env.DEV) console.error("❌ [Security Interceptor] Refresh failed. Forcing logout.");
          window.location.href = "/auth";
       }
     }

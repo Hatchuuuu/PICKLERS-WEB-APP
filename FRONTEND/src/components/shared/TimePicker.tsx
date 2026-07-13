@@ -2,202 +2,200 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
+import { Check } from "lucide-react";
 
 export function TimePicker({ 
   value, 
-  onChange 
+  onChange,
+  label
 }: { 
   value: string; 
   onChange: (val: string) => void;
+  label: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Parse "HH:MM" (24h) to 12h format
-  const parseTime = (val: string) => {
-    const [hStr, mStr] = val.split(":");
+  const MULTIPLIER = 15;
+  const CENTER_OFFSET = Math.floor(MULTIPLIER / 2) * 24; // 7 * 24 = 168
+
+  // Generate times array (e.g. ["12:00 AM", "01:00 AM", ..., "11:00 PM"])
+  const baseTimes = React.useMemo(() => {
+    const arr = [];
+    for (let h = 0; h < 24; h++) {
+      let hour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      let period = h >= 12 ? "PM" : "AM";
+      arr.push(`${hour.toString().padStart(2, "0")}:00 ${period}`);
+    }
+    return arr;
+  }, []);
+
+  const displayTimes = React.useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < MULTIPLIER; i++) {
+      arr.push(...baseTimes);
+    }
+    return arr;
+  }, [baseTimes]);
+
+  // Convert "HH:MM" (24h) to "HH:MM AM/PM"
+  const parseToDisplay = (val24: string) => {
+    if (!val24) return "08:00 AM";
+    const [hStr, mStr] = val24.split(":");
     let h = parseInt(hStr, 10);
     const m = mStr;
     const period = h >= 12 ? "PM" : "AM";
     if (h === 0) h = 12;
     if (h > 12) h -= 12;
-    const hh = h.toString().padStart(2, "0");
-    return { hh, mm: m, period };
+    return `${h.toString().padStart(2, "0")}:${m} ${period}`;
   };
 
-  const to24h = (hh: string, mm: string, period: string) => {
-    let h = parseInt(hh, 10);
+  // Convert "H:MM AM/PM" to "HH:MM" (24h)
+  const parseTo24h = (displayStr: string) => {
+    const [time, period] = displayStr.split(" ");
+    let [hStr, mStr] = time.split(":");
+    let h = parseInt(hStr, 10);
     if (period === "AM" && h === 12) h = 0;
     if (period === "PM" && h < 12) h += 12;
-    return `${h.toString().padStart(2, "0")}:${mm}`;
+    return `${h.toString().padStart(2, "0")}:${mStr}`;
   };
 
-  const initialParsed = parseTime(value || "06:00");
-  const [tempHour, setTempHour] = useState(initialParsed.hh);
-  const [tempMinute, setTempMinute] = useState(initialParsed.mm);
-  const [tempPeriod, setTempPeriod] = useState(initialParsed.period);
-
-  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, "0"));
-  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
-  const periods = ["AM", "PM"];
-
-  const hourRef = useRef<HTMLDivElement>(null);
-  const minRef = useRef<HTMLDivElement>(null);
-  const periodRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(CENTER_OFFSET + 8);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      const parsed = parseTime(value || "06:00");
-      setTempHour(parsed.hh);
-      setTempMinute(parsed.mm);
-      setTempPeriod(parsed.period);
+      const initialDisplay = parseToDisplay(value || "08:00");
+      let idx = baseTimes.indexOf(initialDisplay);
+      if (idx === -1) idx = 8;
       
-      // Auto-scroll to selected values when modal opens
+      const targetIndex = CENTER_OFFSET + idx;
+      setActiveIndex(targetIndex);
+      
+      // Auto-scroll to selected value when modal opens
       setTimeout(() => {
-        if (hourRef.current) hourRef.current.scrollTo({ top: hours.indexOf(parsed.hh) * 30, behavior: "instant" as unknown as ScrollBehavior });
-        if (minRef.current) minRef.current.scrollTo({ top: minutes.indexOf(parsed.mm) * 30, behavior: "instant" as unknown as ScrollBehavior });
-        if (periodRef.current) periodRef.current.scrollTo({ top: periods.indexOf(parsed.period) * 30, behavior: "instant" as unknown as ScrollBehavior });
+        if (scrollRef.current) {
+          scrollRef.current.scrollTo({ top: targetIndex * 40, behavior: "instant" as unknown as ScrollBehavior });
+        }
       }, 0);
     }
-  }, [isOpen, value]);
+  }, [isOpen, value, baseTimes]);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>, setter: (val: string) => void, options: string[]) => {
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const y = e.currentTarget.scrollTop;
-    const index = Math.round(y / 30);
-    const newValue = options[index];
-    if (newValue) {
-      setter(newValue);
+    const index = Math.round(y / 40);
+    if (index >= 0 && index < displayTimes.length && index !== activeIndex) {
+      setActiveIndex(index);
     }
   };
 
-  const handleItemClick = (val: string, setter: (val: string) => void, options: string[], ref: React.RefObject<HTMLDivElement>) => {
-    setter(val);
-    const idx = options.indexOf(val);
-    if (ref.current && idx !== -1) {
-      ref.current.scrollTo({ top: idx * 30, behavior: "smooth" });
+  const handleItemClick = (index: number) => {
+    setActiveIndex(index);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: index * 40, behavior: "smooth" });
     }
   };
 
   const handleSave = () => {
-    onChange(to24h(tempHour, tempMinute, tempPeriod));
+    onChange(parseTo24h(displayTimes[activeIndex]));
     setIsOpen(false);
   };
 
-  const displayTime = parseTime(value || "06:00");
+  const displayTime = parseToDisplay(value || "08:00");
 
-  const modal = isOpen ? createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      <motion.div 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        exit={{ opacity: 0 }}
-        onClick={() => setIsOpen(false)}
-        className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
-      />
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 10 }} 
-        animate={{ opacity: 1, scale: 1, y: 0 }} 
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="relative w-[300px] rounded-[24px] overflow-hidden shadow-2xl z-10 flex flex-col bg-surface-base/90 dark:bg-[#1c1c1e]/80 backdrop-blur-[20px] border border-border dark:border-white/10"
-      >
-        <div className="px-5 py-4 border-b border-border flex justify-between items-center">
-          <span className="text-sm font-semibold text-foreground">Time</span>
-          <button onClick={handleSave} className="text-sm font-bold text-[#0a84ff] active:opacity-70">Done</button>
+  const modal = typeof document !== "undefined" ? createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="absolute inset-0 bg-[#080D1C]/60 backdrop-blur-sm"
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 10 }} 
+            animate={{ opacity: 1, scale: 1, y: 0 }} 
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="relative w-full max-w-[320px] rounded-2xl overflow-hidden shadow-2xl flex flex-col bg-[#0A1124] border border-white/10"
+          >
+            <div className="flex-1 py-8 flex justify-center items-center relative">
+              <div 
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="h-[200px] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar relative flex flex-col items-center"
+              >
+                <div className="h-[80px] w-full shrink-0" />
+                {displayTimes.map((timeStr, i) => {
+                  const isActive = activeIndex === i;
+                  return (
+                    <div 
+                      key={`${timeStr}-${i}`} 
+                      onClick={() => handleItemClick(i)}
+                      className={cn(
+                        "h-[40px] w-full flex items-center justify-center shrink-0 snap-center cursor-pointer transition-all duration-200 select-none relative z-10",
+                      )}
+                    >
+                      <span className={cn(
+                        "text-[18px] font-bold transition-all duration-200 z-10",
+                        isActive ? "text-white" : "text-white/30"
+                      )}>
+                        {timeStr}
+                      </span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activePill"
+                          className="absolute w-[180px] h-[40px] bg-emerald-500 rounded-[14px] -z-10 shadow-[0_4px_16px_rgba(16,185,129,0.3)]"
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+                <div className="h-[80px] w-full shrink-0" />
+              </div>
+            </div>
+
+            {/* Footer Save Button */}
+            <div className="p-4 border-t border-white/5">
+              <button 
+                onClick={handleSave}
+                className="w-full py-3.5 rounded-xl font-bold text-[15px] bg-emerald-500 hover:bg-emerald-400 text-[#080D1C] shadow-[0_4px_16px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                <Check className="w-5 h-5 stroke-2" />
+                Save Time
+              </button>
+            </div>
+          </motion.div>
         </div>
-
-        <div className="flex justify-between items-center px-4 py-6">
-          {/* Hour Column */}
-          <div 
-            ref={hourRef}
-            onScroll={(e) => handleScroll(e, setTempHour, hours)}
-            className="h-[150px] w-1/3 overflow-y-scroll snap-y snap-mandatory no-scrollbar relative flex flex-col items-center"
-          >
-            <div className="h-[60px] shrink-0" />
-            {hours.map(h => (
-              <div 
-                key={h} 
-                onClick={() => handleItemClick(h, setTempHour, hours, hourRef)}
-                className={cn(
-                  "h-[30px] w-full flex items-center justify-center shrink-0 snap-center text-xl cursor-pointer transition-colors",
-                  tempHour === h ? "text-foreground font-bold" : "text-foreground/40 font-medium"
-                )}
-              >
-                {h}
-              </div>
-            ))}
-            <div className="h-[60px] shrink-0" />
-          </div>
-
-          <span className="text-2xl font-bold text-foreground mb-1">:</span>
-
-          {/* Minute Column */}
-          <div 
-            ref={minRef}
-            onScroll={(e) => handleScroll(e, setTempMinute, minutes)}
-            className="h-[150px] w-1/3 overflow-y-scroll snap-y snap-mandatory no-scrollbar relative flex flex-col items-center"
-          >
-            <div className="h-[60px] shrink-0" />
-            {minutes.map(m => (
-              <div 
-                key={m} 
-                onClick={() => handleItemClick(m, setTempMinute, minutes, minRef)}
-                className={cn(
-                  "h-[30px] w-full flex items-center justify-center shrink-0 snap-center text-xl cursor-pointer transition-colors",
-                  tempMinute === m ? "text-foreground font-bold" : "text-foreground/40 font-medium"
-                )}
-              >
-                {m}
-              </div>
-            ))}
-            <div className="h-[60px] shrink-0" />
-          </div>
-
-          {/* Period Column */}
-          <div 
-            ref={periodRef}
-            onScroll={(e) => handleScroll(e, setTempPeriod, periods)}
-            className="h-[150px] w-1/3 overflow-y-scroll snap-y snap-mandatory no-scrollbar relative flex flex-col items-center"
-          >
-            <div className="h-[60px] shrink-0" />
-            {periods.map(p => (
-              <div 
-                key={p} 
-                onClick={() => handleItemClick(p, setTempPeriod, periods, periodRef)}
-                className={cn(
-                  "h-[30px] w-full flex items-center justify-center shrink-0 snap-center text-xl cursor-pointer transition-colors",
-                  tempPeriod === p ? "text-foreground font-bold" : "text-foreground/40 font-medium"
-                )}
-              >
-                {p}
-              </div>
-            ))}
-            <div className="h-[60px] shrink-0" />
-          </div>
-
-          {/* Selection Highlight (Visual Only) */}
-          <div className="absolute top-1/2 left-4 right-4 h-[34px] -translate-y-[1px] bg-surface-interactive rounded-lg pointer-events-none -z-10" />
-        </div>
-      </motion.div>
-    </div>,
+      )}
+    </AnimatePresence>,
     document.body
   ) : null;
 
   return (
     <>
       <button 
-        onClick={() => setIsOpen(true)}
-        className="px-3 py-1.5 rounded-lg text-[15px] font-medium transition-colors active:scale-95"
-        style={{ 
-          background: "rgba(255, 255, 255, 0.1)", 
-          color: "#fff"
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsOpen(true);
         }}
+        className="flex-1 w-full bg-surface-interactive/30 dark:bg-white/[0.02] border border-border dark:border-white/5 rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:bg-surface-interactive/50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer active:scale-95"
       >
-        {displayTime.hh}:{displayTime.mm} {displayTime.period}
+        <span className="text-[11px] font-bold tracking-[0.1em] text-muted-foreground uppercase pointer-events-none">
+          {label}
+        </span>
+        <div 
+          className="bg-surface-base dark:bg-white/[0.06] px-5 py-2 rounded-lg text-foreground font-semibold text-[14px] whitespace-nowrap shadow-sm pointer-events-none"
+        >
+          {displayTime}
+        </div>
       </button>
 
-      <AnimatePresence>
-        {modal}
-      </AnimatePresence>
+      {modal}
 
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }

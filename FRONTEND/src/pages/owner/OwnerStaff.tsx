@@ -121,7 +121,7 @@ export function OwnerStaff() {
       </div>
 
       <button onClick={() => setAddStaffOpen(true)}
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm shadow-2xl active:scale-[0.97] z-30 bg-accent-success text-white" style={{ boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
+        className="fixed bottom-[110px] right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm shadow-2xl active:scale-[0.97] z-30 bg-accent-success text-white" style={{ boxShadow: "0 8px 32px rgba(34,197,94,0.4)", transition: "opacity 150ms ease-out, transform 100ms ease-out" }}
         onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
         onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
         <Plus className="w-5 h-5" />Add Staff
@@ -129,25 +129,35 @@ export function OwnerStaff() {
 
       <AnimatePresence>
         {confirm !== null && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-               onClick={() => { setConfirm(null); setConfirmText(""); }}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} 
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[340px] rounded-[32px] p-6 shadow-2xl border border-black/5 dark:border-white/10 text-center bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] saturate-150">
-              <div className="mb-6">
-                <h3 className="text-[20px] font-bold text-foreground mb-2 tracking-tight">Revoke Staff Access?</h3>
-                <p className="text-[14px] text-foreground/60 leading-relaxed">This will immediately remove this user's access to the facility dashboard and management system.</p>
-              </div>
-              <div className="flex flex-col gap-3">
-                <button onClick={() => handleDelete(confirm!)} 
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-white bg-[#FF3B30] shadow-[0_4px_12px_rgba(255,59,48,0.3)] hover:opacity-90 active:scale-[0.98] transition-all" >
-                  Revoke Access
-                </button>
-                <button onClick={() => { setConfirm(null); setConfirmText(""); }} 
-                  className="w-full py-3.5 rounded-full text-[15px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15 active:scale-[0.98] transition-all">
-                  Cancel
-                </button>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl"
+              onClick={() => { setConfirm(null); setConfirmText(""); }} />
+            <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
+              <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-[28px] overflow-hidden shadow-xl dark:shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)] ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF453A]/20 via-transparent to-transparent opacity-50"></div>
+                <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                   <div className="relative mb-5 mt-2">
+                     <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
+                     <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+                       <span className="text-[24px] font-black text-[#FF453A] drop-shadow-[0_0_12px_rgba(255,59,48,0.6)]">!</span>
+                     </div>
+                   </div>
+                   <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Revoke Access?</h3>
+                   <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
+                     This will immediately remove this user's access to the facility dashboard and management system.
+                   </p>
+                   <div className="flex gap-3 w-full mt-7">
+                     <button onClick={() => { setConfirm(null); setConfirmText(""); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
+                       Cancel
+                     </button>
+                     <button onClick={() => handleDelete(confirm!)} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
+                       Revoke
+                     </button>
+                   </div>
+                </div>
               </div>
             </motion.div>
           </div>

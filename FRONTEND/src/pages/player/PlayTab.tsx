@@ -50,7 +50,7 @@ export function PlayTab() {
           transition={{ ease: [0.23, 1, 0.32, 1], duration: 0.4 }}
           className="p-4 max-w-6xl mx-auto w-full">
           {toastMessage && (
-            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full bg-surface-overlay/80 backdrop-blur-xl border border-border text-foreground shadow-lg text-sm font-medium">
+            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-[110px] left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full bg-surface-overlay/80 backdrop-blur-xl border border-border text-foreground shadow-lg text-sm font-medium">
               {toastMessage}
             </motion.div>
           )}
@@ -59,9 +59,10 @@ export function PlayTab() {
               {!isSearching ? (
                 <motion.div 
                   key="title" 
-                  initial={{ opacity: 0, x: -20 }} 
-                  animate={{ opacity: 1, x: 0 }} 
-                  exit={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -20, filter: "blur(8px)" }} 
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} 
+                  exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute left-0 top-0"
                 >
                   <h1 className="text-[32px] font-extrabold tracking-tight leading-none mb-1.5" style={{ color: "var(--ink-primary)" }}>
@@ -72,10 +73,10 @@ export function PlayTab() {
               ) : (
                 <motion.div 
                   key="search" 
-                  initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }} 
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} 
-                  exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, x: 20, filter: "blur(8px)" }} 
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} 
+                  exit={{ opacity: 0, x: 20, filter: "blur(8px)" }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute left-0 right-[64px] top-0"
                 >
                   <input 

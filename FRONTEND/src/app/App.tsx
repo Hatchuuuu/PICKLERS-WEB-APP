@@ -22,11 +22,13 @@ import { BookingsTab } from "@/pages/player/BookingsTab";
 import { CommunityTab } from "@/pages/player/CommunityTab";
 import { PlayerSettingsTab } from "@/pages/player/PlayerSettings";
 import { OwnerApplication } from "@/pages/player/OwnerApplication";
+import { FacilityDetailView } from "@/pages/player/FacilityDetailView";
 
 import { OwnerLayout } from "@/layouts/OwnerLayout";
 import { OwnerDashboard } from "@/pages/owner/OwnerDashboard";
 import { OwnerCourts } from "@/pages/owner/OwnerCourts";
 import { OwnerTournaments } from "@/pages/owner/OwnerTournaments";
+import { OwnerBracket } from "@/pages/owner/OwnerBracket";
 import { OwnerStaff } from "@/pages/owner/OwnerStaff";
 import { OwnerSettings } from "@/pages/owner/OwnerSettings";
 
@@ -35,13 +37,15 @@ import { AppProvider } from "@/contexts/AppContext";
 import { OwnerProvider } from "@/contexts/OwnerContext";
 import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
 import { RoleGate } from "@/components/shared/RoleGate";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useTournamentStore } from "@/store/useTournamentStore";
 
 function PageTransition({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       className="w-full min-h-screen flex flex-col"
     >
@@ -58,7 +62,7 @@ function AnimatedRoutes() {
   useEffect(() => {
     const path = location.pathname;
     let title = "PICKLERS | FIND • BOOK • PLAY";
-    
+
     if (path === "/auth") title = "PICKLERS | Authentication";
     else if (path.startsWith("/app/owner")) {
       if (path === "/app/owner") title = "PICKLERS | Owner Dashboard";
@@ -76,7 +80,7 @@ function AnimatedRoutes() {
       else if (path === "/app/owner-application") title = "PICKLERS | Partner Application";
       else title = "PICKLERS | App";
     }
-    
+
     document.title = title;
   }, [location.pathname]);
 
@@ -86,7 +90,7 @@ function AnimatedRoutes() {
         {/* Public Routes */}
         <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
-        
+
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           {/* Player Shell Routes */}
@@ -97,6 +101,7 @@ function AnimatedRoutes() {
             <Route path="community" element={<CommunityTab />} />
             <Route path="settings" element={<PlayerSettingsTab />} />
             <Route path="owner-application" element={<OwnerApplication />} />
+            <Route path="facility/:id" element={<PageTransition><FacilityDetailView /></PageTransition>} />
           </Route>
 
           {/* Owner Shell Routes */}
@@ -106,6 +111,7 @@ function AnimatedRoutes() {
                 <Route index element={<OwnerDashboard />} />
                 <Route path="courts" element={<OwnerCourts />} />
                 <Route path="tournaments" element={<OwnerTournaments />} />
+                <Route path="tournaments/:id" element={<OwnerBracket />} />
                 <Route path="staff" element={<OwnerStaff />} />
                 <Route path="settings" element={<OwnerSettings />} />
               </Route>
@@ -121,13 +127,21 @@ function AnimatedRoutes() {
 }
 
 export default function App() {
+  const hydrateFromSupabase = useTournamentStore(state => state.hydrateFromSupabase);
+
+  useEffect(() => {
+    hydrateFromSupabase();
+  }, [hydrateFromSupabase]);
+
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <AppProvider>
             <BrowserRouter>
-              <AnimatedRoutes />
+              <ErrorBoundary>
+                <AnimatedRoutes />
+              </ErrorBoundary>
             </BrowserRouter>
           </AppProvider>
         </AuthProvider>

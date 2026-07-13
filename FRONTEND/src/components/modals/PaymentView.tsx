@@ -312,8 +312,8 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className="relative w-full max-w-sm flex flex-col gap-2 z-10"
             >
-              <div className="w-full max-w-sm bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
-                <div className="p-8 text-center pb-6">
+              <div className="w-full max-w-sm bg-black/20 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[24px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
+                <div className="p-6 text-center pb-6">
                   <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-6 ring-1 ring-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
                     <CreditCard className="w-8 h-8 text-emerald-400 drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" strokeWidth={1.5} />
                   </div>

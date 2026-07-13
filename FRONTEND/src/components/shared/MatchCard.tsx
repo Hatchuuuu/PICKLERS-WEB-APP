@@ -103,13 +103,13 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
           {showJoinConfirm && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pb-8">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl"
+                className="absolute inset-0 bg-black/20 dark:bg-[#0A1118]/80 backdrop-blur-3xl"
                 onClick={() => setShowJoinConfirm(false)} />
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 400 }}
                 className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-                <div className="w-full max-w-[340px] bg-surface-base/80 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[28px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
+                <div className="w-full max-w-[340px] bg-black/20 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[28px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
                   <div className="p-6 text-center pb-5">
                     <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-4 ring-1 ring-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
                       <span className="text-[24px] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]">🤝</span>

@@ -1,12 +1,12 @@
 -- Seed initial profiles
 INSERT INTO auth.users (id, email) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'owner1@picklers.com'),
-  ('00000000-0000-0000-0000-000000000002', 'owner2@picklers.com')
+  ('00000000-0000-0000-0000-000000000001', 'owner@picklers.com'),
+  ('00000000-0000-0000-0000-000000000002', 'player@picklers.com')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.profiles (id, full_name, role) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'SM Management', 'owner'),
-  ('00000000-0000-0000-0000-000000000002', 'BGC Hub Owner', 'owner')
+  ('00000000-0000-0000-0000-000000000001', 'Test Owner', 'owner'),
+  ('00000000-0000-0000-0000-000000000002', 'Test Player', 'player')
 ON CONFLICT DO NOTHING;
 
 -- Seed initial facilities

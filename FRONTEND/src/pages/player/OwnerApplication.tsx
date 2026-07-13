@@ -156,8 +156,8 @@ export function OwnerApplication() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm" onClick={() => setShowSubmitConfirm(false)} />
             <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="relative w-full max-w-sm flex flex-col gap-2 z-10">
               
-              <div className="w-full max-w-sm bg-surface-raised/95 backdrop-blur-[40px] rounded-[32px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
-                 <div className="p-8 text-center pb-6">
+              <div className="w-full max-w-sm bg-surface-raised/95 backdrop-blur-[40px] rounded-[24px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
+                 <div className="p-6 text-center pb-6">
                    <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-5 border border-emerald-500/20 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
                      <Send className="w-7 h-7 text-emerald-400" style={{ marginLeft: "3px" }} />
                    </div>
