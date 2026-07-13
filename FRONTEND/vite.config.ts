@@ -24,6 +24,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  define: {
+    'import.meta.env.VITE_OPENROUTER_API_KEY': JSON.stringify('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')
+  },
   server: {
     port: 3000,
   },

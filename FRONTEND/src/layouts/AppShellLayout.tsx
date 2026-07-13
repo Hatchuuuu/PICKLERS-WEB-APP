@@ -82,7 +82,7 @@ export function AppShellLayout() {
         <div className="px-6 py-5 border-b border-solid flex items-center justify-between" style={{ borderColor: "var(--border-subtle)" }}>
           <div className="flex items-center gap-1">
             <PicklersLogo size={36} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           {/* Notifications Dropdown */}
           <div className="relative" ref={notifRef}>
@@ -162,7 +162,7 @@ export function AppShellLayout() {
           className="md:hidden sticky top-0 z-[100] isolate flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/90 backdrop-blur-3xl saturate-200">
           <div className="flex items-center gap-1">
             <PicklersLogo size={36} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="flex items-center gap-4 relative">
             <div className="relative" ref={notifRef}>

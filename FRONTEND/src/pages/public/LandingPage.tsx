@@ -152,7 +152,7 @@ export function LandingPage() {
             text="PICKLERS"
             className="font-black"
             style={{
-              fontFamily: "'Arial Black', Impact, sans-serif",
+              fontFamily: "'Montserrat', sans-serif",
               letterSpacing: "-0.05em",
               fontSize: useTransform(scrollY, [0, 100], ["1.25rem", "1.125rem"]) as unknown as string
             }}
@@ -511,7 +511,7 @@ export function LandingPage() {
           delay={0.1}
         >
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.01em" }}>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.01em" }}>
               Play Pickleball, Anywhere.
             </h2>
             <p className="text-lg" style={{ color: "var(--ink-secondary)" }}>Discover premium facilities and join active matches near you.</p>
@@ -903,7 +903,7 @@ export function LandingPage() {
             <div className="md:col-span-1">
               <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2 mb-6 cursor-pointer hover:opacity-80 transition-opacity">
                 <PicklersLogo size={36} />
-                <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Arial Black', Impact, sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+                <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
               </button>
               <p className="text-[15px] leading-relaxed mb-8" style={{ color: "var(--ink-muted)" }}>
                 The Philippines' premier pickleball booking and community platform. Find courts, join matches, and play.
