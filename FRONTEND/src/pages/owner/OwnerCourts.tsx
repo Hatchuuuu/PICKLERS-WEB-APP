@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Plus, X, Check, Loader2, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WalkInModal } from "@/components/modals/WalkInModal";
+import { WalkInModal } from "@/components/modals/WalkinModal";
 import { ManageAvailabilityModal } from "@/components/owner/ManageAvailabilityModal";
 import { useOwner } from "@/contexts/OwnerContext";
 
