@@ -6,6 +6,7 @@ import { PicklersLogo } from "@/components/ui/PicklersLogo";
 import ShinyText from "@/components/ui/ShinyText";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import { MockApi } from "@/lib/api";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Phone, User } from "lucide-react";
 
@@ -138,6 +139,22 @@ export function AuthPage() {
     
     handleFinalSubmit();
   }
+
+  const handleOAuth = async (provider: 'google' | 'facebook') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) {
+        console.error(`${provider} auth error:`, error.message);
+      }
+    } catch (err) {
+      console.error("OAuth exception:", err);
+    }
+  };
 
   const inputClassName = "w-full rounded-[10px] px-4 py-2 sm:py-2.5 text-[14px] sm:text-[15px] outline-none transition-all duration-200 border border-solid focus:scale-[1.005] focus:shadow-[0_0_0_3px_rgba(0,217,139,0.15)] focus:-translate-y-[1px]";
   const inputStyle = {
@@ -403,6 +420,7 @@ export function AuthPage() {
           <div className="flex gap-3 pb-1">
             {["Google", "Facebook"].map(provider => (
               <button key={provider} type="button"
+                onClick={() => handleOAuth(provider.toLowerCase() as 'google' | 'facebook')}
                 className="flex-1 h-[44px] sm:h-[48px] rounded-[14px] sm:rounded-[16px] text-[14px] sm:text-[15px] font-semibold tracking-tight transition-all duration-300 flex items-center justify-center gap-2.5 active:scale-[0.97] bg-white dark:bg-white/5 border border-black/[0.04] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-[1px] text-foreground"
               >
                 {provider === "Google" ? (
