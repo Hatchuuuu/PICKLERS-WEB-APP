@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Trophy, Users } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { mapToBracketTree } from '@/lib/tournament/bracket-mapper';
 import { processMatchResult } from '@/lib/tournament/bracket-state';
-import { Team, Match } from '@/lib/tournament/types';
+
 import { BracketCanvas } from '@/components/tournament/BracketCanvas';
 import { BracketSkeleton } from '@/components/tournament/BracketSkeleton';
 import { RoundRobinView } from '@/components/tournament/RoundRobinView';
@@ -250,7 +250,7 @@ export function OwnerBracket() {
                       {/* Format/Team Info Pill */}
                       <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-surface-overlay/80 dark:bg-slate-900/80 backdrop-blur-md border border-border/60 rounded-full px-3 py-1.5 shadow-xl text-foreground">
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                          {format === 'ROUND_ROBIN' ? 'Round Robin' : format === 'DOUBLE' ? 'Double Elim' : 'Single Elim'} · {teamCount} Teams · {teamType === 'DOUBLES' ? '2v2' : '1v1'}
+                          {format === 'DOUBLE' ? 'Double Elim' : 'Single Elim'} · {teamCount} Teams · {teamType === 'DOUBLES' ? '2v2' : '1v1'}
                         </span>
                       </div>
 

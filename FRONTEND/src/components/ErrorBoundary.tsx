@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 import { AlertCircle, Home, RotateCcw } from "lucide-react";
 
 interface Props {
@@ -41,15 +41,15 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-muted-foreground mb-8">
                 An unexpected error occurred. Our team has been notified.
               </p>
-              
+
               <div className="flex flex-row gap-3 w-full mt-2">
-                <button 
+                <button
                   onClick={() => window.location.reload()}
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-red-500/10 text-red-500 font-bold border border-red-500/20 hover:bg-red-500/20 active:scale-[0.97] transition-all"
                 >
                   <RotateCcw className="w-4 h-4" /> Try Again
                 </button>
-                <button 
+                <button
                   onClick={() => window.location.href = '/'}
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-surface-interactive text-foreground font-bold border border-border hover:bg-surface-interactive/80 active:scale-[0.97] transition-all"
                 >
@@ -57,8 +57,8 @@ export class ErrorBoundary extends Component<Props, State> {
                 </button>
               </div>
             </div>
-            
-            {this.state.error && (
+
+            {import.meta.env.DEV && this.state.error && (
               <div className="border-t border-border bg-muted/30 p-4">
                 <details className="text-xs text-muted-foreground">
                   <summary className="cursor-pointer font-medium mb-2 hover:text-foreground transition-colors">Error Details</summary>

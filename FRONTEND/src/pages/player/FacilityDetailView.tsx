@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   MapPin, Star, Clock, ChevronRight, CalendarDays, Check, AlertTriangle
@@ -8,11 +9,25 @@ import { PaymentView } from "@/components/modals/PaymentView";
 import { QuickBookModal } from "@/components/modals/QuickBookModal";
 
 
-export function FacilityDetailView({ facility, onBack }: { facility: typeof FACILITIES[0]; onBack: () => void }) {
-  const courts = FACILITY_COURTS[facility.id] ?? [];
+interface FacilityDetailViewProps {
+  facility?: typeof FACILITIES[0];
+  onBack?: () => void;
+}
+
+export function FacilityDetailView({ facility: propFacility, onBack: propOnBack }: FacilityDetailViewProps = {}) {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const facility = useMemo(() => {
+    if (propFacility) return propFacility;
+    if (id) return FACILITIES.find(f => f.id === Number(id));
+    return undefined;
+  }, [propFacility, id]);
+
+  const courts = facility ? FACILITY_COURTS[facility.id] ?? [] : [];
   const [filter, setFilter] = useState<"All" | "Indoor" | "Outdoor">("All");
-  const [booked, setBooked] = useState<number | null>(null);
-  const [bookSuccess, setBookSuccess] = useState<number | null>(null);
+  const [booked, setBooked] = useState<string | number | null>(null);
+  const [bookSuccess, setBookSuccess] = useState<string | number | null>(null);
   const [quickBookOpen, setQuickBookOpen] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -28,13 +43,13 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
     const today = new Date().toISOString().split("T")[0];
     setTimeout(() => {
       setBooked(null);
-      setPaymentData({ court, facility, date: today, startTime: "8:00 AM", endTime: "10:00 AM" });
+      setPaymentData({ court, facility: facility!, date: today, startTime: "8:00 AM", endTime: "10:00 AM" });
     }, 700);
   }
 
   function handleQuickBook(court: CourtData, date: string, startTime: string, endTime: string) {
     setQuickBookOpen(false);
-    setPaymentData({ court, facility, date, startTime, endTime });
+    setPaymentData({ court, facility: facility!, date, startTime, endTime });
   }
 
   const available = courts.filter(c => c.status === "available").length;
@@ -45,7 +60,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
       <PaymentView
         data={paymentData}
         onBack={() => setPaymentData(null)}
-        onDone={() => { 
+        onDone={() => {
           setBookSuccess(paymentData.court.id);
           setPaymentData(null);
           // Auto clear success message after 5 seconds
@@ -54,6 +69,13 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
       />
     );
   }
+
+  if (!facility) return <div className="p-8 text-center text-muted-foreground">Facility not found</div>;
+
+  const handleBack = () => {
+    if (propOnBack) propOnBack();
+    else navigate(-1);
+  };
 
   return (
     <motion.div
@@ -67,27 +89,27 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
       <div className="relative h-72 sm:h-96 overflow-hidden bg-surface-raised">
         {/* Base Skeleton */}
         {!imgLoaded && (
-          <motion.div 
-            className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" 
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
           />
         )}
-        
-        <motion.img 
-          src={facility.image} 
-          alt={facility.name} 
+
+        <motion.img
+          src={facility.image}
+          alt={facility.name}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: imgLoaded ? 1 : 0, scale: imgLoaded ? 1 : 1.05 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           onLoad={() => setImgLoaded(true)}
-          className="w-full h-full object-cover" 
+          className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 dark:from-[#0A1118] dark:via-[#0A1118]/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 dark:from-[#0A1118]/50 dark:via-transparent to-transparent" />
 
         {/* Premium Frosted Back Button */}
-        <button onClick={onBack} aria-label="Back to courts"
+        <button onClick={handleBack} aria-label="Back to courts"
           className="absolute top-6 left-6 flex items-center gap-1.5 pr-5 pl-3 min-h-[44px] rounded-full text-[14px] font-bold text-white transition-all active:scale-95 shadow-[0_8px_32px_rgba(0,0,0,0.4)] group"
           style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.18)" }}
           onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.6)")}
@@ -124,7 +146,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
               {courts.length > 0 ? (
                 <>
                   <div className="text-[13px] mb-1 font-bold text-white/60 uppercase tracking-widest">from</div>
-                  <div className="text-4xl sm:text-5xl font-bold font-mono leading-none drop-shadow-2xl" style={{ 
+                  <div className="text-4xl sm:text-5xl font-bold font-mono leading-none drop-shadow-2xl" style={{
                     background: "linear-gradient(135deg, #00F260 0%, #0575E6 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -136,10 +158,10 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
                 </>
               ) : (
                 <div className="px-4 py-2 rounded-full mt-4 shadow-xl" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" }}>
-                  <motion.span className="text-[13px] font-bold tracking-widest uppercase inline-block" 
+                  <motion.span className="text-[13px] font-bold tracking-widest uppercase inline-block"
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                    style={{ 
+                    style={{
                       background: "linear-gradient(135deg, #FFFFFF 0%, #A0AABF 100%)",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent"
@@ -153,8 +175,8 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
 
       {/* Floating Info Pill */}
       <div className="relative z-10 px-2 sm:px-4 -mt-4 sm:-mt-6 max-w-6xl mx-auto w-full">
-        <div className="flex items-center justify-center gap-2 sm:gap-6 px-4 sm:px-6 py-3 sm:py-3.5 rounded-full w-max max-w-full mx-auto shadow-2xl border border-white/5" 
-             style={{ background: "rgba(20,30,45,0.8)", backdropFilter: "blur(24px)" }}>
+        <div className="flex items-center justify-center gap-2 sm:gap-6 px-4 sm:px-6 py-3 sm:py-3.5 rounded-full w-max max-w-full mx-auto shadow-2xl border border-white/5"
+          style={{ background: "rgba(20,30,45,0.8)", backdropFilter: "blur(24px)" }}>
           <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[13px] font-bold text-white/80 shrink-0">
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-cyan-400" />{facility.hours}
           </div>
@@ -183,7 +205,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
               </h2>
               <p className="text-[14px] font-medium mt-1 text-foreground/60">Select a court to book</p>
             </div>
-            
+
             {/* Compact Quick Book Neon Pill */}
             <button
               onClick={() => setQuickBookOpen(true)}
@@ -192,7 +214,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
               {/* Neon Gradient Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
+
               <CalendarDays className="w-4 h-4 text-white drop-shadow-md relative z-10" />
               <span className="text-[13px] font-bold text-white relative z-10" style={{ letterSpacing: "0.02em" }}>
                 Quick Book
@@ -235,7 +257,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
 
         <AnimatePresence mode="wait">
           {filtered.length === 0 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
               className="w-full py-16 flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-surface-interactive border border-border dark:bg-white/[0.05] dark:border-white/[0.1]">
@@ -254,14 +276,14 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
           <AnimatePresence mode="popLayout">
             {filtered.map((court, i) => {
               const isBooked = booked === court.id;
-              
+
               const isAvailable = court.status === "available";
               const isOccupied = court.status === "occupied";
               const isMaintenance = court.status === "maintenance";
-              
+
               const statusColor = isAvailable ? "#10B981" : isOccupied ? "#EF4444" : "#F59E0B";
               const glowColor = isAvailable ? "rgba(16,185,129,0.2)" : isOccupied ? "rgba(239,68,68,0.1)" : "rgba(245,158,11,0.1)";
-                                
+
               return (
                 <motion.div key={court.id} layout
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }}
@@ -270,11 +292,11 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
                   style={{
                     boxShadow: `0 0 20px ${glowColor}`
                   }}>
-                  
+
                   {isAvailable && (
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   )}
-                  
+
                   <div className="px-6 pt-6 pb-5 flex-1 relative z-10">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -289,7 +311,7 @@ export function FacilityDetailView({ facility, onBack }: { facility: typeof FACI
                         <div className="relative w-2 h-2">
                           <div className="absolute inset-0 rounded-full" style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }} />
                           {isAvailable && (
-                            <motion.div 
+                            <motion.div
                               className="absolute inset-0 rounded-full border border-emerald-400"
                               animate={{ scale: [1, 2.5], opacity: [0.8, 0] }}
                               transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}

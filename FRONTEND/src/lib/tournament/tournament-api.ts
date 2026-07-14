@@ -11,7 +11,7 @@ export const TournamentAPI = {
       supabase.from('matches').select('*').eq('tournament_id', tournamentId),
       // In a real app we'd join games to matches, but here we fetch games for the tournament
       // using an inner join or fetching all games for the matches.
-      supabase.rpc('get_tournament_games', { t_id: tournamentId }).catch(() => ({ data: [] }))
+      supabase.rpc('get_tournament_games', { t_id: tournamentId }).then(res => res.error ? { data: [] } : res)
     ]);
 
     return {
@@ -74,7 +74,7 @@ export const TournamentAPI = {
   },
 
   // Submit score and advance bracket
-  async submitMatchScore(matchId: string, games: Game[], updatedMatches: Match[]) {
+  async submitMatchScore(_matchId: string, games: Game[], updatedMatches: Match[]) {
     // In a real app we'd use a Postgres Function (RPC) to handle this transactionally.
     // Here we will batch update.
     

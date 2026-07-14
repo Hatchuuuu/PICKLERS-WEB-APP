@@ -2,11 +2,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CalendarDays, Users,
-  Trophy, Plus, Settings2, ChevronRight, Edit2, MoreHorizontal, User, ArrowLeft
+  Trophy, Plus, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
 import { useTournamentStore } from "@/store/useTournamentStore";
 import { CreateTournamentModal } from "@/components/owner/CreateTournamentModal";
 
@@ -28,21 +27,6 @@ export function OwnerTournaments() {
       return { ...t, status: s };
   }).filter(t => t.status === tab);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    format: "Single-Elimination",
-    date: "",
-    maxPlayers: "16"
-  });
-
-  const handleCreateSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Tournament created successfully!');
-    setIsDrawerOpen(false);
-    // Ideally create in store, then navigate. We will mock ID for now
-    const newId = crypto.randomUUID();
-    navigate(`/app/owner/tournaments/${newId}`);
-  };
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 min-h-screen text-foreground">

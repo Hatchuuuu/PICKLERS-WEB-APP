@@ -376,7 +376,7 @@ function Button({
     selected?: boolean;
     asChild?: boolean;
   }) {
-  const Comp = asChild ? SlotPrimitive.Slot : 'button';
+  const Comp = asChild ? SlotPrimitive : 'button';
   return (
     <Comp
       data-slot="button"

@@ -38,6 +38,7 @@ export function ManageAvailabilityModal({ courtId, onClose }: { courtId: number,
   }, [isAvailable, blockedDates, court]);
 
   function handleSave() {
+    if (!court) return;
     updateCourt(court.id, { available: isAvailable, blockedDates });
     onClose();
   }

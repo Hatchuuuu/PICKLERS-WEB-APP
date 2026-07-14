@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { cn, levelColor } from "@/lib/utils";
 import { OPEN_MATCHES } from "@/data/mockData";
 import { CapacityRing } from "@/components/ui/shared";
 import { VerificationGate } from "@/components/shared/VerificationGate";
@@ -53,7 +52,7 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className={`relative p-5 pt-[52px] flex gap-5 items-center cursor-default h-full rounded-[24px] border backdrop-blur-[20px] ${joined ? 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_8px_32px_rgba(52,211,153,0.15),inset_0_1px_1px_rgba(255,255,255,0.1)]' : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.01] dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.06)]'}`}>
-      
+
       {/* Absolute Level Badge */}
       <div className="absolute top-4 left-5 flex items-center gap-2">
         <span className="text-[12px] px-3 py-1 rounded-full font-bold tracking-wide bg-black/5 text-accent-primary border border-border dark:bg-white/5 dark:border-white/5 backdrop-blur-[8px]">

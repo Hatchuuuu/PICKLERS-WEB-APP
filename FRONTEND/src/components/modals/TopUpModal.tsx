@@ -46,9 +46,9 @@ export function TopUpModal() {
 
         {/* Modal */}
         <motion.div
-          initial={{ y: "100%", md: { y: 20, scale: 0.95 }, opacity: 0 }}
+          initial={{ y: "100%", opacity: 0 }}
           animate={{ y: 0, scale: 1, opacity: 1 }}
-          exit={{ y: "100%", md: { y: 20, scale: 0.95 }, opacity: 0 }}
+          exit={{ y: "100%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
           className="relative w-full max-w-md bg-background md:rounded-[24px] rounded-t-[24px] rounded-b-none overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-border flex flex-col"
         >

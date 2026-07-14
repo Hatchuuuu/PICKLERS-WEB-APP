@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LIVE_COURTS, BOOKING_REQUESTS, BOOKINGS } from '@/data/mockData';
+import { LIVE_COURTS, BOOKING_REQUESTS, type LiveCourt } from '@/data/mockData';
 
 // Simulated API latency
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -25,12 +25,20 @@ export function useLiveCourts() {
         console.error("Supabase fetch failed, falling back to mock data:", error);
         return [...LIVE_COURTS]; // Fallback to mock data if DB is empty or fails
       }
-      
+
       // If we have data from Supabase, return it. If empty, maybe fallback to mock for now so the UI doesn't look broken.
       if (data && data.length > 0) {
-        return data;
+        // Map Supabase data to LiveCourt format
+        return data.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          status: "available", // Default for DB courts for now
+          player: null,
+          remaining: 0,
+          maxTime: 60
+        })) as LiveCourt[];
       }
-      
+
       return [...LIVE_COURTS];
     },
     staleTime: 1000 * 60, // 1 minute stale time
@@ -49,7 +57,7 @@ export function useBookCourt() {
       // 1. Client-Side Validation Defense
       const parsed = BookingSchema.safeParse(payload);
       if (!parsed.success) {
-        throw new Error(parsed.error.errors[0].message);
+        throw new Error(parsed.error.issues[0].message);
       }
 
       // 2. Fetch Active Session
@@ -90,7 +98,7 @@ export function useBookCourt() {
 
 export function useUpdateCourt() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (courtUpdates: any) => {
       await delay(500); // simulate latency
@@ -104,15 +112,15 @@ export function useUpdateCourt() {
     onMutate: async (newCourt) => {
       await queryClient.cancelQueries({ queryKey: ['liveCourts'] });
       const prevCourts = queryClient.getQueryData(['liveCourts']);
-      
+
       // Optimistically patch
-      queryClient.setQueryData(['liveCourts'], (old: any) => 
+      queryClient.setQueryData(['liveCourts'], (old: any) =>
         old.map((c: any) => c.id === newCourt.id ? { ...c, ...newCourt } : c)
       );
-      
+
       return { prevCourts };
     },
-    onError: (err, newCourt, context) => {
+    onError: (_err, _newCourt, context) => {
       if (context?.prevCourts) {
         queryClient.setQueryData(['liveCourts'], context.prevCourts);
       }
@@ -138,7 +146,7 @@ export function useBookingRequests() {
 
 export function useResolveRequest() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       await delay(400);
@@ -147,12 +155,12 @@ export function useResolveRequest() {
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['bookingRequests'] });
       const prevReqs = queryClient.getQueryData(['bookingRequests']);
-      queryClient.setQueryData(['bookingRequests'], (old: any) => 
+      queryClient.setQueryData(['bookingRequests'], (old: any) =>
         old.filter((r: any) => r.id !== id)
       );
       return { prevReqs };
     },
-    onError: (err, id, context) => {
+    onError: (_err, _id, context) => {
       if (context?.prevReqs) {
         queryClient.setQueryData(['bookingRequests'], context.prevReqs);
       }

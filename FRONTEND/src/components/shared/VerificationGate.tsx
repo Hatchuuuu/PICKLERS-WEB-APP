@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, ShieldAlert, X, Camera, IdCard, UserFocus, Clock, Loader2, ScanFace } from "lucide-react";
+import { Check, ShieldAlert, X, IdCard, Clock, Loader2, ScanFace } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Step = "primer" | "id-front" | "id-back" | "selfie" | "analyzing" | "submitted";

@@ -3,14 +3,13 @@ import { useOutlet, useNavigate, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   LayoutDashboard, Map, Settings,
-  Trophy, UserCheck, LogOut, Bell, Grid2x2
+  Trophy, UserCheck, LogOut, Grid2x2
 } from "lucide-react";
 import { PicklersLogo } from "@/components/ui/PicklersLogo";
 import ShinyText from "@/components/ui/ShinyText";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { useApp } from "@/contexts/AppContext";
-import { NotificationDropdown } from "@/components/shared/NotificationDropdown";
+// NotificationDropdown removed
 
 type OwnerTabId = "owner-dashboard" | "owner-courts" | "owner-tournaments" | "owner-staff" | "owner-settings";
 
@@ -38,7 +37,7 @@ export function OwnerLayout() {
   const currentPath = segments.length > 0 ? segments[segments.length - 1] : "";
   const view = "owner-" + (currentPath === "owner" ? "dashboard" : currentPath);
 
-  const { notifications } = useApp();
+  // notifications removed
   const [showNotifs, setShowNotifs] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -47,7 +46,7 @@ export function OwnerLayout() {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as HTMLElement;
       if (target.closest('[data-notif-toggle]')) return;
-      
+
       if (notifRef.current && !notifRef.current.contains(target)) {
         setShowNotifs(false);
       }
@@ -64,7 +63,7 @@ export function OwnerLayout() {
         <div className="px-6 py-5 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
           <div className="flex items-center gap-2 mb-1">
             <PicklersLogo size={32} />
-            <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="text-[12px] font-medium" style={{ color: "var(--accent-success)" }}>Owner Portal</div>
         </div>
@@ -106,8 +105,8 @@ export function OwnerLayout() {
         </div>
         <div className="p-5 border-t border-solid flex items-center gap-3" style={{ borderColor: "var(--border-subtle)", background: "rgba(0,0,0,0.1)" }}>
           <div className="relative w-10 h-10 rounded-full flex items-center justify-center p-[2px] overflow-hidden">
-            <div className="absolute inset-0 w-full h-full" 
-              style={{ 
+            <div className="absolute inset-0 w-full h-full"
+              style={{
                 background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
               }} />
             <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase"
@@ -122,18 +121,18 @@ export function OwnerLayout() {
 
       <main className="flex-1 overflow-y-auto pb-[120px] md:pb-0 relative bg-background flex flex-col">
         {/* Mobile Premium Header */}
-        <div 
+        <div
           className="md:hidden sticky top-0 z-30 flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/75 backdrop-blur-3xl">
           <div className="flex items-center gap-1">
             <PicklersLogo size={42} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="flex items-center gap-4 relative">
 
-            
+
             <button onClick={() => setShowLogoutConfirm(true)} className="relative w-8 h-8 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden">
-              <div className="absolute inset-0 w-full h-full" 
-                style={{ 
+              <div className="absolute inset-0 w-full h-full"
+                style={{
                   background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
                 }} />
               <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none"
@@ -182,25 +181,25 @@ export function OwnerLayout() {
               <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-[28px] overflow-hidden shadow-xl dark:shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)] ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FF453A]/20 via-transparent to-transparent opacity-50"></div>
                 <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
-                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
-                   <div className="relative mb-5 mt-2">
-                     <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
-                     <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
-                       <LogOut className="w-6 h-6 text-[#FF453A]" style={{ marginLeft: "-2px" }} strokeWidth={2.5} />
-                     </div>
-                   </div>
-                   <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Sign Out?</h3>
-                   <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
-                     You will need to sign in again to access the facility dashboard.
-                   </p>
-                   <div className="flex gap-3 w-full mt-7">
-                     <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
-                       Cancel
-                     </button>
-                     <button onClick={() => { logout(); navigate("/auth"); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
-                       Sign Out
-                     </button>
-                   </div>
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                  <div className="relative mb-5 mt-2">
+                    <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
+                    <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+                      <LogOut className="w-6 h-6 text-[#FF453A]" style={{ marginLeft: "-2px" }} strokeWidth={2.5} />
+                    </div>
+                  </div>
+                  <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Sign Out?</h3>
+                  <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
+                    You will need to sign in again to access the facility dashboard.
+                  </p>
+                  <div className="flex gap-3 w-full mt-7">
+                    <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
+                      Cancel
+                    </button>
+                    <button onClick={() => { logout(); navigate("/auth"); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

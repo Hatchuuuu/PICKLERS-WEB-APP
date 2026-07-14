@@ -1,5 +1,34 @@
 export type ChatMessage = { from: "me" | "them"; text: string; ts: string };
 
+export type CourtData = {
+  id: string | number;
+  name: string;
+  surface?: string;
+  type: "Indoor" | "Outdoor" | "Indoor/Outdoor";
+  price: number;
+  image?: string;
+  status?: "available" | "maintenance" | "occupied";
+  occupiedUntil?: string;
+  occupiedBy?: string;
+};
+
+export type PaymentData = {
+  court: CourtData;
+  facility: typeof FACILITIES[0];
+  date: string | Date;
+  startTime: string;
+  endTime: string;
+};
+
+export type LiveCourt = {
+  id: number;
+  name: string;
+  status: string;
+  player: string | null;
+  remaining: number;
+  maxTime: number;
+};
+
 export const MOCK_CHATS: Record<number, ChatMessage[]> = {
   1: [
     { from: "them", text: "Hey! Good game yesterday 🏓", ts: "2:14 PM" },

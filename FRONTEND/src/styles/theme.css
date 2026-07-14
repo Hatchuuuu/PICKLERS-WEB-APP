@@ -195,13 +195,16 @@
     width: 8px;
     height: 8px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: var(--surface-interactive);
     border-radius: var(--radius-full);
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: var(--ink-secondary);
   }
@@ -334,4 +337,16 @@
       rgba(255, 255, 255, 0) 100%);
   transform: skewX(-20deg);
   animation: button-shine 8s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

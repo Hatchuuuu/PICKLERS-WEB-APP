@@ -24,11 +24,6 @@ const activeSessions = new Map<string, AuthResponse['user']>();
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const MockApi = {
-  async verifyOTP(code: string): Promise<boolean> {
-    await delay(600); // Simulate network latency
-    // In production, this would call an SMS/Email service
-    return code === "123456" || code === "000000";
-  },
 
   async login(payload: { email?: string; phone?: string; name?: string; role: UserRole }): Promise<AuthResponse> {
     await delay(400);

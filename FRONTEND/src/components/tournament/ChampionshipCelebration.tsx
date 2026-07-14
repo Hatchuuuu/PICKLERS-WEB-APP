@@ -1,6 +1,6 @@
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { Trophy, X } from 'lucide-react';
-import { TournamentPlayer } from '@/lib/tournament/types';
+import { TournamentPlayer } from './MatchNode';
 import { PlayerAvatar } from './PlayerAvatar';
 import confetti from 'canvas-confetti';
 import { useEffect } from 'react';
@@ -18,7 +18,7 @@ export function ChampionshipCelebration({ champion, tournamentName, onDismiss }:
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 60 };
 
-      const interval = setInterval(function() {
+      const interval = setInterval(function () {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {

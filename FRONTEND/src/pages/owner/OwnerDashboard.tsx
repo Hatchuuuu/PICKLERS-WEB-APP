@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, Check, Eye, EyeOff } from "lucide-react";
-import { LIVE_COURTS, BOOKING_REQUESTS } from "@/data/mockData";
+import { X, Check, Eye, EyeOff } from "lucide-react";
+import { BOOKING_REQUESTS } from "@/data/mockData";
 import { CourtCard } from "@/pages/owner/CourtCard";
 import { useAppUIStore } from "@/store/useUIStore";
 import { useLiveCourts, useUpdateCourt, useBookingRequests, useResolveRequest } from "@/hooks/useCourts";
@@ -15,7 +15,7 @@ export function OwnerDashboard() {
   const { data: courts = [], isLoading: courtsLoading } = useLiveCourts();
   const { mutate: updateCourt } = useUpdateCourt();
   
-  const { data: requests = [], isLoading: requestsLoading } = useBookingRequests();
+  const { data: requests = [] } = useBookingRequests();
   const { mutate: resolveRequest } = useResolveRequest();
 
   const [requestSuccess, setRequestSuccess] = useState<{msg: string, type: "success" | "danger"} | null>(null);
@@ -24,8 +24,7 @@ export function OwnerDashboard() {
   const [resolvedRequests, setResolvedRequests] = useState<{id: string, player: string, court: string, total: number, action: "accepted" | "declined"}[]>([]);
   const [timedUpCourts, setTimedUpCourts] = useState<number[]>([]);
   
-  const [isFetchingMetrics, setIsFetchingMetrics] = useState(false);
-  const prevShowMetrics = useRef(showMetrics);
+  
 
 
 

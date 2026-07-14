@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { FACILITIES, FACILITY_COURTS, LIVE_COURTS, BOOKING_REQUESTS, BOOKINGS, MOCK_CHATS, ChatMessage } from "@/data/mockData";
+import { FACILITIES, FACILITY_COURTS, BOOKINGS, MOCK_CHATS, ChatMessage } from "@/data/mockData";
 
 export type AppNotification = {
   id: string;

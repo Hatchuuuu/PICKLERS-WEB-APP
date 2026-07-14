@@ -4,8 +4,8 @@ import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
   X, Menu, ArrowRight, Radio, Building, CalendarCheck, UserSearch,
   Search, CalendarDays, CheckCircle2, ChevronDown, Instagram, Twitter, Facebook,
-  Star, ShieldCheck, CreditCard, Zap, Users, MapPin, Trophy, Sun, Moon,
-  Sparkles, Send, Loader2, Bot, ArrowUp
+  Star, ShieldCheck, CreditCard, Zap, Users, Trophy, Sun, Moon,
+  Loader2, ArrowUp
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import ReactMarkdown from 'react-markdown';
@@ -50,8 +50,8 @@ export function LandingPage() {
         headers: {
           "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": window.location.origin, // Required for OpenRouter
-          "X-Title": "Picklers Web App" // Optional
+          "HTTP-Referer": window.location.origin,
+          "X-Title": "Picklers Web App"
         },
         body: JSON.stringify({
           model: "openai/gpt-4o-mini",
@@ -79,7 +79,7 @@ export function LandingPage() {
     }
   };
 
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -154,6 +154,7 @@ export function LandingPage() {
             style={{
               fontFamily: "'Montserrat', sans-serif",
               letterSpacing: "-0.05em",
+              marginLeft: "-8px",
               fontSize: useTransform(scrollY, [0, 100], ["1.25rem", "1.125rem"]) as unknown as string
             }}
             color="var(--ink-primary)"
@@ -194,8 +195,7 @@ export function LandingPage() {
                 </AnimatePresence>
               </span>
             </button>
-          )}
-          <button onClick={() => navigate("/auth")} className="text-base py-2.5 font-medium text-secondary-foreground hover:text-foreground transition-colors inline-flex items-center justify-center">
+          )}          <button onClick={() => navigate("/auth")} className="text-base py-2.5 font-medium text-secondary-foreground hover:text-foreground transition-colors inline-flex items-center justify-center">
             Log In
           </button>
           <button onClick={() => navigate("/auth?intent=signup")}
@@ -222,8 +222,7 @@ export function LandingPage() {
                 {resolvedTheme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 {resolvedTheme === "dark" ? "Dark Mode" : "Light Mode"}
               </button>
-            )}
-            <button onClick={() => { navigate("/auth?intent=signup"); setMobileMenu(false); }}
+            )}            <button onClick={() => { navigate("/auth?intent=signup"); setMobileMenu(false); }}
               className="w-full py-3.5 rounded-[10px] font-semibold shadow-sm"
               style={{ background: "var(--accent-primary)", color: "var(--ink-inverse)" }}>
               Sign Up / Log In
@@ -903,7 +902,7 @@ export function LandingPage() {
             <div className="md:col-span-1">
               <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2 mb-6 cursor-pointer hover:opacity-80 transition-opacity">
                 <PicklersLogo size={36} />
-                <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+                <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.05em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
               </button>
               <p className="text-[15px] leading-relaxed mb-8" style={{ color: "var(--ink-muted)" }}>
                 The Philippines' premier pickleball booking and community platform. Find courts, join matches, and play.

@@ -11,7 +11,7 @@ export function TimePicker({
 }: { 
   value: string; 
   onChange: (val: string) => void;
-  label: string;
+  label?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 

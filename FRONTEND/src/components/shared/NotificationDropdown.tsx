@@ -3,7 +3,7 @@ import { Bell, CalendarDays, Users, Server, Check, X } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { cn } from "@/lib/utils";
 
-export function NotificationDropdown({ onClose, className }: { onClose: () => void, className?: string }) {
+export function NotificationDropdown({ onClose: _onClose, className }: { onClose?: () => void, className?: string }) {
   const { notifications, markAllNotificationsRead, dismissNotification } = useApp();
 
   const getIconInfo = (type: string) => {
@@ -57,24 +57,24 @@ export function NotificationDropdown({ onClose, className }: { onClose: () => vo
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={{ left: 0.8, right: 0 }}
-                  onDragEnd={(e, info) => {
+                  onDragEnd={(_e, info) => {
                     if (info.offset.x < -60) {
                       dismissNotification(n.id);
                     }
                   }}
                   className={cn(
                     "relative flex gap-3.5 p-4 rounded-[20px] transition-all duration-300 group cursor-pointer",
-                    n.read 
-                      ? "hover:bg-black/[0.02] dark:hover:bg-white/[0.04] border border-transparent" 
+                    n.read
+                      ? "hover:bg-black/[0.02] dark:hover:bg-white/[0.04] border border-transparent"
                       : "bg-surface-raised dark:bg-white/[0.04] border border-border dark:border-white/[0.08] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
                   )}
                   onClick={() => dismissNotification(n.id)}
                 >
                   <div className="shrink-0 w-11 h-11 rounded-[16px] flex items-center justify-center border border-border dark:border-white/[0.05] shadow-sm transition-transform duration-300 group-hover:scale-105"
-                       style={{ backgroundColor: info.bg }}>
+                    style={{ backgroundColor: info.bg }}>
                     <Icon className="w-5 h-5" style={{ color: info.color, filter: `drop-shadow(0 0 8px ${info.glow})` }} />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0 pr-6 pt-0.5">
                     <div className="flex items-start justify-between mb-1">
                       <span className={cn("text-[14px] font-bold truncate pr-2 tracking-tight", n.read ? "text-muted-foreground dark:text-slate-300" : "text-foreground dark:text-white")}>{n.title}</span>
@@ -86,7 +86,7 @@ export function NotificationDropdown({ onClose, className }: { onClose: () => vo
                   {/* Unread indicator */}
                   {!n.read && (
                     <div className="absolute left-[13px] top-[13px] w-2.5 h-2.5 rounded-full z-10"
-                         style={{ backgroundColor: info.color, boxShadow: `0 0 12px ${info.color}, 0 0 4px ${info.color}` }} />
+                      style={{ backgroundColor: info.color, boxShadow: `0 0 12px ${info.color}, 0 0 4px ${info.color}` }} />
                   )}
 
                   {/* Dismiss Icon */}

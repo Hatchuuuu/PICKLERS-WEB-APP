@@ -25,7 +25,7 @@ export function mapToBracketTree(matches: Match[], teams: Team[]): {
     const formatMatch = (match: Match, prefix: string): TournamentMatch => {
         // Find if it's a final
         const isFinal = match.bracket_type === 'FINAL';
-        
+
         let roundName = `${prefix} Round ${match.round_number}`;
         if (isFinal) {
             roundName = 'Grand Final';
@@ -47,7 +47,7 @@ export function mapToBracketTree(matches: Match[], teams: Team[]): {
             next_match_winner_goes_to: match.next_match_winner_goes_to,
             next_match_loser_goes_to: match.next_match_loser_goes_to,
             status: match.status,
-            isBye
+            isBye: Boolean(isBye)
         };
     };
 

@@ -10,11 +10,10 @@ import { FACILITIES, FACILITY_COURTS } from "@/data/mockData";
 export function FacilityCard({ f, onFav, onViewCourts }: { f: typeof FACILITIES[0]; onFav: () => void; onViewCourts?: () => void }) {
   const [pop, setPop] = useState(false);
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  useInView(ref, { once: true, margin: "-50px" });
 
   // Deterministic mock density
-  const density = (f.id * 37) % 100;
-  const densityColor = density < 40 ? "var(--accent-success)" : density < 75 ? "var(--accent-warning)" : "var(--accent-danger)";
+  // densityColor removed
 
   const facilityCourts = FACILITY_COURTS[f.id] || [];
   const minPrice = facilityCourts.length > 0 ? Math.min(...facilityCourts.map(c => c.price)) : f.price;

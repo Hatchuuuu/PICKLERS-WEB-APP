@@ -1,4 +1,4 @@
-import { Team, Match, BracketType, MatchStatus } from './types';
+import { Team, Match } from './types';
 import { propagateByes } from './bracket-state';
 
 function generateId(): string {
@@ -145,17 +145,17 @@ export function generateSingleEliminationWithConsolation(
 ): Match[] {
     // 1. Generate Main Bracket
     const matches = generateSingleElimination(teams, tournamentId, divisionId);
-    
+
     // 2. Identify Round 1 matches in Main Bracket
     const r1Matches = matches.filter(m => m.round_number === 1 && m.bracket_type === 'WINNER');
-    
+
     // 3. Create Consolation Bracket (size is exactly half of main bracket's starting size)
     const numLosers = r1Matches.length;
     if (numLosers < 2) return matches;
-    
+
     const numConsolationRounds = Math.log2(numLosers);
     const consolationMatches: Match[][] = Array.from({ length: numConsolationRounds }, () => []);
-    
+
     for (let r = 0; r < numConsolationRounds; r++) {
         const matchesInRound = numLosers / Math.pow(2, r + 1);
         for (let m = 0; m < matchesInRound; m++) {
@@ -177,24 +177,24 @@ export function generateSingleEliminationWithConsolation(
             });
         }
     }
-    
+
     // Link Consolation matches
     for (let r = 0; r < numConsolationRounds - 1; r++) {
         for (let m = 0; m < consolationMatches[r].length; m++) {
             consolationMatches[r][m].next_match_winner_goes_to = consolationMatches[r + 1][Math.floor(m / 2)].id;
         }
     }
-    
+
     // Map Round 1 Main losers to Consolation Round 1
     for (let m = 0; m < r1Matches.length; m++) {
         const targetMatch = Math.floor(m / 2);
         r1Matches[m].next_match_loser_goes_to = consolationMatches[0][targetMatch].id;
     }
-    
+
     for (let r = 0; r < numConsolationRounds; r++) {
         matches.push(...consolationMatches[r]);
     }
-    
+
     return matches;
 }
 
@@ -441,14 +441,14 @@ export function generateRoundRobinWithPlayoffs(
     playoffSize: number = 4
 ): Match[] {
     const matches = generateRoundRobin(teams, tournamentId, divisionId);
-    
+
     const dummyTeams = Array.from({ length: playoffSize }, (_, i) => ({
         id: `dummy_${i}`,
-        name: `Seed ${i+1}`
+        name: `Seed ${i + 1}`
     } as Team));
-    
+
     const playoffMatches = generateSingleElimination(dummyTeams, tournamentId, divisionId);
-    
+
     for (const match of playoffMatches) {
         match.bracket_type = match.bracket_type === 'FINAL' ? 'FINAL' : 'PLAYOFF';
         match.team1_id = null;
@@ -456,8 +456,8 @@ export function generateRoundRobinWithPlayoffs(
         match.status = 'PENDING';
         match.round_number += 100;
     }
-    
+
     matches.push(...playoffMatches);
-    
+
     return matches;
 }

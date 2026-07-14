@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Wallet, ScanFace, Fingerprint, Moon, Camera, MapPin, Building2, Sun, ArrowRight } from "lucide-react";
+import { Check, Wallet, ScanFace, Fingerprint, Moon, Camera, MapPin, Sun, ArrowRight } from "lucide-react";
 import { Toggle } from "@/components/ui/shared";
 import { useTheme } from "next-themes";
 import { TimePicker } from "@/components/shared/TimePicker";
@@ -240,6 +240,7 @@ export function OwnerSettings() {
             </div>
           </SettingsGroup>
         </div>
+
 
 
         {/* RIGHT COLUMN */}

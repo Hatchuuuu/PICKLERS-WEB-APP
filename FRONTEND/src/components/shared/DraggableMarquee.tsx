@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Trophy, MapPin, ShieldCheck, Building, Zap } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 
@@ -50,7 +49,7 @@ export function DraggableMarquee() {
         if (!autoScroll.isPlaying()) {
           autoScroll.play();
         }
-      }, 200); 
+      }, 200);
     };
 
     emblaApi.on("pointerUp", resumeAutoScroll);
@@ -67,16 +66,16 @@ export function DraggableMarquee() {
             <div key={set} className="flex-[0_0_auto] min-w-0 flex items-center gap-16 md:gap-24 pl-16 md:pl-24 group">
               {brands.map((brand, i) => (
                 <div key={i} className="flex flex-col items-center justify-center gap-4 w-32 h-32 md:w-40 md:h-36 transition-all duration-500 hover:-translate-y-2 select-none group/item">
-                  
-                  <img 
-                    src={brand.logoUrl} 
+
+                  <img
+                    src={brand.logoUrl}
                     alt={brand.label}
-                    className="h-10 md:h-14 w-auto max-w-[110px] md:max-w-[140px] object-contain transition-transform duration-500 group-hover/item:scale-105" 
-                    onError={(e) => { 
-                      e.currentTarget.style.display = 'none'; 
-                    }} 
+                    className="h-10 md:h-14 w-auto max-w-[110px] md:max-w-[140px] object-contain transition-transform duration-500 group-hover/item:scale-105"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
-                  
+
                   <span className="text-foreground/50 group-hover/item:text-foreground/80 font-bold text-xs md:text-sm tracking-[0.2em] uppercase transition-colors duration-300 text-center">
                     {brand.label}
                   </span>

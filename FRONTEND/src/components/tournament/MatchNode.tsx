@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -32,13 +32,13 @@ interface MatchNodeProps {
   animationDelay?: number;
 }
 
-export const MatchNode = memo(function MatchNode({ 
-  match, 
-  teamType = 'DOUBLES', 
-  onClick, 
+export const MatchNode = memo(function MatchNode({
+  match,
+  teamType = 'DOUBLES',
+  onClick,
   onRevert,
-  showRoundLabel = true, 
-  animationDelay = 0 
+  showRoundLabel = true,
+  animationDelay = 0
 }: MatchNodeProps) {
   const isCompleted = match.status === 'COMPLETED';
   const isCancelled = match.status === 'CANCELLED';
@@ -85,8 +85,8 @@ export const MatchNode = memo(function MatchNode({
         className={cn(
           "rounded-xl border overflow-hidden transition-all duration-300 ease-out relative",
           isBye ? "border-dashed border-border bg-surface-interactive/30" :
-          isCancelled ? "border-border/50 bg-surface-interactive/50 opacity-40" :
-          "bg-card",
+            isCancelled ? "border-border/50 bg-surface-interactive/50 opacity-40" :
+              "bg-card",
           isClickable && "cursor-pointer active:scale-[0.97]",
           !isChampion && !isBye && !isCancelled && "border-border hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.08)]",
           isChampion && "border-amber-400/80 shadow-[0_0_25px_rgba(251,191,36,0.25)] ring-1 ring-amber-400/50"
@@ -113,7 +113,7 @@ export const MatchNode = memo(function MatchNode({
           isLoser={isCompleted && !p1IsWinner && !!match.player1}
           isBye={isBye && !match.player1}
           teamType={teamType}
-          isChampion={isChampion && p1IsWinner}
+          isChampion={!!(isChampion && p1IsWinner)}
         />
 
         <div className={cn(
@@ -128,7 +128,7 @@ export const MatchNode = memo(function MatchNode({
           isLoser={isCompleted && !p2IsWinner && !!match.player2}
           isBye={isBye && !match.player2}
           teamType={teamType}
-          isChampion={isChampion && p2IsWinner}
+          isChampion={!!(isChampion && p2IsWinner)}
         />
       </div>
     </motion.div>
@@ -137,7 +137,7 @@ export const MatchNode = memo(function MatchNode({
   // Deep equality check for React.memo to prevent massive DOM lag
   if (prev.teamType !== next.teamType) return false;
   if (prev.showRoundLabel !== next.showRoundLabel) return false;
-  
+
   const m1 = prev.match;
   const m2 = next.match;
   if (m1.id !== m2.id) return false;
@@ -149,7 +149,7 @@ export const MatchNode = memo(function MatchNode({
   if (m1.player2?.id !== m2.player2?.id) return false;
   if (m1.player1?.name !== m2.player1?.name) return false;
   if (m1.player2?.name !== m2.player2?.name) return false;
-  
+
   return true;
 });
 
@@ -190,10 +190,10 @@ function TeamRow({
       <span className={cn(
         "text-[13px] font-semibold truncate flex-1",
         isBye ? "text-muted-foreground italic text-[11px] tracking-wide" :
-        !player ? "text-muted-foreground italic" :
-        isChampion ? "text-amber-500 dark:text-amber-400 drop-shadow-sm" :
-        isWinner ? "text-[#16A34A] dark:text-[#32D74B]" :
-        "text-foreground"
+          !player ? "text-muted-foreground italic" :
+            isChampion ? "text-amber-500 dark:text-amber-400 drop-shadow-sm" :
+              isWinner ? "text-[#16A34A] dark:text-[#32D74B]" :
+                "text-foreground"
       )}>
         {isBye ? 'BYE' : (player ? player.name : 'TBD')}
       </span>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTournamentStore } from '@/store/useTournamentStore';
 import { useNavigate } from 'react-router';
-import { X, Search, Calendar, ChevronRight, ChevronLeft, User, Users, Check, ChevronDown } from 'lucide-react';
+import { X, Search, Calendar, ChevronRight, ChevronLeft, User, Users, Check, ChevronDown, Trophy } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
@@ -192,7 +192,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
   const [enrolledPlayers, setEnrolledPlayers] = useState<string[]>([]);
   const [poolSearchText, setPoolSearchText] = useState('');
   const [poolFocused, setPoolFocused] = useState(false);
-  const poolTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const poolTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Pairing Logic
   const [pairingMode, setPairingMode] = useState<'auto' | 'manual'>('auto');

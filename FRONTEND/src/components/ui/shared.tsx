@@ -16,19 +16,20 @@ export function CapacityRing({ filled, max }: { filled: number; max: number }) {
   );
 }
 
-export function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label?: string }) {
+export function Toggle({ value, checked, onChange, label }: { value?: boolean; checked?: boolean; onChange: (v: boolean) => void; label?: string }) {
+  const isChecked = checked ?? value ?? false;
   return (
-    <button onClick={() => onChange(!value)}
-      aria-label={label ?? (value ? "Disable" : "Enable")}
-      aria-checked={value}
+    <button onClick={() => onChange(!isChecked)}
+      aria-label={label ?? (isChecked ? "Disable" : "Enable")}
+      aria-checked={isChecked}
       role="switch"
       className="flex items-center justify-center min-w-[44px] min-h-[44px]">
       <div className="relative w-12 h-6 rounded-full"
         style={{
-          background: value ? "var(--accent-success)" : "var(--surface-interactive)",
+          background: isChecked ? "var(--accent-success)" : "var(--surface-interactive)",
           border: "1px solid var(--border-emphasis)",
           transition: "background-color 200ms ease-out" }}>
-        <motion.div animate={{ x: value ? 24 : 2 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        <motion.div animate={{ x: isChecked ? 24 : 2 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
           className="absolute top-0.5 w-5 h-5 rounded-full bg-surface-raised border border-border" />
       </div>
     </button>

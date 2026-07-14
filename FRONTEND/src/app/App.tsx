@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { ThemeProvider } from "next-themes";
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
@@ -17,20 +17,20 @@ import { AuthPage } from "@/pages/public/AuthPage";
 
 import { AppShellLayout } from "@/layouts/AppShellLayout";
 import { PlayTab } from "@/pages/player/PlayTab";
-import { ExploreTab } from "@/pages/player/ExploreTab";
 import { BookingsTab } from "@/pages/player/BookingsTab";
 import { CommunityTab } from "@/pages/player/CommunityTab";
 import { PlayerSettingsTab } from "@/pages/player/PlayerSettings";
 import { OwnerApplication } from "@/pages/player/OwnerApplication";
 import { FacilityDetailView } from "@/pages/player/FacilityDetailView";
 
-import { OwnerLayout } from "@/layouts/OwnerLayout";
-import { OwnerDashboard } from "@/pages/owner/OwnerDashboard";
-import { OwnerCourts } from "@/pages/owner/OwnerCourts";
-import { OwnerTournaments } from "@/pages/owner/OwnerTournaments";
-import { OwnerBracket } from "@/pages/owner/OwnerBracket";
-import { OwnerStaff } from "@/pages/owner/OwnerStaff";
-import { OwnerSettings } from "@/pages/owner/OwnerSettings";
+const ExploreTab = lazy(() => import("@/pages/player/ExploreTab").then(m => ({ default: m.ExploreTab })));
+const OwnerLayout = lazy(() => import("@/layouts/OwnerLayout").then(m => ({ default: m.OwnerLayout })));
+const OwnerDashboard = lazy(() => import("@/pages/owner/OwnerDashboard").then(m => ({ default: m.OwnerDashboard })));
+const OwnerCourts = lazy(() => import("@/pages/owner/OwnerCourts").then(m => ({ default: m.OwnerCourts })));
+const OwnerTournaments = lazy(() => import("@/pages/owner/OwnerTournaments").then(m => ({ default: m.OwnerTournaments })));
+const OwnerBracket = lazy(() => import("@/pages/owner/OwnerBracket").then(m => ({ default: m.OwnerBracket })));
+const OwnerStaff = lazy(() => import("@/pages/owner/OwnerStaff").then(m => ({ default: m.OwnerStaff })));
+const OwnerSettings = lazy(() => import("@/pages/owner/OwnerSettings").then(m => ({ default: m.OwnerSettings })));
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProvider } from "@/contexts/AppContext";
@@ -49,7 +49,15 @@ function PageTransition({ children }: { children: React.ReactNode }) {
       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       className="w-full min-h-screen flex flex-col"
     >
-      {children}
+      <Suspense fallback={
+        <div className="w-full h-full flex-1 min-h-[50vh] flex items-center justify-center bg-background">
+          <div className="w-12 h-12 rounded-xl bg-surface-interactive border border-border shadow-sm flex items-center justify-center">
+             <div className="w-6 h-6 border-2 border-accent-primary/30 border-t-accent-primary rounded-full animate-spin" />
+          </div>
+        </div>
+      }>
+        {children}
+      </Suspense>
     </motion.div>
   );
 }

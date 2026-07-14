@@ -1,4 +1,4 @@
-import { Match, Game, Team, ScoringFormat } from './types';
+import { Match, Game, ScoringFormat } from './types';
 
 export function validateScores(games: Game[], isTiebreaker: boolean = false, format: ScoringFormat = 'BEST_OF_3_TO_11'): boolean {
     if (games.length === 0) return false;

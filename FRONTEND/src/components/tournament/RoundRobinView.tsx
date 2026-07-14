@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
-import { Trophy, Swords, Medal, User } from 'lucide-react';
+import { Trophy, Swords, Medal } from 'lucide-react';
 import { Match, Team } from '@/lib/tournament/types';
 import { calculateRoundRobinStandings } from '@/lib/tournament/standings-service';
 import { WinnerModal } from './WinnerModal';
-import { TournamentMatch, TournamentPlayer } from './MatchNode';
+import { TournamentMatch } from './MatchNode';
 import { PlayerAvatar } from './PlayerAvatar';
 
 interface RoundRobinViewProps {
@@ -15,14 +15,7 @@ interface RoundRobinViewProps {
   onMatchWin?: (matchId: string, winnerId: string) => void;
 }
 
-interface StandingsEntry {
-  team: Team;
-  played: number;
-  won: number;
-  lost: number;
-  points: number;
-  rank: number;
-}
+// StandingsEntry removed
 
 export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWin }: RoundRobinViewProps) {
   const [tab, setTab] = useState<'standings' | 'matches' | 'completed'>('standings');
@@ -33,7 +26,7 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
     // We pass [] for games since the store currently does not track granular sub-games.
     // The service gracefully falls back to match.winner_id for W/L and Head-to-Head resolving.
     const calculatedStandings = calculateRoundRobinStandings(teams, matches, []);
-    
+
     const sorted = calculatedStandings.map((standing, idx) => {
       const team = teams.find(t => t.id === standing.team_id)!;
       return {
@@ -147,7 +140,7 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
                 <div className="col-span-2 text-center">W - L</div>
                 <div className="col-span-2 text-center text-emerald-400">Points</div>
               </div>
-              
+
               <div className="flex flex-col">
                 <AnimatePresence>
                   {standings.map((entry, index) => (
@@ -203,10 +196,10 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
             </div>
           ) : tab === 'matches' ? (
             <div className="flex flex-col gap-12 pb-24">
-              
+
               {/* Active Rounds */}
               {activeRounds.map(([roundNum, roundMatches], rIndex) => (
-                <motion.div 
+                <motion.div
                   key={`active-round-${roundNum}`}
                   layout
                   initial={{ opacity: 0, y: 20 }}
@@ -217,7 +210,7 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
                     <h3 className="text-2xl font-black text-white tracking-tight">Round {roundNum}</h3>
                     <div className="h-px bg-border flex-1" />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     <AnimatePresence mode="popLayout">
                       {roundMatches.map((match) => renderMatchCard(match))}
@@ -237,7 +230,7 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
             <div className="flex flex-col gap-12 pb-24">
               {/* Completed Matches Section */}
               {completedMatches.length > 0 ? (
-                <motion.div 
+                <motion.div
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -247,7 +240,7 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
                     <h3 className="text-xl font-bold text-muted-foreground tracking-tight">Completed Matches</h3>
                     <div className="h-px bg-border flex-1" />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     <AnimatePresence mode="popLayout">
                       {completedMatches.map((match) => renderMatchCard(match, true))}
@@ -256,7 +249,9 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
                 </motion.div>
               ) : (
                 <div className="text-center p-8 bg-surface-base rounded-2xl border border-border shadow-lg mt-4">
-                  <Clock className="w-12 h-12 text-slate-500 mx-auto mb-4 opacity-50" />
+                  <div className="w-12 h-12 text-slate-500 mx-auto mb-4 opacity-50 flex items-center justify-center">
+                    <Trophy className="w-8 h-8" />
+                  </div>
                   <p className="text-sm text-muted-foreground">Finish some matches in the Matches tab first.</p>
                 </div>
               )}
@@ -267,10 +262,9 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
 
       <WinnerModal
         match={selectedMatch}
-        isOpen={!!selectedMatch}
         onClose={() => setSelectedMatch(null)}
         onConfirm={(matchId, winnerId) => {
-          if (selectedMatch && onMatchWin) {
+          if (selectedMatch && onMatchWin && winnerId) {
             onMatchWin(matchId, winnerId);
             setSelectedMatch(null);
           }
@@ -309,11 +303,11 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
         <div className="bg-surface-overlay rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden h-full">
           {/* Shimmer sweep effect if it's completed */}
           {isCompletedSection && (
-             <motion.div 
-               animate={{ x: ["-200%", "300%"] }} 
-               transition={{ duration: 4, repeat: Infinity, repeatDelay: 1, ease: "linear" }}
-               className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 z-0 pointer-events-none" 
-             />
+            <motion.div
+              animate={{ x: ["-200%", "300%"] }}
+              transition={{ duration: 4, repeat: Infinity, repeatDelay: 1, ease: "linear" }}
+              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 z-0 pointer-events-none"
+            />
           )}
 
           {/* P1 Row */}

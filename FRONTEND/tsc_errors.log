@@ -1,0 +1,94 @@
+﻿src/components/ErrorBoundary.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/shared/CustomDatePicker.tsx(1,13): error TS6133: 'React' is declared but its value is never read.
+src/components/shared/DraggableMarquee.tsx(2,1): error TS6192: All imports in import declaration are unused.
+src/components/shared/FacilityCard.tsx(13,9): error TS6133: 'isInView' is declared but its value is never read.
+src/components/shared/FacilityCard.tsx(17,9): error TS6133: 'densityColor' is declared but its value is never read.
+src/components/shared/MatchCard.tsx(4,1): error TS6192: All imports in import declaration are unused.
+src/components/shared/NotificationDropdown.tsx(6,40): error TS6133: 'onClose' is declared but its value is never read.
+src/components/shared/NotificationDropdown.tsx(60,31): error TS6133: 'e' is declared but its value is never read.
+src/components/tournament/BracketSkeleton.tsx(2,10): error TS6133: 'cn' is declared but its value is never read.
+src/components/tournament/ChampionshipCelebration.tsx(1,18): error TS6133: 'AnimatePresence' is declared but its value is never read.
+src/components/tournament/ChampionshipCelebration.tsx(3,10): error TS2724: '"@/lib/tournament/types"' has no exported member named 'TournamentPlayer'. Did you mean 'TournamentType'?
+src/components/tournament/ChampionshipCelebration.tsx(5,22): error TS7016: Could not find a declaration file for module 'canvas-confetti'. 'C:/Users/Nitro/Desktop/PICKLERS WEB APP/FRONTEND/node_modules/canvas-confetti/src/confetti.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/canvas-confetti` if it exists or add a new declaration (.d.ts) file containing `declare module 'canvas-confetti';`
+src/components/tournament/MatchNode.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/tournament/RoundRobinView.tsx(4,33): error TS6133: 'User' is declared but its value is never read.
+src/components/tournament/RoundRobinView.tsx(18,11): error TS6196: 'StandingsEntry' is declared but never used.
+src/contexts/AppContext.tsx(2,39): error TS6133: 'LIVE_COURTS' is declared but its value is never read.
+src/contexts/AppContext.tsx(2,52): error TS6133: 'BOOKING_REQUESTS' is declared but its value is never read.
+src/contexts/AuthContext.tsx(69,11): error TS2322: Type 'string' is not assignable to type 'UserRole'.
+src/hooks/useCourts.ts(60,38): error TS2339: Property 'errors' does not exist on type 'ZodError<{ court_id: string; start_time: string; end_time: string; total_amount: number; }>'.
+src/hooks/useCourts.ts(123,15): error TS6133: 'err' is declared but its value is never read.
+src/hooks/useCourts.ts(123,20): error TS6133: 'newCourt' is declared but its value is never read.
+src/hooks/useCourts.ts(163,15): error TS6133: 'err' is declared but its value is never read.
+src/hooks/useCourts.ts(163,20): error TS6133: 'id' is declared but its value is never read.
+src/layouts/AppShellLayout.tsx(6,20): error TS6133: 'Map' is declared but its value is never read.
+src/layouts/AppShellLayout.tsx(6,64): error TS6133: 'PlayCircle' is declared but its value is never read.
+src/layouts/AppShellLayout.tsx(6,94): error TS6133: 'ShieldAlert' is declared but its value is never read.
+src/layouts/AppShellLayout.tsx(14,10): error TS6133: 'VerificationGate' is declared but its value is never read.
+src/layouts/OwnerLayout.tsx(6,30): error TS6133: 'Bell' is declared but its value is never read.
+src/layouts/OwnerLayout.tsx(13,10): error TS6133: 'NotificationDropdown' is declared but its value is never read.
+src/layouts/OwnerLayout.tsx(41,11): error TS6133: 'notifications' is declared but its value is never read.
+src/lib/tournament/bracket-generator.ts(1,23): error TS6133: 'BracketType' is declared but its value is never read.
+src/lib/tournament/bracket-generator.ts(1,36): error TS6133: 'MatchStatus' is declared but its value is never read.
+src/lib/tournament/bracket-mapper.ts(50,13): error TS2322: Type 'string | boolean' is not assignable to type 'boolean | undefined'.
+  Type 'string' is not assignable to type 'boolean | undefined'.
+src/pages/owner/OwnerStaff.tsx(15,10): error TS6133: 'confirmText' is declared but its value is never read.
+src/pages/player/FacilityDetailView.tsx(46,31): error TS2322: Type '{ id: number; name: string; location: string; type: string; rating: number; price: number; hours: string; distance: string; moto: string; car: string; image: string; favorited: boolean; } | undefined' is not assignable to type '{ id: number; name: string; location: string; type: string; rating: number; price: number; hours: string; distance: string; moto: string; car: string; image: string; favorited: boolean; }'.
+  Type 'undefined' is not assignable to type '{ id: number; name: string; location: string; type: string; rating: number; price: number; hours: string; distance: string; moto: string; car: string; image: string; favorited: boolean; }'.
+src/pages/player/FacilityDetailView.tsx(52,29): error TS2322: Type '{ id: number; name: string; location: string; type: string; rating: number; price: number; hours: string; distance: string; moto: string; car: string; image: string; favorited: boolean; } | undefined' is not assignable to type '{ id: number; name: string; location: string; type: string; rating: number; price: number; hours: string; distance: string; moto: string; car: string; image: string; favorited: boolean; }'.
+  Type 'undefined' is not assignable to type '{ id: number; name: string; location: string; type: string; rating: number; price: number; hours: string; distance: string; moto: string; car: string; image: string; favorited: boolean; }'.
+src/pages/player/PlayerSettings.tsx(68,3): error TS2304: Cannot find name 'useEffect'.
+src/pages/public/AuthPage.tsx(49,16): error TS2503: Cannot find namespace 'NodeJS'.
+src/pages/public/AuthPage.tsx(338,133): error TS2322: Type '{ type: string; stiffness: number; damping: number; mass: number; duration: number; }' is not assignable to type 'Transition<any> | undefined'.
+  Type '{ type: string; stiffness: number; damping: number; mass: number; duration: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+    Type '{ type: string; stiffness: number; damping: number; mass: number; duration: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.
+src/pages/public/AuthPage.tsx(353,42): error TS2322: Type '{ initial: { opacity: number; y: number; filter: string; }; animate: { opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }; exit: { opacity: number; y: number; filter: string; transition: { duration: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'animate' is incompatible with index signature.
+    Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type 'Variant'.
+      Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type 'TargetAndTransition'.
+        Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+          Types of property 'transition' are incompatible.
+            Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'Transition<any> | undefined'.
+              Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                  Types of property 'type' are incompatible.
+                    Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.
+src/pages/public/AuthPage.tsx(384,17): error TS2322: Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'Transition<any> | undefined'.
+  Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+    Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.
+src/pages/public/AuthPage.tsx(397,192): error TS2322: Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'Transition<any> | undefined'.
+  Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+    Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.
+src/pages/public/AuthPage.tsx(486,25): error TS2322: Type '(el: HTMLInputElement | null) => HTMLInputElement | null' is not assignable to type 'Ref<HTMLInputElement> | undefined'.
+  Type '(el: HTMLInputElement | null) => HTMLInputElement | null' is not assignable to type '(instance: HTMLInputElement | null) => void | (() => VoidOrUndefinedOnly)'.
+    Type 'HTMLInputElement | null' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+      Type 'null' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+src/pages/public/AuthPage.tsx(672,31): error TS2322: Type '{ initial: { opacity: number; y: number; filter: string; }; animate: { opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }; exit: { opacity: number; y: number; filter: string; transition: { duration: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'animate' is incompatible with index signature.
+    Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type 'Variant'.
+      Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type 'TargetAndTransition'.
+        Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+          Types of property 'transition' are incompatible.
+            Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'Transition<any> | undefined'.
+              Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                  Types of property 'type' are incompatible.
+                    Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.
+src/pages/public/AuthPage.tsx(719,25): error TS2322: Type '{ initial: { opacity: number; y: number; filter: string; }; animate: { opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }; exit: { opacity: number; y: number; filter: string; transition: { duration: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'animate' is incompatible with index signature.
+    Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type 'Variant'.
+      Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type 'TargetAndTransition'.
+        Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; damping: number; mass: number; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+          Types of property 'transition' are incompatible.
+            Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'Transition<any> | undefined'.
+              Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                Type '{ type: string; stiffness: number; damping: number; mass: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                  Types of property 'type' are incompatible.
+                    Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.

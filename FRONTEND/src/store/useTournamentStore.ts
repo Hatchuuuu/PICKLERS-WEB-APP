@@ -132,7 +132,6 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
       set({ matches: newMatches });
 
       // Find the specific matches that were mutated to update Supabase efficiently
-      const oldMatch = matches.find(m => m.id === matchId);
       const changedMatches = newMatches.filter(newM => {
           const oldM = matches.find(m => m.id === newM.id);
           return !oldM || oldM.winner_id !== newM.winner_id || oldM.status !== newM.status || oldM.team1_id !== newM.team1_id || oldM.team2_id !== newM.team2_id;
@@ -161,16 +160,17 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
           newMatches[matchIndex] = {
               ...match,
               status: 'PENDING',
-              winner_id: undefined
+              winner_id: null,
+              loser_id: null
           };
 
           // Remove winner from next match if they are there
-          if (match.next_match_id && oldWinner) {
-              const nextIndex = newMatches.findIndex(m => m.id === match.next_match_id);
+          if (match.next_match_winner_goes_to && oldWinner) {
+              const nextIndex = newMatches.findIndex(m => m.id === match.next_match_winner_goes_to);
               if (nextIndex !== -1) {
                   const nextMatch = { ...newMatches[nextIndex] };
-                  if (nextMatch.team1_id === oldWinner) nextMatch.team1_id = undefined;
-                  if (nextMatch.team2_id === oldWinner) nextMatch.team2_id = undefined;
+                  if (nextMatch.team1_id === oldWinner) nextMatch.team1_id = null;
+                  if (nextMatch.team2_id === oldWinner) nextMatch.team2_id = null;
                   newMatches[nextIndex] = nextMatch;
               }
           }

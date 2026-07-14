@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { CalendarDays, Wallet, AlertTriangle, Clock, Navigation } from "lucide-react";
+import { CalendarDays, Wallet, AlertTriangle, Navigation } from "lucide-react";
 import { cn, statusColor } from "@/lib/utils";
 import { useApp } from "@/contexts/AppContext";
 import { NavigationOverlay } from "@/components/shared/NavigationOverlay";
@@ -119,7 +119,7 @@ export function BookingsTab() {
             {filtered.map((b, i) => (
               <motion.div key={b.id} layout initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95, y: -16 }} transition={{ delay: i * 0.04, ease: [0.23, 1, 0.32, 1], duration: 0.6 }}
                 className="rounded-[24px] p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-transform duration-500 hover:-translate-y-1 relative bg-surface-base shadow-md border border-border dark:bg-white/[0.03] dark:shadow-[0_16px_40px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.1)] dark:border-white/[0.12] backdrop-blur-xl">
-                {("isNew" in b && b.isNew) && (
+                {("isNew" in b && Boolean((b as any).isNew)) && (
                   <motion.div className="absolute inset-0 rounded-[24px] border border-emerald-400 pointer-events-none"
                     initial={{ opacity: 0, boxShadow: "inset 0 0 0px rgba(52,211,139,0)" }}
                     animate={{ opacity: [0, 1, 0, 1, 0], boxShadow: ["inset 0 0 0px rgba(52,211,139,0)", "inset 0 0 20px rgba(52,211,139,0.2)", "inset 0 0 0px rgba(52,211,139,0)", "inset 0 0 20px rgba(52,211,139,0.2)", "inset 0 0 0px rgba(52,211,139,0)"] }}
