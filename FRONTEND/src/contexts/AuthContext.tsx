@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { MockApi } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
@@ -37,6 +39,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => setToast(null), 5000);
   };
 
+  const syncSession = (token: string) => {
+    localStorage.setItem("picklers_session_token", token);
+    document.cookie = `sb-access-token=${token}; path=/; max-age=604800; samesite=lax`;
+  };
+
+  const destroySession = () => {
+    localStorage.removeItem("picklers_session_token");
+    localStorage.removeItem("picklers_session_data");
+    document.cookie = `sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  };
+
   useEffect(() => {
     async function initSession() {
       // 1. Check for real Supabase Session (OAuth bridge)
@@ -70,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         setUser(response.user);
-        localStorage.setItem("picklers_session_token", response.session.token);
+        syncSession(response.session.token);
         setIsLoading(false);
         return;
       }
@@ -82,8 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (validUser) {
           setUser(validUser);
         } else {
-          localStorage.removeItem("picklers_session_token");
-          localStorage.removeItem("picklers_session_data");
+          destroySession();
         }
       }
       setIsLoading(false);
@@ -96,8 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         initSession();
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
-        localStorage.removeItem("picklers_session_token");
-        localStorage.removeItem("picklers_session_data");
+        destroySession();
       }
     });
 
@@ -113,13 +124,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     setUser(response.user);
-    localStorage.setItem("picklers_session_token", response.session.token);
+    syncSession(response.session.token);
   };
 
   const logout = async () => {
     setUser(null);
-    localStorage.removeItem("picklers_session_token");
-    localStorage.removeItem("picklers_session_data");
+    destroySession();
     await supabase.auth.signOut();
   };
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
@@ -99,13 +101,13 @@ export function VerificationGate({ children, onVerifiedClick, disabled = false }
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="relative w-full max-w-md flex flex-col items-center"
               >
-                <div className="w-full bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-[24px] overflow-hidden shadow-xl dark:shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)] ring-1 ring-black/5 dark:ring-0 relative p-[1px] flex flex-col" style={{ minHeight: "500px" }}>
+                <div className="w-full bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-[24px] overflow-hidden shadow-xl dark:shadow-2xl ring-1 ring-black/5 dark:ring-0 relative p-[1px] flex flex-col" style={{ minHeight: "500px" }}>
                   <div className="absolute inset-0 bg-gradient-to-br from-[#10B981]/10 via-transparent to-transparent opacity-50"></div>
                   <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[23px] flex flex-col flex-1 overflow-hidden">
                     
                     {/* Header */}
                     <div className="flex items-center justify-between p-5 border-b border-white/[0.05]">
-                      <span className="text-[13px] font-bold text-slate-400 uppercase tracking-widest pl-2">
+                      <span className="text-[13px] font-bold text-slate-400 tracking-tight pl-2">
                         {step === "primer" ? "Identity" : step === "submitted" ? "Complete" : "Camera"}
                       </span>
                       <button onClick={() => setShowModal(false)} className="p-2 text-slate-400 hover:text-white rounded-full transition-colors bg-white/[0.03] hover:bg-white/[0.08]">

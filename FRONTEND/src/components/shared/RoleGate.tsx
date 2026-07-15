@@ -1,15 +1,22 @@
-import { Navigate, Outlet } from "react-router";
+"use client";
+
+
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 import type { UserRole } from "@/contexts/AuthContext";
 
-export function RoleGate({ role }: { role: UserRole }) {
+export function RoleGate({ role, children }: { role: UserRole, children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
 
-  if (isLoading) return null; // Let ProtectedRoute handle the loading spinner
+  useEffect(() => {
+    if (!isLoading && user?.role !== role) {
+      router.replace('/app');
+    }
+  }, [isLoading, user, role, router]);
 
-  if (user?.role !== role) {
-    return <Navigate to="/app" replace />;
-  }
+  if (isLoading || user?.role !== role) return null;
 
-  return <Outlet />;
+  return <>{children}</>;
 }

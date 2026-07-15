@@ -1,3 +1,5 @@
+"use client";
+
 import { Match } from '@/lib/tournament/types';
 import { MatchNode } from '@/components/owner/MatchNode';
 

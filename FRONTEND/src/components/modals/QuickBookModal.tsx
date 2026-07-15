@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Clock, Search, X, CreditCard, CalendarDays, ChevronRight } from "lucide-react";
@@ -335,15 +337,15 @@ export function QuickBookModal({
                         <div className="flex items-center justify-between mb-5 px-4 py-3 rounded-xl border relative z-10"
                           style={{ background: "rgba(0,0,0,0.3)", borderColor: "rgba(255,255,255,0.05)" }}>
                           <div className="flex flex-col">
-                            <span className="text-[12px] font-bold text-foreground/40 uppercase tracking-widest mb-1">Rate</span>
+                            <span className="text-sm font-medium tracking-tight mb-1">Rate</span>
                             <span className="text-[13px] font-bold text-foreground/80">₱{court.price}/hr × {hours}h</span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[12px] font-bold text-foreground/40 uppercase tracking-widest mb-1">Fee</span>
+                            <span className="text-sm font-medium tracking-tight mb-1">Fee</span>
                             <span className="text-[13px] font-bold text-foreground/80">+₱{courtFee}</span>
                           </div>
                           <div className="flex flex-col items-end">
-                            <span className="text-[12px] font-bold text-cyan-400/70 uppercase tracking-widest mb-1">Total</span>
+                            <span className="text-sm font-medium tracking-tight mb-1">Total</span>
                             <span className="text-[18px] font-bold font-mono text-cyan-400 drop-shadow-md">₱{(courtTotal + courtFee).toLocaleString()}</span>
                           </div>
                         </div>

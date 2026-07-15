@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Calendar as CalendarIcon, ShieldAlert, Trash2, Check, Clock } from "lucide-react";
@@ -88,7 +90,7 @@ export function ManageAvailabilityModal({ courtId, onClose }: { courtId: number,
         animate={{ scale: 1, opacity: 1, y: 0 }} 
         exit={{ scale: 0.95, opacity: 0, y: 20 }} 
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="relative w-full max-w-md bg-surface-base dark:bg-[#080D1C]/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-[0_20px_60px_-10px_rgba(0,0,0,0.8)] border border-border dark:border-white/10 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+        className="relative w-full max-w-md bg-surface-base dark:bg-[#080D1C]/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-xl border border-border dark:border-white/10 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}

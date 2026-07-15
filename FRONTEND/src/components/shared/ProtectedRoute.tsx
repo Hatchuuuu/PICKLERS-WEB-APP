@@ -1,10 +1,24 @@
-import { Navigate, Outlet, useLocation } from "react-router";
+"use client";
+import React from "react";
+
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "motion/react";
 
-export function ProtectedRoute() {
+function ProtectedRouteInner({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
+      router.replace(`/auth?redirect=${encodeURIComponent(pathname + search)}`);
+    }
+  }, [isLoading, isAuthenticated, pathname, searchParams, router]);
 
   if (isLoading) {
     return (
@@ -18,10 +32,12 @@ export function ProtectedRoute() {
     );
   }
 
-  if (!isAuthenticated) {
-    // Save the intent if they tried to access a specific route
-    return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  }
+  if (!isAuthenticated) return null;
 
-  return <Outlet />;
+  return <>{children}</>;
+}
+
+
+export function ProtectedRoute(props: { children: React.ReactNode }) {
+  return <React.Suspense fallback={<div className="bg-background h-screen w-full" />}><ProtectedRouteInner {...props} /></React.Suspense>;
 }

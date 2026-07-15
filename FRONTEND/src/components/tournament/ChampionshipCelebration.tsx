@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from 'motion/react';
 import { Trophy, X } from 'lucide-react';
 import { TournamentPlayer } from './MatchNode';

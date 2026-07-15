@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useMemo } from 'react';
 import { useTournamentStore } from '@/store/useTournamentStore';
 import { X, Search, CheckCircle2 } from 'lucide-react';
@@ -66,7 +68,7 @@ export function ManageTeamsModal({ isOpen, onClose, tournamentId }: { isOpen: bo
                                 <input
                                     type="text"
                                     placeholder={isAssigned ? "Reassign player..." : "Search players..."}
-                                    className="w-full bg-muted border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                    className="w-full bg-muted border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus:ring-primary/50"
                                     value={query}
                                     onChange={e => setSearchQuery(prev => ({ ...prev, [team.id]: e.target.value }))}
                                 />

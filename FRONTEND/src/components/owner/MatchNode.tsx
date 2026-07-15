@@ -1,3 +1,5 @@
+"use client";
+
 import { useTournamentStore } from '@/store/useTournamentStore';
 import { motion } from 'motion/react';
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Trophy } from 'lucide-react';
@@ -451,7 +453,7 @@ export function BracketCanvas({
         {winnersRounds.map((round, rIdx) => (
           <div
             key={`wh-${rIdx}`}
-            className="absolute text-[10px] font-bold text-slate-500 uppercase tracking-widest select-none text-center pointer-events-none"
+            className="absolute text-[10px] font-bold text-slate-500 tracking-tight select-none text-center pointer-events-none"
             style={{ left: START_X + rIdx * ROUND_WIDTH, width: MATCH_W, top: START_Y - 22 }}
           >
             {round[0]?.round ?? `Round ${rIdx + 1}`}
@@ -462,7 +464,7 @@ export function BracketCanvas({
         {losersRounds.map((round, rIdx) => (
           <div
             key={`lh-${rIdx}`}
-            className="absolute text-[10px] font-bold text-red-400/50 uppercase tracking-widest select-none text-center pointer-events-none"
+            className="absolute text-[10px] font-bold text-red-400/50 tracking-tight select-none text-center pointer-events-none"
             style={{ left: START_X + rIdx * ROUND_WIDTH, width: MATCH_W, top: layout.losersStartY - 22 }}
           >
             {round[0]?.round ?? `L-Round ${rIdx + 1}`}

@@ -18,7 +18,7 @@ Status: 🟢 ALREADY IMPLEMENTED (Good to go on Vite)
 
 4. Backend Framework
 Next.js (App Router) (Server Components, API routes, and edge runtime)
-Status: 🟡 NEEDS SETUP: We need to migrate the current Vite codebase over to a Next.js App Router structure.
+Status: 🟢 ALREADY IMPLEMENTED (App Router migration is fully complete)
 
 5. Styling & UI Components
 Tailwind CSS v4 + Radix UI + Framer Motion + GSAP (Utility-first styling paired with accessible headless primitives and fluid, physics-based animations)
@@ -33,8 +33,8 @@ Supabase Row Level Security (RLS) (Strict database-level separation between Faci
 Status: 🟢 ALREADY IMPLEMENTED (Good to go)
 
 8. Authentication
-Supabase Auth + Email OTP (Magic Links) + Google/Meta OAuth (Secure passwordless and social logins - 100% Free up to 50k users. Note: Twilio SMS removed to save budget.)
-Status: 🟡 NEEDS SETUP: Need to configure Email Magic Links and Social Logins inside your Supabase dashboard.
+Supabase Auth + Email OTP + Phone OTP + Google/Meta OAuth (Secure passwordless and social logins)
+Status: 🟢 ALREADY IMPLEMENTED (Flawless client-side architecture using Zod, custom hooks, and strict OAuth intent routing)
 
 9. Authorization (RBAC)
 Supabase JWT Payloads (Instant, stateless role verification for Admins, Owners, and Players)
@@ -81,8 +81,8 @@ Sentry (Real-time crash reporting, session replays, and API failure monitoring -
 Status: 🟡 NEEDS SETUP: Code is injected in main.tsx, but you need to get your DSN Key from Sentry and paste it into .env.
 
 20. Web Application Firewall (WAF) & Rate Limiting
-Vercel Edge WAF + Supabase API Rate Limiting (Built-in enterprise-grade DDoS and bot protection - Free Tier)
-Status: 🟡 NEEDS SETUP: Automatically happens once Vercel is linked (Step 16).
+Vercel Edge WAF + Upstash Redis Rate Limiting (Custom-built 5 req/60s rate limiter to protect Auth APIs)
+Status: 🟢 ALREADY IMPLEMENTED (Custom Redis Rate Limiter is fully integrated)
 
 21. Product Analytics
 PostHog (Deep product insights, user session recordings, and feature flags - Free up to 1M events/month)
@@ -98,14 +98,17 @@ Status: 🟡 NEEDS SETUP: Need to write the PostgreSQL database functions for th
 
 24. Image Optimization & Media CDN
 Next.js <Image> Component (Built-in automated edge compression and WebP formatting via Vercel - Free)
-Status: 🟡 NEEDS SETUP: Will happen automatically during the Next.js migration (Step 4).
+Status: 🟢 ALREADY IMPLEMENTED (Next.js setup complete)
+
+25. Serverless Caching & Distributed Memory
+Upstash Redis (Lightning-fast serverless cache used for Auth rate limiting and OTP cooldowns - Free Tier)
+Status: 🟢 ALREADY IMPLEMENTED (Database connected and fully utilized in API routes)
 
 --------------------------------------------------
 
 WHAT I DON'T NECESSARILY NEED FOR STARTING (Omitted from MVP)
 These technologies were heavily evaluated but intentionally cut from the initial launch to protect your student budget and prevent over-engineering. Keep this list handy for when Picklers goes viral:
 
-- Upstash Redis (You don't need heavy caching until you go viral)
 - Upstash QStash (You don't need heavy background jobs yet)
 - Playwright E2E Testing (Don't waste time writing test scripts right now, just manually test it)
 - Expo / Mobile App (Focus 100% on the web app first)

@@ -1,6 +1,9 @@
+"use client";
+
 import { useState, useRef, useEffect } from 'react';
 import { useTournamentStore } from '@/store/useTournamentStore';
-import { useNavigate } from 'react-router';
+import { useRouter } from 'next/navigation';
+
 import { X, Search, Calendar, ChevronRight, ChevronLeft, User, Users, Check, ChevronDown, Trophy } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
@@ -43,7 +46,7 @@ function PremiumDatePicker({ value, onChange }: { value: string, onChange: (val:
             <button 
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl pl-11 pr-4 py-4 text-left text-[15px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#0BCE83]/50 transition-all flex items-center justify-between shadow-inner"
+                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl pl-11 pr-4 py-4 text-left text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all flex items-center justify-between shadow-inner"
             >
                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <span className={value ? "text-white" : "text-muted-foreground"}>
@@ -124,7 +127,7 @@ function PremiumSelect({ value, onChange, options, labelMap }: { value: string |
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-3.5 text-left text-[15px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#0BCE83]/50 transition-all shadow-inner flex items-center justify-between"
+                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-3.5 text-left text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all shadow-inner flex items-center justify-between"
             >
                 <span className="text-white">{labelMap ? labelMap[value] : value}</span>
                 <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
@@ -169,7 +172,7 @@ function PremiumSelect({ value, onChange, options, labelMap }: { value: string |
 
 export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const addTournament = useTournamentStore(state => state.addTournament);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const FORMAT_LABELS: Record<string, string> = {
       single: "Single Elimination",
@@ -307,7 +310,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
     });
     
     onClose();
-    navigate(`/app/owner/tournaments/${id}`);
+    router.push(`/app/owner/tournaments/${id}`);
   };
 
   return (
@@ -317,7 +320,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="bg-surface-base rounded-[32px] shadow-2xl border border-border w-full max-w-[500px] max-h-full overflow-hidden flex flex-col"
+        className="bg-surface-base rounded-2xl shadow-2xl border border-border w-full max-w-[500px] max-h-full overflow-hidden flex flex-col"
       >
         <div className="px-6 py-5 flex justify-between items-center bg-surface-base z-20 shrink-0 border-b border-border">
             <h2 className="text-xl font-black tracking-tight text-foreground flex items-center gap-2">
@@ -363,7 +366,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                         <input 
                             type="text" 
                             placeholder="e.g. Summer Smash 2026"
-                            className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-4 text-white text-[15px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner"
+                            className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-4 text-white text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner"
                             value={name} 
                             onChange={e => setName(e.target.value)} 
                         />
@@ -424,7 +427,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                 type="number" 
                                 min="2"
                                 placeholder="e.g. 12"
-                                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-3.5 text-white text-[15px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner"
+                                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-3.5 text-white text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner"
                                 value={capacity || ''} 
                                 onChange={e => setCapacity(parseInt(e.target.value) || 0)} 
                             />
@@ -453,7 +456,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                 disabled={isRosterFull}
                                 placeholder={isRosterFull ? "Roster is full!" : "Search Picklers Account..."}
                                 className={cn(
-                                    "w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl pl-11 pr-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner",
+                                    "w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl pl-11 pr-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner",
                                     isRosterFull && "opacity-50 cursor-not-allowed"
                                 )}
                                 value={poolSearchText}
@@ -640,7 +643,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                                         <X className="w-3.5 h-3.5" />
                                                     </button>
                                                 )}
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t.name}</span>
+                                                <span className="text-[10px] font-black tracking-tight text-muted-foreground">{t.name}</span>
                                                 <div className="flex flex-col gap-1.5">
                                                     <div className="text-sm font-semibold text-white flex items-center gap-2">
                                                         <PlayerAvatar teamName={t.p1} teamType="SINGLES" size="sm" />

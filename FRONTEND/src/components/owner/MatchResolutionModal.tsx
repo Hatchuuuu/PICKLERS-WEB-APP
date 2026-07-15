@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { useTournamentStore } from '@/store/useTournamentStore';
 import { X, RotateCcw, AlertCircle } from 'lucide-react';
@@ -146,7 +148,7 @@ export function MatchResolutionModal({
                                     <input 
                                         type="number"
                                         placeholder="-"
-                                        className={`w-full h-12 text-center text-xl font-bold bg-muted/50 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all ${isEditMode && games[i]?.team1_score !== undefined && games[i]!.team1_score! > (games[i]!.team2_score || 0) ? 'text-primary bg-primary/10 border-primary/30' : ''}`}
+                                        className={`w-full h-12 text-center text-xl font-bold bg-muted/50 border border-border rounded-md focus:outline-none focus-visible:ring-2 focus:ring-primary focus:bg-background transition-all ${isEditMode && games[i]?.team1_score !== undefined && games[i]!.team1_score! > (games[i]!.team2_score || 0) ? 'text-primary bg-primary/10 border-primary/30' : ''}`}
                                         value={games[i]?.team1_score ?? ''}
                                         onChange={e => handleScoreChange(i, 1, e.target.value)}
                                         disabled={isEditMode}
@@ -154,7 +156,7 @@ export function MatchResolutionModal({
                                     <input 
                                         type="number"
                                         placeholder="-"
-                                        className={`w-full h-12 text-center text-xl font-bold bg-muted/50 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all ${isEditMode && games[i]?.team2_score !== undefined && games[i]!.team2_score! > (games[i]!.team1_score || 0) ? 'text-primary bg-primary/10 border-primary/30' : ''}`}
+                                        className={`w-full h-12 text-center text-xl font-bold bg-muted/50 border border-border rounded-md focus:outline-none focus-visible:ring-2 focus:ring-primary focus:bg-background transition-all ${isEditMode && games[i]?.team2_score !== undefined && games[i]!.team2_score! > (games[i]!.team1_score || 0) ? 'text-primary bg-primary/10 border-primary/30' : ''}`}
                                         value={games[i]?.team2_score ?? ''}
                                         onChange={e => handleScoreChange(i, 2, e.target.value)}
                                         disabled={isEditMode}

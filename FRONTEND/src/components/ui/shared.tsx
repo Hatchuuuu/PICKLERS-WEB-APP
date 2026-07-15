@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "motion/react";
 export function CapacityRing({ filled, max }: { filled: number; max: number }) {
   const r = 22;

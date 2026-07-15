@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check, ChevronDown } from "lucide-react";
@@ -11,7 +13,7 @@ function PremiumSelect({ value, onChange, options, placeholder = "Select..." }: 
             <button 
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-3.5 text-left text-[15px] focus:outline-none focus:ring-2 focus:ring-[#0BCE83]/50 transition-all flex items-center justify-between text-white"
+                className="w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl px-4 py-3.5 text-left text-[15px] focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all flex items-center justify-between text-white"
             >
                 <span className={value ? "text-white" : "text-slate-500"}>{value || placeholder}</span>
                 <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", isOpen && "rotate-180")} />
@@ -70,7 +72,7 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
         initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
         className="fixed inset-0 z-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-[28px] p-6 shadow-[0_0_80px_rgba(11,206,131,0.15)] border border-white/[0.08] bg-background dark:bg-[#0B132B]/95 backdrop-blur-2xl">
+        <div className="w-full max-w-md rounded-2xl p-6 shadow-[0_0_80px_rgba(11,206,131,0.15)] border border-white/[0.08] bg-background dark:bg-[#0B132B]/95 backdrop-blur-2xl">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-black text-white tracking-wide" >LOG WALK-IN</h2>
@@ -82,17 +84,17 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
           </div>
           <div className="space-y-5">
             <div>
-              <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Player Name</label>
+              <label className="block text-sm font-medium tracking-tight mb-2">Player Name</label>
               <input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="e.g. Juan Dela Cruz (or leave blank)"
                 className="w-full px-4 py-3.5 rounded-2xl text-[15px] outline-none border border-white/[0.08] bg-white/[0.03] text-white focus:border-[#0BCE83]/50 focus:bg-white/[0.05] transition-all placeholder:text-slate-600 font-medium" />
             </div>
             <div>
-              <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Court</label>
+              <label className="block text-sm font-medium tracking-tight mb-2">Court</label>
               <PremiumSelect value={court} onChange={setCourt} options={courts} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Start</label>
+                <label className="block text-sm font-medium tracking-tight mb-2">Start</label>
                 <PremiumSelect 
                   value={startTime} 
                   onChange={val => { setStartTime(val); setEndTime(TIME_SLOTS[slotIndex(val) + 2] ?? TIME_SLOTS[slotIndex(val) + 1]); }} 
@@ -100,12 +102,12 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">End</label>
+                <label className="block text-sm font-medium tracking-tight mb-2">End</label>
                 <PremiumSelect value={endTime} onChange={setEndTime} options={endSlots} />
               </div>
             </div>
             <div>
-              <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Payment</label>
+              <label className="block text-sm font-medium tracking-tight mb-2">Payment</label>
               <div className="flex bg-white/[0.02] p-1.5 rounded-2xl border border-white/[0.05]">
                 {(["cash", "gcash"] as const).map(m => (
                   <button key={m} onClick={() => setPayMethod(m)}

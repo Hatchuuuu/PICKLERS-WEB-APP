@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
@@ -133,7 +135,7 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
         >
           {tab === 'standings' ? (
             <div className="bg-surface-base/60 backdrop-blur-xl rounded-2xl border border-border/80 overflow-hidden shadow-2xl">
-              <div className="grid grid-cols-12 gap-4 px-8 py-5 bg-surface-overlay text-[11px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border/80">
+              <div className="grid grid-cols-12 gap-4 px-8 py-5 bg-surface-overlay text-sm font-medium tracking-tight border-b border-border/80">
                 <div className="col-span-1 text-center">Rank</div>
                 <div className="col-span-5">Player / Team</div>
                 <div className="col-span-2 text-center">Played</div>
@@ -325,7 +327,7 @@ export function RoundRobinView({ matches, teams, teamType = 'DOUBLES', onMatchWi
           </div>
 
           <div className="w-full h-px bg-border relative z-10">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-overlay px-3 py-1 rounded-full text-[10px] font-black text-muted-foreground uppercase tracking-widest border border-border/80">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-overlay px-3 py-1 rounded-full text-[10px] font-black text-muted-foreground tracking-tight border border-border/80">
               {isCompletedSection ? `R${match.round_number}` : 'VS'}
             </div>
           </div>

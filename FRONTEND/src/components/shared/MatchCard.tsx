@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
@@ -108,7 +110,7 @@ export function MatchCard({ m, joined, onJoin, publicMode = false }: { m: typeof
                 exit={{ scale: 0.95, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 400 }}
                 className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-                <div className="w-full max-w-[340px] bg-black/20 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-[28px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/[0.08]">
+                <div className="w-full max-w-[340px] bg-black/20 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl border border-black/5 dark:border-white/[0.08]">
                   <div className="p-6 text-center pb-5">
                     <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-4 ring-1 ring-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
                       <span className="text-[24px] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]">🤝</span>

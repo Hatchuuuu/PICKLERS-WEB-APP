@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowUp, Navigation, Compass, Search, Volume2 } from "lucide-react";
@@ -9,7 +11,7 @@ interface NavigationOverlayProps {
   onClose: () => void;
 }
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 const DUMMY_ROUTE: GeoJSON.Feature<GeoJSON.LineString> = {
   type: "Feature",
@@ -100,7 +102,7 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring", bounce: 0.3 }}
-            className="bg-gradient-to-r from-emerald-600/95 to-emerald-700/95 backdrop-blur-3xl rounded-[32px] p-4 flex items-center gap-4 shadow-2xl pointer-events-auto max-w-lg mx-auto border border-white/20"
+            className="bg-gradient-to-r from-emerald-600/95 to-emerald-700/95 backdrop-blur-3xl rounded-2xl p-4 flex items-center gap-4 shadow-2xl pointer-events-auto max-w-lg mx-auto border border-white/20"
             style={{ boxShadow: "0 24px 48px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.3)" }}
           >
             <div className="flex flex-col items-center justify-center w-12 h-12">

@@ -1,3 +1,5 @@
+"use client";
+
 import { Component, ErrorInfo, ReactNode } from "react";
 import { AlertCircle, Home, RotateCcw } from "lucide-react";
 
@@ -58,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             </div>
 
-            {import.meta.env.DEV && this.state.error && (
+            {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="border-t border-border bg-muted/30 p-4">
                 <details className="text-xs text-muted-foreground">
                   <summary className="cursor-pointer font-medium mb-2 hover:text-foreground transition-colors">Error Details</summary>

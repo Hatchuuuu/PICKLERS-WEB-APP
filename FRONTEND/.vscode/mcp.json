@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "Sentry": {
+      "url": "https://mcp.sentry.dev/mcp/picklers-f1/picklers-web-app",
+      "type": "http"
+    }
+  }
+}

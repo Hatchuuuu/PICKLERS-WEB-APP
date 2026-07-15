@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useState, ReactNode } from "react";
 import { FACILITIES, FACILITY_COURTS, BOOKINGS, MOCK_CHATS, ChatMessage } from "@/data/mockData";
 

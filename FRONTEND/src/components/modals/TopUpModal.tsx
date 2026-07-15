@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, CheckCircle2, ChevronRight, Wallet } from "lucide-react";
@@ -90,7 +92,7 @@ export function TopUpModal() {
               <div className="p-5 flex flex-col gap-6">
                 {/* Amount Selection */}
                 <div>
-                  <h3 className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-1">
+                  <h3 className="text-sm font-medium tracking-tight mb-3 px-1">
                     Select Amount
                   </h3>
                   <div className="grid grid-cols-2 gap-3 mb-3">
@@ -157,7 +159,7 @@ export function TopUpModal() {
 
                 {/* Payment Method */}
                 <div>
-                  <h3 className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-1">
+                  <h3 className="text-sm font-medium tracking-tight mb-3 px-1">
                     Payment Method
                   </h3>
                   <div className="flex flex-col gap-3">
