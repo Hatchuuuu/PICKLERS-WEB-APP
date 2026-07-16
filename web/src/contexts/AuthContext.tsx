@@ -1,0 +1,193 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+import { supabase } from "@/lib/supabase";
+import { useToast } from "./ToastContext";
+
+export type UserRole = "player" | "owner";
+
+export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
+
+export interface User {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  avatarUrl?: string;
+  role: UserRole;
+  verificationStatus: VerificationStatus;
+  facilitySetupComplete?: boolean;
+  notifications?: {
+    booking: boolean;
+    matches: boolean;
+    community: boolean;
+  };
+}
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (userData: Omit<User, "id" | "verificationStatus">) => Promise<void>;
+  logout: () => Promise<void>;
+  submitVerification: () => void;
+  verifyAccount: () => void; // Admin/Dev override
+  updateUser: (data: Partial<User>) => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { showToast } = useToast();
+
+
+
+  const destroySession = () => {
+    // We removed local storage token
+    // We removed local storage data
+  };
+
+  useEffect(() => {
+    async function initSession() {
+      // Capture hash synchronously before any awaits, in case the URL changes (e.g. AuthCallbackPage redirects)
+      const hasOAuthHash = typeof window !== "undefined" && window.location.hash.includes("access_token=");
+      
+      setIsLoading(true); // FIX: Ensure loading state is active while processing session changes
+      // 1. Check for real Supabase Session
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session && session.user) {
+        const email = session.user.email;
+        const name = session.user.user_metadata?.full_name || email?.split('@')[0] || "Player";
+
+        const intent = sessionStorage.getItem("picklers_oauth_intent");
+        if (intent === "signup") {
+          const createdAt = new Date(session.user.created_at).getTime();
+          // If created more than 60 seconds ago, it's an existing account
+          if (Date.now() - createdAt > 60000) {
+            showToast("This account is already connected to an existing account");
+          }
+        }
+        sessionStorage.removeItem("picklers_oauth_intent");
+
+        let assignedRole: UserRole = "player";
+        let dbVerificationStatus: VerificationStatus = "unverified";
+        const { data: profile } = await supabase
+          .from('player_profiles')
+          .select('role, verification_status')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile?.role === 'owner') {
+          assignedRole = "owner";
+        }
+        if (profile?.verification_status) {
+          dbVerificationStatus = profile.verification_status as VerificationStatus;
+        }
+
+        // Map Supabase User directly to our internal UI format without using mock data
+        const userObj: User = {
+          id: session.user.id,
+          name: name,
+          email: email,
+          phone: session.user.phone,
+          role: assignedRole,
+          verificationStatus: assignedRole === "owner" ? "verified" : dbVerificationStatus
+        };
+
+        setUser(userObj);
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Do not stop loading if we started processing with an OAuth redirect hash
+      if (hasOAuthHash) {
+        // OAuth hash detected on mount, keeping AuthContext in loading state until session is processed...
+        return; 
+      }
+
+      setIsLoading(false);
+    }
+    initSession();
+
+    // Listen for future OAuth redirects dynamically
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+        initSession();
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        destroySession();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async (userData: Omit<User, "id" | "verificationStatus">) => {
+    // In the real flow, the login function in AuthContext is bypassed because useAuthForm
+    // talks directly to supabase.auth.signInWithPassword. But for compatibility:
+    const userObj: User = {
+      id: "pending-auth",
+      name: userData.name,
+      email: userData.email,
+      phone: userData.phone,
+      role: userData.role,
+      verificationStatus: "unverified"
+    };
+    setUser(userObj);
+  };
+
+  const logout = async () => {
+    setUser(null);
+    destroySession();
+    await supabase.auth.signOut();
+  };
+
+  // Keep these strictly as UI state overrides for the prototype
+  const submitVerification = async () => {
+    if (user) {
+      const pendingUser = { ...user, verificationStatus: "pending" as VerificationStatus };
+      setUser(pendingUser);
+      await supabase.from('player_profiles').update({ verification_status: 'pending' }).eq('id', user.id);
+    }
+  };
+
+  const verifyAccount = async () => {
+    if (user) {
+      const verifiedUser = { ...user, verificationStatus: "verified" as VerificationStatus };
+      setUser(verifiedUser);
+      await supabase.from('player_profiles').update({ verification_status: 'verified' }).eq('id', user.id);
+    }
+  };
+
+  const updateUser = async (data: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...data };
+      setUser(updatedUser);
+      
+      const dbUpdates: any = {};
+      if (data.name !== undefined) dbUpdates.name = data.name;
+      // Removed insecure local storage persistence
+      if (Object.keys(dbUpdates).length > 0) {
+        await supabase.from('player_profiles').update(dbUpdates).eq('id', user.id);
+      }
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, submitVerification, verifyAccount, updateUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}

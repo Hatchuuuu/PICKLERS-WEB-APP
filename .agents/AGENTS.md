@@ -21,3 +21,7 @@ The core brand identity for success and error messages uses a distinct, dark "pi
 **3. General Principles**
 - Avoid large, glowing neon blobs inside small components like toasts.
 - Keep the shape universally rounded, but NOT fully pill-shaped (`rounded-xl` instead of `rounded-full`).
+
+## Supabase Database Migrations
+- Whenever creating or editing a Supabase migration file, you MUST also append or place the complete SQL statements into `web/supabase/setup_all.sql` (or `supabase/setup_all.sql`).
+- This ensures the user can easily copy and paste the entire concatenated database schema into the Supabase SQL editor in one go.

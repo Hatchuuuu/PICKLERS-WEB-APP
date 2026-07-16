@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-15T14:05:00Z",
+  "title": "Design System: PICKLERS OFFICIAL",
+  "extensions": {
+    "colorMeta": {
+      "accent-primary": { "role": "primary", "displayName": "Athletic Emerald", "canonical": "#00D98B", "tonalRamp": ["#002417", "#00492E", "#006D46", "#00925D", "#00B674", "#00D98B", "#4DE4B2", "#99EED8"] },
+      "surface-base": { "role": "neutral", "displayName": "Deep Slate Base", "canonical": "#0A1628", "tonalRamp": ["#03070D", "#060E1A", "#0A1628", "#122747", "#193866", "#214A85", "#3865A8", "#6389BE"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles, major hero numbers." },
+      "headline": { "displayName": "Headline", "purpose": "Section headers, modal titles." }
+    },
+    "shadows": [
+      { "name": "shadow-glow", "value": "0 0 24px rgba(0, 217, 139, 0.18)", "purpose": "Elevate highly active or premium primary actions." }
+    ],
+    "motion": [
+      { "name": "button-shine", "value": "ease infinite", "purpose": "Attention grabbing micro-animation for primary actions." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary call to action.",
+      "html": "<button class=\"ds-btn-primary\">GET STARTED</button>",
+      "css": ".ds-btn-primary { background: #00D98B; color: #0A1628; padding: 8px 16px; font-family: Inter, sans-serif; font-weight: 500; border: none; border-radius: 10px; transition: background 0.2s, transform 0.2s; } .ds-btn-primary:hover { background: #00C47E; transform: translateY(-2px); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Premium Pickleball Hub",
+    "overview": "The PICKLERS design system balances high-end, \"Apple-tier\" software craftsmanship with the dynamic, active nature of pickleball. It leverages a rich, deep dark mode punctuated by vibrant semantic accents.",
+    "keyCharacteristics": [
+      "Athletic Elegance: Crisp, high-contrast typography and vivid accents against deep, immersive surfaces.",
+      "Dimensionality: Strategic use of layered shadows and glow effects to elevate interactive elements.",
+      "Snappy Interactivity: Purposeful micro-animations rather than sluggish choreography."
+    ],
+    "rules": [
+      { "name": "The Emerald Restraint Rule", "body": "The primary accent (#00D98B) is powerful. Use it exclusively for primary actions, active selections, and success confirmations.", "section": "colors" },
+      { "name": "The Tight Heading Rule", "body": "Headings must use negative letter-spacing (-0.015em to -0.01em) to feel engineered and locked-in, never loose.", "section": "typography" },
+      { "name": "The Floating Pill Rule", "body": "Success and error messages must feel like floating objects, using backdrop-blur-2xl, deep shadows, and subtle tinted borders.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use the dark \"pill\" aesthetic for success and error messages.",
+      "Do maintain the 8px spacing scale strictly.",
+      "Do use shadow-glow for active, premium focal points."
+    ],
+    "donts": [
+      "Don't use generic white/gray cards or heavy iOS-style opaque blurs for toasts and alerts.",
+      "Don't use glowing neon blobs unstructured.",
+      "Don't use generic, flat, template-like SaaS layouts.",
+      "Don't use side-stripe borders as colored accents on cards or callouts."
+    ]
+  }
+}
