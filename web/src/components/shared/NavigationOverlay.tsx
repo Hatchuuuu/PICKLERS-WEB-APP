@@ -124,7 +124,7 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
         </div>
 
         {/* Floating Controls Right */}
-        <div className="absolute right-4 bottom-44 flex flex-col gap-3 z-10">
+        <div className="absolute right-4 bottom-52 flex flex-col gap-3 z-10">
           {[Compass, Search, Volume2].map((Icon, idx) => (
             <motion.button 
               key={idx}
@@ -144,7 +144,7 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.6, type: "spring" }}
-          className="absolute left-4 bottom-44 px-5 py-3 rounded-full bg-surface-base/90 dark:bg-[#0A1118]/90 backdrop-blur-3xl flex items-center gap-2 border border-black/5 dark:border-white/10 shadow-[0_8px_16px_rgba(0,0,0,0.2)] active:scale-90 transition-transform z-10"
+          className="absolute left-4 bottom-52 px-5 py-3 rounded-full bg-surface-base/90 dark:bg-[#0A1118]/90 backdrop-blur-3xl flex items-center gap-2 border border-black/5 dark:border-white/10 shadow-[0_8px_16px_rgba(0,0,0,0.2)] active:scale-90 transition-transform z-10"
         >
           <Navigation className="w-4 h-4 text-blue-500" fill="currentColor" />
           <span className="text-foreground font-bold text-[14px]">Re-center</span>
@@ -156,7 +156,7 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
             initial={{ y: 150 }}
             animate={{ y: 0 }}
             transition={{ delay: 0.3, type: "spring", bounce: 0 }}
-            className="bg-surface-base/95 dark:bg-[#0A1118]/95 backdrop-blur-3xl rounded-t-[32px] p-6 pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.4)] border-t border-black/5 dark:border-white/10 pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-4"
+            className="bg-surface-base/95 dark:bg-[#0A1118]/95 backdrop-blur-3xl rounded-t-[32px] p-6 pb-28 sm:pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.4)] border-t border-black/5 dark:border-white/10 pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-4"
           >
             <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-black/10 dark:bg-white/20 rounded-full" />
             

@@ -377,7 +377,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                     </div>
                     <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Play Type</label>
-                        <div className="flex bg-white/[0.03] border border-white/[0.08] p-1.5 rounded-2xl relative shadow-inner">
+                        <div className="flex gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
                             {['doubles', 'singles'].map((type) => (
                                 <button
                                     key={type}
@@ -386,17 +386,12 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                         setPairingMode('auto');
                                     }}
                                     className={cn(
-                                        "flex-1 relative py-3 text-sm font-bold z-10 transition-colors capitalize",
-                                        playType === type ? "text-[#0A1121]" : "text-muted-foreground hover:text-slate-200"
+                                        "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200 relative z-10",
+                                        playType === type 
+                                            ? "bg-white dark:bg-[#1E293B] text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-black/5 dark:border-white/5" 
+                                            : "text-muted-foreground hover:text-foreground border border-transparent"
                                     )}
                                 >
-                                    {playType === type && (
-                                        <motion.div 
-                                            layoutId="playTypePill"
-                                            className="absolute inset-0 bg-[#0BCE83] rounded-xl -z-10 shadow-[0_4px_12px_rgba(11,206,131,0.2)] border border-[#0BCE83]/50"
-                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                        />
-                                    )}
                                     <span className="flex items-center justify-center gap-2">
                                         {type === 'singles' ? <User className="w-4 h-4" /> : <Users className="w-4 h-4" />}
                                         {type}
@@ -547,7 +542,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                             <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                                 Team Pairing Mode
                             </label>
-                            <div className="flex bg-white/[0.03] border border-white/[0.08] p-1.5 rounded-2xl relative mb-6 shadow-inner">
+                            <div className="flex gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl mb-6">
                                 {['auto', 'manual'].map((mode) => (
                                     <button
                                         key={mode}
@@ -558,17 +553,12 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                             setSelectedToPair(null);
                                         }}
                                         className={cn(
-                                            "flex-1 relative py-2.5 text-sm font-bold z-10 transition-colors capitalize",
-                                            pairingMode === mode ? "text-[#0A1121]" : "text-muted-foreground hover:text-slate-200"
+                                            "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200 relative z-10",
+                                            pairingMode === mode 
+                                                ? "bg-white dark:bg-[#1E293B] text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-black/5 dark:border-white/5" 
+                                                : "text-muted-foreground hover:text-foreground border border-transparent"
                                         )}
                                     >
-                                        {pairingMode === mode && (
-                                            <motion.div 
-                                                layoutId="pairingModePill"
-                                                className="absolute inset-0 bg-[#0BCE83] rounded-xl -z-10 shadow-[0_4px_12px_rgba(11,206,131,0.2)] border border-[#0BCE83]/50"
-                                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                            />
-                                        )}
                                         {mode === 'auto' ? 'Auto-Mix' : 'Desired Teammates'}
                                     </button>
                                 ))}

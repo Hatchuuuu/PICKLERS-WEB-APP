@@ -61,16 +61,16 @@ export default function OwnerStaff() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium tracking-tight mb-1.5">Role</label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
                     {(["desk", "manager"] as const).map(r => (
                       <button key={r} onClick={() => setNewStaffRole(r)}
-                        className="flex-1 py-2.5 rounded-xl text-sm font-medium active:scale-[0.97] capitalize"
-                        style={{
-                          background: newStaffRole === r ? "var(--border-default)" : "var(--surface-interactive)",
-                          border: newStaffRole === r ? "1px solid rgba(0,212,255,0.4)" : "1px solid var(--border-subtle)",
-                          color: newStaffRole === r ? "var(--accent-primary)" : "var(--ink-muted)",
-                          transition: "all 150ms ease-out"
-                        }}>{r}</button>
+                        className={cn(
+                          "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200",
+                          newStaffRole === r 
+                            ? "bg-white dark:bg-[#1E293B] text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-black/5 dark:border-white/5" 
+                            : "text-muted-foreground hover:text-foreground border border-transparent"
+                        )}
+                      >{r}</button>
                     ))}
                   </div>
                 </div>

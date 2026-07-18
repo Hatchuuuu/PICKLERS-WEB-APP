@@ -83,17 +83,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const mappedFacilities = dbFacilities.map((f: Record<string, unknown>) => ({
             id: Number(f.id),
             name: String(f.name),
-            address: String(f.address || "Unknown Address"),
-            location: String(f.address || "Unknown Location"),
-            type: f.is_indoor ? "Indoor" : "Outdoor",
-            image: String(f.image_url || "https://images.unsplash.com/photo-1622228399564-946d849b28b7?q=80&w=2940&auto=format&fit=crop"),
-            distance: f.distance_miles ? `${f.distance_miles} mi` : "2.5 mi",
-            courts: Number(f.total_courts || 6),
+            address: String(f.location || "Unknown Location"),
+            location: String(f.location || "Unknown Location"),
+            type: String(f.type || "Outdoor"),
+            image: String(f.image || "https://images.unsplash.com/photo-1622228399564-946d849b28b7?q=80&w=2940&auto=format&fit=crop"),
+            distance: String(f.distance || "2.5 km"),
+            moto: String(f.moto || "15 min"),
+            car: String(f.car || "30 min"),
+            hours: String(f.hours || "6am - 10pm"),
+            courts: 6,
             rating: Number(f.rating || 4.8),
-            reviews: Number(f.reviews_count || 124),
-            price: f.price_per_hour ? `$${f.price_per_hour}/hr` : "$24/hr",
-            indoor: Boolean(f.is_indoor || false),
-            tags: (f.tags as string[]) || []
+            reviews: 124,
+            price: f.price ? Number(f.price) : 400,
+            indoor: String(f.type || "").toLowerCase().includes('indoor'),
+            tags: []
           }));
           if (mappedFacilities.length > 0) {
              setFacilities(mappedFacilities);

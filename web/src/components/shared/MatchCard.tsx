@@ -27,14 +27,14 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
   const CapacityRing = ({ filled, max }: { filled: number, max: number }) => {
     return (
       <div className="relative w-12 h-12 shrink-0 flex items-center justify-center bg-black/5 dark:bg-white/5 rounded-full border border-black/10 dark:border-white/10 shadow-inner">
-        <svg className="absolute inset-0 w-full h-full -rotate-90">
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
           <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" strokeWidth="3" className="text-black/5 dark:text-white/5" />
           <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" strokeWidth="3" 
             className="text-[#3B82F6]" 
             strokeDasharray={`${(filled / max) * 138} 138`} 
             strokeLinecap="round" />
         </svg>
-        <div className="text-[14px] font-bold tracking-tight text-foreground">{filled}/{max}</div>
+        <div className="text-[13px] font-bold tracking-tighter leading-none whitespace-nowrap text-foreground">{filled}/{max}</div>
       </div>
     );
   };

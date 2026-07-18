@@ -307,7 +307,6 @@ export default function FacilityDetailView({ facility: propFacility, onBack: pro
               const isOccupied = court.status === "occupied";
               const isMaintenance = court.status === "maintenance";
 
-              const statusColor = isAvailable ? "#10B981" : isOccupied ? "#EF4444" : "#F59E0B";
               const glowColor = isAvailable ? "rgba(16,185,129,0.2)" : isOccupied ? "rgba(239,68,68,0.1)" : "rgba(245,158,11,0.1)";
 
               return (
@@ -324,40 +323,42 @@ export default function FacilityDetailView({ facility: propFacility, onBack: pro
                   )}
 
                   <div className="px-6 pt-6 pb-5 flex-1 relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[18px] font-extrabold text-foreground" >
-                          {court.name}
-                        </span>
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <span className="text-[18px] font-extrabold text-foreground leading-tight" >
+                        {court.name}
+                      </span>
+                      <div className="flex items-center gap-3 shrink-0 pt-0.5">
                         <span className="text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider text-foreground/70 bg-surface-interactive border border-border dark:bg-white/10 dark:border-white/[0.05]">
                           {court.type}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/5 border border-border dark:bg-black/30 dark:border-white/[0.05]">
-                        <div className="relative w-2 h-2">
-                          <div className="absolute inset-0 rounded-full" style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }} />
-                          {isAvailable && (
-                            <motion.div
-                              className="absolute inset-0 rounded-full border border-emerald-400"
-                              animate={{ scale: [1, 2.5], opacity: [0.8, 0] }}
-                              transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
-                            />
-                          )}
+                        <div className="flex items-center justify-center">
+                          <div className="relative w-2.5 h-2.5">
+                            <div className={`absolute inset-0 rounded-full ${isAvailable ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : isOccupied ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]'}`} />
+                            {isAvailable && (
+                              <motion.div
+                                className="absolute inset-0 rounded-full border border-emerald-400"
+                                animate={{ scale: [1, 2.5], opacity: [0.8, 0] }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
+                              />
+                            )}
+                          </div>
                         </div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: statusColor }}>
-                          {isAvailable ? "Available" : isOccupied ? "Occupied" : "Maint."}
-                        </span>
                       </div>
                     </div>
 
                     <div className="text-[14px] font-medium mb-5 text-foreground/50">{court.surface}</div>
 
                     {isOccupied && court.occupiedUntil && (
-                      <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-2 text-[13px] font-bold border"
-                        style={{ background: "rgba(239,68,68,0.1)", borderColor: "rgba(239,68,68,0.2)" }}>
-                        <Clock className="w-4 h-4 shrink-0 text-red-400" />
-                        <span className="text-red-400">Free at {court.occupiedUntil}</span>
-                        {court.occupiedBy && <span className="ml-auto opacity-70 font-medium text-red-300">{court.occupiedBy}</span>}
+                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg mb-2 text-[12px] font-semibold border bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400 backdrop-blur-sm">
+                        <Clock className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">
+                          Free at {!isNaN(Date.parse(court.occupiedUntil)) ? new Date(court.occupiedUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedUntil}
+                        </span>
+                        {court.occupiedBy && (
+                          <div className="ml-auto flex items-center pl-2 border-l border-red-500/20 dark:border-red-500/30">
+                            <span className="truncate max-w-[90px] opacity-80">{court.occupiedBy}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 

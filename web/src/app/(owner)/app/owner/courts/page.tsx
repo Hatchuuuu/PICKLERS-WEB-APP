@@ -147,22 +147,21 @@ export default function OwnerCourts() {
                   </div>
                 </div>
                 <div className="text-[13px] text-muted-foreground mb-2">{c.surface}</div>
-                <div className="text-cyan-400 font-bold font-mono text-[15px] mb-4 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]">₱{c.price}/hr</div>
-                
-                {c.currentBooking && (
-                  <div className="mb-4 p-3 rounded-[14px] bg-amber-500/5 border border-amber-500/10">
-                    <div className="text-sm font-medium tracking-tight mb-1">Currently Booked</div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-cyan-400 font-bold font-mono text-[15px] drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]">₱{c.price}/hr</div>
+                  
+                  {c.currentBooking && (
+                    <div className="flex items-center gap-2.5 text-right">
+                      <div className="flex flex-col items-end">
+                        <div className="text-[12px] font-bold text-foreground leading-none mb-1">{c.currentBooking.userName}</div>
+                        <div className="text-[10px] font-medium text-amber-500/80 leading-none">{c.currentBooking.time}</div>
+                      </div>
+                      <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
                         <User className="w-3.5 h-3.5 text-amber-500" />
                       </div>
-                      <div>
-                        <div className="text-[14px] font-bold text-foreground">{c.currentBooking.userName}</div>
-                        <div className="text-[12px] font-medium text-muted-foreground">{c.currentBooking.time}</div>
-                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 <div className="flex gap-3 mt-4">
                   <button onClick={() => startEdit(c)} 

@@ -34,7 +34,7 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
       // 30% chance to fail for demo purposes if GCash is used
       if (method === "gcash" && Math.random() < 0.3) {
         setStage("failed");
-        setErrorMsg("Connection timed out. Please check your internet and try again.");
+        setErrorMsg("Payment failed because you are using a demo account.");
         return;
       }
 
@@ -156,19 +156,21 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
       transition={{ ease: "easeOut", duration: 0.22 }} className="min-h-full">
 
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-border sticky top-0 z-10 bg-surface-base/95 dark:bg-[#080f2e]/95 backdrop-blur-md">
-        <button onClick={onBack} aria-label="Go Back"
-          className="group flex items-center justify-center w-11 h-11 rounded-full transition-all active:scale-95 shadow-sm bg-surface-interactive border border-border text-muted-foreground hover:bg-black/5 hover:text-foreground dark:bg-white/[0.03] dark:border-white/[0.08] dark:text-[var(--ink-secondary)] dark:hover:bg-white/[0.08] dark:hover:text-[var(--ink-primary)]"
-        >
-          <ChevronRight className="w-6 h-6 rotate-180 transition-transform group-hover:-translate-x-0.5" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold leading-none" >PAYMENT</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Review and confirm your booking</p>
+      <div className="sticky top-0 z-10 bg-surface-base/95 dark:bg-[#080f2e]/95 backdrop-blur-md border-b border-border">
+        <div className="flex items-center gap-3 px-6 py-5 w-full">
+          <button onClick={onBack} aria-label="Go Back"
+            className="group flex items-center justify-center shrink-0 w-11 h-11 rounded-full transition-all active:scale-95 shadow-sm bg-surface-interactive border border-border text-muted-foreground hover:bg-black/5 hover:text-foreground dark:bg-white/[0.03] dark:border-white/[0.08] dark:text-[var(--ink-secondary)] dark:hover:bg-white/[0.08] dark:hover:text-[var(--ink-primary)]"
+          >
+            <ChevronRight className="w-6 h-6 rotate-180 transition-transform group-hover:-translate-x-0.5" />
+          </button>
+          <div>
+            <h1 className="text-lg font-bold leading-none" >PAYMENT</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Review and confirm your booking</p>
+          </div>
         </div>
       </div>
 
-      <div className="p-6 max-w-lg">
+      <div className="p-6 max-w-lg mx-auto w-full">
 
         {/* Booking summary card */}
         <div className="rounded-2xl overflow-hidden mb-6"
@@ -304,7 +306,7 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
       {/* Payment Confirmation Action Sheet */}
       <AnimatePresence>
         {showConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-4 pb-8">
+          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-4 pb-24 sm:pb-8">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"

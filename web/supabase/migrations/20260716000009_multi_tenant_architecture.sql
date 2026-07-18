@@ -46,6 +46,12 @@ CREATE POLICY "Facility owners can update booking requests" ON public.booking_re
     EXISTS (SELECT 1 FROM public.facilities f WHERE f.id = facility_id AND f.owner_id = auth.uid())
 );
 
+-- Add SELECT policy for facility owners on bookings
+DROP POLICY IF EXISTS "Facility owners can view bookings at their facility" ON public.bookings;
+CREATE POLICY "Facility owners can view bookings at their facility" ON public.bookings FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.facilities f WHERE f.id = facility_id AND f.owner_id = auth.uid())
+);
+
 -- ---------------------------------------------------------
 -- 3. Player Booking Request Tracking
 -- ---------------------------------------------------------

@@ -31,6 +31,7 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: "openai/gpt-4o-mini",
+        max_tokens: 1000,
         messages: [
           {
             role: "system",

@@ -52,9 +52,9 @@ export async function middleware(request: NextRequest) {
     // Role-based protection for /owner
     if (pathname.startsWith('/app/owner')) {
       const { data: roleData } = await supabase
-        .from('user_roles')
+        .from('player_profiles')
         .select('role')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .single()
       
       if (!roleData || roleData.role !== 'owner') {

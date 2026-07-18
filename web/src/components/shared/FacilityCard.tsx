@@ -38,7 +38,7 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: Facility & { favor
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
 
-        <span className="absolute top-4 left-4 text-sm font-medium tracking-tight text-foreground shadow-sm border border-black/5 dark:border-white/20 bg-white/50 dark:bg-white/15 backdrop-blur-[12px]">
+        <span className="absolute top-4 left-4 text-[12px] px-3 py-1 rounded-full font-bold tracking-wide text-foreground shadow-sm border border-black/5 dark:border-white/20 bg-white/50 dark:bg-white/15 backdrop-blur-[12px]">
           {f.type}
         </span>
 

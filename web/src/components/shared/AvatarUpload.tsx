@@ -42,7 +42,7 @@ export function AvatarUpload() {
       {user?.role === "owner" && (
         <button
           onClick={() => user.facilitySetupComplete ? router.push('/app/owner') : setShowSetup(true)}
-          className="absolute top-[48px] left-[calc(50%+60px)] -translate-y-1/2 flex items-center gap-1.5 px-3 py-1.5 bg-surface-interactive border border-border rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors shadow-sm whitespace-nowrap"
+          className="absolute top-0 left-[calc(50%+60px)] flex items-center gap-1.5 px-3 py-1.5 bg-surface-interactive border border-border rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors shadow-sm whitespace-nowrap"
         >
           <ArrowRightLeft className="w-3.5 h-3.5 text-foreground/70" />
           <span className="text-[12px] font-bold text-foreground/80">Switch to Owner</span>
@@ -137,11 +137,11 @@ export function AvatarUpload() {
       <div className="mt-4 text-center">
         <div className="font-bold text-[19px] tracking-tight text-foreground">{user?.name}</div>
         <div className="mt-1.5 inline-flex items-center justify-center text-[11px] font-black uppercase tracking-[0.1em] text-foreground/50 bg-black/5 dark:bg-white/5 px-3 py-1 rounded-full border border-black/5 dark:border-white/5 shadow-sm">
-          <span>Player</span>
+          <span className="text-emerald-500 drop-shadow-sm">Player</span>
           {user?.role === "owner" && (
             <>
               <span className="mx-2 opacity-30">/</span>
-              <span className="text-emerald-500 drop-shadow-sm">Court Owner</span>
+              <span className="text-amber-400 drop-shadow-sm">Court Owner</span>
             </>
           )}
         </div>

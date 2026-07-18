@@ -95,12 +95,13 @@ export default function ExploreTab() {
         ) : (
           <AnimatePresence mode="popLayout">
             {filtered.map((m: MatchData, i: number) => {
+              const rawMatch = m as any;
               const cardData = {
                 id: m.id,
                 level: m.level,
-                slots: m.max_players - m.current_players,
-                max: m.max_players,
-                facility: m.facility_name,
+                slots: rawMatch.participants || m.current_players || 0,
+                max: rawMatch.max_participants || m.max_players || 0,
+                facility: rawMatch.facility || m.facility_name,
                 date: m.date,
                 time: m.time,
                 host: m.host || "Picklers Organizer",

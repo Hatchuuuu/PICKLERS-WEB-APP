@@ -288,12 +288,16 @@ export function useAuthForm() {
   };
 
   const onSubmit = async (data: AuthFormData) => {
-
     setAuthError("");
     setSuccessMessage("");
-    if (view === "forgot-password") await handleSendCode(data);
-    else if (view === "reset-password") await handleResetPassword(data);
-    else await handleMainSubmit(data);
+    try {
+      if (view === "forgot-password") await handleSendCode(data);
+      else if (view === "reset-password") await handleResetPassword(data);
+      else await handleMainSubmit(data);
+    } catch (err: any) {
+      setLoading(false);
+      shakeError(err.message || "An unexpected frontend error occurred.");
+    }
   };
 
   const handleOAuth = async (provider: 'google' | 'facebook') => {

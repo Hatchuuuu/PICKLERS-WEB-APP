@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   ChevronRight, User, Phone, Bell, Smartphone, Users,
   ShieldCheck, BadgeCheck, ShieldAlert,
-  LogOut, Lock, KeyRound
+  LogOut, KeyRound
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -251,22 +251,24 @@ export default function PlayerSettingsTab() {
       {user?.role === "owner" ? (
         <div className="flex flex-col gap-4 mb-8">
           <WalletPill />
-          <div className="rounded-[20px] p-5 relative overflow-hidden group cursor-pointer"
-            onClick={() => user?.facilitySetupComplete ? router.push("/app/owner") : setShowSetup(true)}
-            style={{ background: "var(--surface-raised)", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", boxShadow: "0 4px 12px rgba(16,185,129,0.3)" }}>
-                <ShieldCheck className="w-7 h-7 text-foreground" />
+          {!user?.facilitySetupComplete && (
+            <div className="rounded-[20px] p-5 relative overflow-hidden group cursor-pointer"
+              onClick={() => setShowSetup(true)}
+              style={{ background: "var(--surface-raised)", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", boxShadow: "0 4px 12px rgba(16,185,129,0.3)" }}>
+                  <ShieldCheck className="w-7 h-7 text-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[17px] font-bold text-foreground mb-0.5">Finish Facility Setup</div>
+                  <div className="text-[13px] text-foreground/50">Tap to complete your onboarding</div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-foreground/30" />
               </div>
-              <div className="flex-1">
-                <div className="text-[17px] font-bold text-foreground mb-0.5">Owner Access Verified</div>
-                <div className="text-[13px] text-foreground/50">Tap to open dashboard</div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-foreground/30" />
             </div>
-          </div>
+          )}
         </div>
       ) : (
         user?.role === "player" && (
@@ -337,9 +339,8 @@ export default function PlayerSettingsTab() {
             }}
             rightContent={
               user?.verificationStatus === "verified" ? (
-                <div className="flex items-center gap-1.5 text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-[8px] mr-1">
-                  <Lock className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  <span className="text-[11px] font-black uppercase tracking-wider">Locked</span>
+                <div className="text-[14px] font-medium text-muted-foreground mr-2">
+                  {profile.name}
                 </div>
               ) : undefined
             }

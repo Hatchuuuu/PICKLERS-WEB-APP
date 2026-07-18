@@ -148,7 +148,7 @@ export function FacilitySetupWizard({ onClose }: FacilitySetupWizardProps) {
               </p>
               <button 
                 onClick={nextStep}
-                className="w-full h-[56px] rounded-2xl bg-emerald-500 text-white font-bold text-[17px] flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors shadow-sm active:scale-[0.98]"
+                className="w-full h-[56px] rounded-2xl bg-emerald-500 text-white font-bold text-[17px] flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors shadow-sm active:scale-[0.98] mb-24 sm:mb-0"
               >
                 Let's get started
                 <ChevronRight className="w-5 h-5" />
@@ -204,7 +204,7 @@ export function FacilitySetupWizard({ onClose }: FacilitySetupWizardProps) {
                 </div>
               </div>
 
-              <div className="fixed bottom-0 left-0 right-0 p-6 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10">
+              <div className="fixed bottom-0 left-0 right-0 p-6 pb-24 sm:pb-6 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10">
                 <div className="w-full max-w-md">
                   <button 
                     onClick={nextStep}
@@ -278,7 +278,7 @@ export function FacilitySetupWizard({ onClose }: FacilitySetupWizardProps) {
                 </div>
               </div>
 
-              <div className="fixed bottom-0 left-0 right-0 p-6 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10">
+              <div className="fixed bottom-0 left-0 right-0 p-6 pb-24 sm:pb-6 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10">
                 <div className="w-full max-w-md">
                   <button 
                     onClick={nextStep}
@@ -328,7 +328,7 @@ export function FacilitySetupWizard({ onClose }: FacilitySetupWizardProps) {
                 })}
               </div>
 
-              <div className="fixed bottom-0 left-0 right-0 p-6 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10">
+              <div className="fixed bottom-0 left-0 right-0 p-6 pb-24 sm:pb-6 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10">
                 <div className="w-full max-w-md">
                   <button 
                     onClick={nextStep}

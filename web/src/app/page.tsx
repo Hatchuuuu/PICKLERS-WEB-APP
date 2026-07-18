@@ -22,6 +22,7 @@ import { MatchCard } from "@/components/shared/MatchCard";
 import AnimatedContent from "@/components/ui/AnimatedContent";
 import CountUp from "@/components/ui/CountUp";
 import ShinyText from "@/components/ui/ShinyText";
+import { DraggableMarquee } from "@/components/shared/DraggableMarquee";
 
 const shimmerStyles = `
   @keyframes shimmer {
@@ -352,7 +353,7 @@ export default function LandingPage() {
             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-foreground/10" />
           </div>
         </div>
-        {/* <DraggableMarquee /> */}
+        <DraggableMarquee />
       </section>
 
       {/* Stats bar */}
@@ -582,13 +583,14 @@ export default function LandingPage() {
           ) : (
             <motion.div key="play" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               <div id="players" className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {matches.map((m: MatchData, i: number) => {
+                {matches.slice(0, 6).map((m: MatchData, i: number) => {
+                  const rawMatch = m as any;
                   const cardData = {
                     id: m.id,
                     level: m.level,
-                    slots: m.max_players - m.current_players,
-                    max: m.max_players,
-                    facility: m.facility_name,
+                    slots: rawMatch.participants || m.current_players || 0,
+                    max: rawMatch.max_participants || m.max_players || 0,
+                    facility: rawMatch.facility || m.facility_name,
                     date: m.date,
                     time: m.time,
                     host: m.host || "Picklers Organizer",

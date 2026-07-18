@@ -349,12 +349,12 @@ export default function OwnerDashboard() {
             ) : requests.map(r => (
               <div key={r.id} className="rounded-2xl p-5 transition-all bg-surface-base shadow-lg border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl relative">
                 <div className="flex items-start justify-between mb-0.5">
-                  <div className="text-[15px] font-bold text-foreground tracking-tight pr-2">{r.player}</div>
+                  <div className="text-[15px] font-bold text-foreground tracking-tight pr-2">{r.player_name}</div>
                   <div className="text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded-md bg-white/[0.04] border border-white/[0.05] text-white/60 shrink-0">
                     {r.paymentMethod || 'Cash'}
                   </div>
                 </div>
-                <div className="text-[13px] text-muted-foreground">{r.court}</div>
+                <div className="text-[13px] text-muted-foreground">{r.court_name}</div>
                 <div className="text-[13px] text-muted-foreground">{r.time}</div>
                 <div className="mt-2 text-cyan-400 font-mono text-[15px] font-bold">₱{r.total.toLocaleString()}</div>
                 <div className="flex gap-3 mt-4">

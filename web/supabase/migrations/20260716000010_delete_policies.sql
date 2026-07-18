@@ -61,10 +61,10 @@ CREATE POLICY "Owners can delete match games" ON public.match_games FOR DELETE U
     )
 );
 
--- Matches: Owners can delete matches
+-- Matches: Authenticated users can delete matches
 DROP POLICY IF EXISTS "Owners can delete matches" ON public.matches;
-CREATE POLICY "Owners can delete matches" ON public.matches FOR DELETE USING (
-    EXISTS (SELECT 1 FROM public.tournaments t WHERE t.id = tournament_id AND t.owner_id = auth.uid())
+CREATE POLICY "Authenticated users can delete matches" ON public.matches FOR DELETE USING (
+    auth.uid() IS NOT NULL
 );
 
 -- ---------------------------------------------------------
