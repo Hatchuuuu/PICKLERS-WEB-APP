@@ -170,7 +170,7 @@ export default function LandingPage() {
             text="PICKLERS"
             className="font-black"
             style={{
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "var(--font-montserrat), sans-serif",
               letterSpacing: "-0.02em",
               marginLeft: "-8px",
               fontSize: useTransform(scrollY, [0, 100], ["1.25rem", "1.125rem"]) as unknown as string
@@ -286,7 +286,7 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-6xl sm:text-7xl md:text-[100px] lg:text-[120px] leading-[0.95] tracking-[-0.03em] mb-[14px] flex justify-center text-[#4abd96]"
-            style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, textShadow: "var(--shadow-glow)" }}>
+            style={{ fontFamily: "var(--font-montserrat), sans-serif", fontWeight: 900, textShadow: "var(--shadow-glow)" }}>
               PICKLERS
           </h1>
           <div className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-[0.15em] md:tracking-[0.2em] mb-8 flex items-center justify-center gap-2 sm:gap-4 md:gap-5 leading-none"
@@ -520,7 +520,7 @@ export default function LandingPage() {
           delay={0.1}
         >
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.01em" }}>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.01em" }}>
               Play Pickleball, Anywhere.
             </h2>
             <p className="text-lg" style={{ color: "var(--ink-secondary)" }}>Discover premium facilities and join active matches near you.</p>
@@ -617,7 +617,7 @@ export default function LandingPage() {
       <section className="px-6 py-24 max-w-6xl mx-auto border-t border-solid relative z-10 border-border" >
         <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
               Built for the modern player.
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ink-secondary)" }}>Everything you need to elevate your pickleball experience, wrapped in an interface you'll actually love using.</p>
@@ -677,7 +677,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto relative z-10">
           <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
                 Loved by the community.
               </h2>
               <p className="text-lg" style={{ color: "var(--ink-secondary)" }}>Join thousands of players already finding their matches.</p>
@@ -720,7 +720,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
                 How It Works
               </h2>
               <p className="text-lg" style={{ color: "var(--ink-secondary)" }}>From finding a court to the first serve in three easy steps.</p>
@@ -765,7 +765,7 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto">
           <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
                 Frequently Asked Questions
               </h2>
             </div>
@@ -926,7 +926,7 @@ export default function LandingPage() {
             <div className="md:col-span-1">
               <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2 mb-6 cursor-pointer hover:opacity-80 transition-opacity">
                 <PicklersLogo size={36} />
-                <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+                <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
               </button>
               <p className="text-[15px] leading-relaxed mb-8" style={{ color: "var(--ink-muted)" }}>
                 The Philippines' premier pickleball booking and community platform. Find courts, join matches, and play.

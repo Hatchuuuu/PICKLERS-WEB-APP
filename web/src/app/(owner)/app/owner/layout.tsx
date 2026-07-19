@@ -74,7 +74,7 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
         <div className="px-6 py-5 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
           <div className="flex items-center gap-2 mb-1">
             <PicklersLogo size={32} />
-            <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="text-[12px] font-medium" style={{ color: "var(--accent-success)" }}>Owner Portal</div>
         </div>
@@ -136,7 +136,7 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
           className="md:hidden sticky top-0 z-30 flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/75 backdrop-blur-3xl">
           <div className="flex items-center gap-1">
             <PicklersLogo size={42} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "'Montserrat', sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="flex items-center gap-4 relative">
 

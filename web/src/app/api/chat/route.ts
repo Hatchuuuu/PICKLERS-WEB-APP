@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000",
+        "HTTP-Referer": req.headers.get('origin') || "https://picklers-web-app.vercel.app",
         "X-Title": "Picklers Web App"
       },
       body: JSON.stringify({

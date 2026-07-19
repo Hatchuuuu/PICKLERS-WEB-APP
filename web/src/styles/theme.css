@@ -184,10 +184,18 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.6;
     letter-spacing: -0.01em;
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Prevent purging of variables used only in React inline styles */
+  .preserve-vars {
+    color: var(--ink-primary);
+    background-color: var(--ink-secondary);
+    border-color: var(--ink-muted);
+    box-shadow: var(--shadow-glow);
   }
 
   /* Premium Scrollbar */
