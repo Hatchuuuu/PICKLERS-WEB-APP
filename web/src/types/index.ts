@@ -90,3 +90,57 @@ export type LiveCourt = {
   remaining: number;
   maxTime: number;
 };
+
+// ---- Community Types ----
+
+export type Club = {
+  id: string;
+  name: string;
+  description: string | null;
+  banner_url: string | null;
+  admin_id: string;
+  admin_name?: string;
+  member_count: number;
+  my_status: "none" | "pending" | "member" | "admin";
+  created_at: string;
+};
+
+export type ClubMember = {
+  id: string;
+  user_id: string;
+  name: string;
+  level?: string;
+  status: "pending" | "member" | "admin";
+  joined_at: string;
+};
+
+export type DirectMessage = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  read: boolean;
+  created_at: string;
+};
+
+export type Conversation = {
+  user_id: string;
+  name: string;
+  level?: string;
+  online: boolean;
+  last_message: string;
+  last_at: string;
+  unread_count: number;
+};
+
+export type CommunityPlayer = {
+  id: string;
+  name: string;
+  level: string;
+  gold: number;
+  silver: number;
+  bronze: number;
+  online: boolean;
+  like_count: number;
+  i_liked: boolean;
+};
