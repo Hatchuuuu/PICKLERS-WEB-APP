@@ -292,9 +292,9 @@ export default function LandingPage() {
           <div className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-[0.15em] md:tracking-[0.2em] mb-8 flex items-center justify-center gap-2 sm:gap-4 md:gap-5 leading-none"
             style={{ color: "var(--ink-primary)" }}>
             <span className="-mr-[0.15em] md:-mr-[0.2em]">FIND</span>
-            <span className="text-white text-[1.2em] md:text-[1.3em] tracking-normal opacity-90 shrink-0 leading-none flex items-center justify-center relative -top-[3px]">•</span>
+            <span className="text-[1.2em] md:text-[1.3em] tracking-normal opacity-90 shrink-0 leading-none flex items-center justify-center relative -top-[3px]">•</span>
             <span className="-mr-[0.15em] md:-mr-[0.2em]">BOOK</span>
-            <span className="text-white text-[1.2em] md:text-[1.3em] tracking-normal opacity-90 shrink-0 leading-none flex items-center justify-center relative -top-[3px]">•</span>
+            <span className="text-[1.2em] md:text-[1.3em] tracking-normal opacity-90 shrink-0 leading-none flex items-center justify-center relative -top-[3px]">•</span>
             <span className="-mr-[0.15em] md:-mr-[0.2em]">PLAY</span>
           </div>
           <p className="max-w-2xl mx-auto text-lg sm:text-xl mb-12 leading-relaxed" style={{ color: "var(--ink-secondary)" }}>
