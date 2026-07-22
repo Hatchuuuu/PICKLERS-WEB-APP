@@ -45,6 +45,7 @@ export default function FacilityDetailView({ facility: propFacility, onBack: pro
         type: d.type || "Indoor",
         price: d.price,
         status: d.status || "available",
+        occupiedFrom: d.occupied_from,
         occupiedUntil: d.occupied_until,
         occupiedBy: d.occupied_by
       })) as CourtData[];
@@ -324,7 +325,7 @@ export default function FacilityDetailView({ facility: propFacility, onBack: pro
 
                   <div className="px-6 pt-6 pb-5 flex-1 relative z-10">
                     <div className="flex items-start justify-between gap-4 mb-3">
-                      <span className="text-[18px] font-extrabold text-foreground leading-tight" >
+                      <span className="text-[18px] font-extrabold text-foreground leading-tight truncate" title={court.name}>
                         {court.name}
                       </span>
                       <div className="flex items-center gap-3 shrink-0 pt-0.5">
@@ -348,11 +349,17 @@ export default function FacilityDetailView({ facility: propFacility, onBack: pro
 
                     <div className="text-[14px] font-medium mb-5 text-foreground/50">{court.surface}</div>
 
-                    {isOccupied && court.occupiedUntil && (
+                    {isOccupied && (court.occupiedUntil || court.occupiedFrom) && (
                       <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg mb-2 text-[12px] font-semibold border bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400 backdrop-blur-sm">
                         <Clock className="w-3.5 h-3.5 shrink-0" />
                         <span className="truncate">
-                          Free at {!isNaN(Date.parse(court.occupiedUntil)) ? new Date(court.occupiedUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedUntil}
+                          {court.occupiedFrom && court.occupiedUntil ? (
+                            `${court.occupiedFrom} - ${court.occupiedUntil}`
+                          ) : court.occupiedUntil ? (
+                            `Free at ${!isNaN(Date.parse(court.occupiedUntil)) ? new Date(court.occupiedUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedUntil}`
+                          ) : (
+                            "Currently Occupied"
+                          )}
                         </span>
                         {court.occupiedBy && (
                           <div className="ml-auto flex items-center pl-2 border-l border-red-500/20 dark:border-red-500/30">
@@ -393,7 +400,16 @@ export default function FacilityDetailView({ facility: propFacility, onBack: pro
                         ) : isAvailable ? (
                           "Book Now"
                         ) : isOccupied ? (
-                          "Occupied"
+                          (court.occupiedBy || court.occupiedFrom) ? (
+                            <div className="flex flex-col items-center justify-center leading-tight">
+                              <span className="font-bold truncate max-w-[140px] text-[13px]">{court.occupiedBy || "Occupied"}</span>
+                              {(court.occupiedFrom || court.occupiedUntil) && (
+                                <span className="text-[10px] opacity-70 font-medium">
+                                  {court.occupiedFrom} {court.occupiedFrom && court.occupiedUntil ? "-" : ""} {court.occupiedUntil}
+                                </span>
+                              )}
+                            </div>
+                          ) : "Occupied"
                         ) : (
                           "Unavailable"
                         )}

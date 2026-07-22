@@ -1,0 +1,273 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "motion/react";
+import { Search, Heart, Shield, MessageCircle, CheckCircle2, Medal, X } from "lucide-react";
+import type { CommunityPlayer, Club } from "@/types";
+import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
+
+function Avatar({ name, size = 44, online, avatarUrl }: { name: string; size?: number; online?: boolean; avatarUrl?: string | null }) {
+  const colors = [
+    "from-emerald-500 to-teal-600",
+    "from-blue-500 to-indigo-600",
+    "from-violet-500 to-purple-600",
+    "from-rose-500 to-pink-600",
+    "from-amber-500 to-orange-600",
+  ];
+  const color = colors[(name?.charCodeAt(0) ?? 0) % colors.length];
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <div className={`w-full h-full rounded-full bg-gradient-to-br ${color} flex items-center justify-center font-bold text-white overflow-hidden`}
+        style={{ fontSize: size * 0.38 }}>
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+        ) : (
+          name?.[0]?.toUpperCase() || "P"
+        )}
+      </div>
+      {online && (
+        <span className="absolute bottom-0 right-0 rounded-full border-2 border-background bg-emerald-400"
+          style={{ width: size * 0.28, height: size * 0.28 }} />
+      )}
+    </div>
+  );
+}
+
+function LevelBadge({ level }: { level: string }) {
+  return (
+    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+      style={{ background: "var(--accent-primary-muted)", color: "var(--accent-primary)" }}>
+      {level}
+    </span>
+  );
+}
+
+function EmptyState({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center px-8">
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+        style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
+        <Icon className="w-7 h-7" style={{ color: "var(--ink-muted)" }} />
+      </div>
+      <p className="text-sm font-semibold text-foreground mb-1">{title}</p>
+      <p className="text-xs" style={{ color: "var(--ink-muted)" }}>{subtitle}</p>
+    </div>
+  );
+}
+
+export default function CommunityTab({
+  onOpenChat,
+  onOpenProfile
+}: {
+  onOpenChat: (p: { id: string; name: string; online: boolean; avatar_url?: string | null }) => void;
+  onOpenProfile?: (id: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Data
+  const [players, setPlayers] = useState<CommunityPlayer[]>([]);
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchData = useCallback(async (q: string) => {
+    setLoading(true);
+    const [pRes, cRes] = await Promise.all([
+      fetch(`/api/community/players?q=${encodeURIComponent(q)}`),
+      fetch(`/api/community/clubs`)
+    ]);
+
+    if (pRes.ok) setPlayers(await pRes.json());
+    if (cRes.ok) {
+      const allClubs: Club[] = await cRes.json();
+      setClubs(q.trim() ? allClubs.filter(c => c.name.toLowerCase().includes(q.toLowerCase())) : allClubs);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchData("");
+  }, [fetchData]);
+
+  function handleSearch(v: string) {
+    setSearch(v);
+    if (searchRef.current) clearTimeout(searchRef.current);
+    searchRef.current = setTimeout(() => fetchData(v), 300);
+  }
+
+  // --- Actions ---
+
+  async function toggleLike(p: CommunityPlayer) {
+    // Optimistic
+    setPlayers(prev => prev.map(pl =>
+      pl.id === p.id ? { ...pl, i_liked: !pl.i_liked, like_count: pl.like_count + (pl.i_liked ? -1 : 1) } : pl
+    ));
+    const res = await fetch("/api/community/likes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ liked_id: p.id }),
+    });
+    if (!res.ok) {
+      // Revert
+      setPlayers(prev => prev.map(pl => pl.id === p.id ? { ...pl, i_liked: p.i_liked, like_count: p.like_count } : pl));
+    }
+  }
+
+  async function handleJoinClub(club: Club) {
+    if (club.my_status !== "none") return;
+    setJoiningId(club.id);
+    const res = await fetch(`/api/community/clubs/${club.id}/join`, { method: "POST" });
+    if (res.ok) {
+      setClubs(prev => prev.map(c => c.id === club.id ? { ...c, my_status: "pending" } : c));
+    }
+    setJoiningId(null);
+  }
+
+  return (
+    <div className="flex flex-col gap-5 pt-1">
+      {/* Search Input */}
+      <div className="relative z-10">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--ink-muted)" }} />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          placeholder="Search players and clubs..."
+          className="w-full h-12 pl-11 pr-10 rounded-2xl text-[14px] outline-none transition-shadow focus:shadow-[0_0_20px_rgba(0,217,139,0.15)]"
+          style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)", color: "var(--ink-primary)" }}
+        />
+        {search && (
+          <button onClick={() => { setSearch(""); fetchData(""); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center bg-surface-interactive hover:bg-border-default transition-colors">
+            <X className="w-3 h-3 text-ink-secondary" />
+          </button>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="flex flex-col gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-[76px] rounded-2xl animate-pulse" style={{ background: "var(--surface-raised)" }} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+
+          {/* PLAYERS SECTION */}
+          {players.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <h2 className="text-[12px] font-bold uppercase tracking-wider px-1" style={{ color: "var(--ink-muted)" }}>
+                {search ? "Players" : "Discover Players"}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {players.slice(0, search ? players.length : 10).map((p, i) => (
+                  <motion.div key={`player-${p.id}`}
+                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.35 }}
+                    className="flex items-center gap-4 p-4 rounded-2xl"
+                    style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
+                    <button onClick={() => onOpenProfile?.(p.id)} className="shrink-0 transition-transform hover:scale-105 active:scale-95 text-left">
+                      <Avatar name={p.name} size={46} online={p.online} avatarUrl={p.avatar_url} />
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <button onClick={() => onOpenProfile?.(p.id)} className="text-[15px] font-bold text-foreground leading-tight truncate hover:underline text-left">
+                          {p.name}
+                        </button>
+                        <LevelBadge level={p.level} />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <Medal className="w-3.5 h-3.5 text-amber-400" strokeWidth={1.5} />
+                          <span className="text-xs text-ink-muted">{p.gold}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Medal className="w-3.5 h-3.5 text-slate-400" strokeWidth={1.5} />
+                          <span className="text-xs text-ink-muted">{p.silver}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Medal className="w-3.5 h-3.5 text-orange-400" strokeWidth={1.5} />
+                          <span className="text-xs text-ink-muted">{p.bronze}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <LockedFeatureWrapper showLockIcon={false}>
+                        <motion.button whileTap={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                          onClick={() => toggleLike(p)}
+                          className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center rounded-xl transition-colors"
+                          style={{ background: p.i_liked ? "rgba(239,68,68,0.12)" : "transparent" }}>
+                          <Heart className="w-4 h-4 transition-all" style={{ color: p.i_liked ? "#f04848" : "var(--ink-muted)", fill: p.i_liked ? "#f04848" : "none" }} />
+                          <span className="text-[10px] font-mono" style={{ color: p.i_liked ? "#f04848" : "var(--ink-muted)" }}>{p.like_count}</span>
+                        </motion.button>
+                      </LockedFeatureWrapper>
+                      <LockedFeatureWrapper featureLabel="send direct messages" showLockIcon={false}>
+                        <button onClick={() => onOpenChat(p)}
+                          className="w-11 h-11 flex items-center justify-center rounded-xl bg-surface-interactive border border-border-subtle hover:bg-surface-hover active:scale-95 transition-all">
+                          <MessageCircle className="w-4 h-4 text-cyan-400" />
+                        </button>
+                      </LockedFeatureWrapper>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* CLUBS SECTION */}
+          {clubs.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <h2 className="text-[12px] font-bold uppercase tracking-wider px-1 mt-2" style={{ color: "var(--ink-muted)" }}>
+                {search ? "Clubs" : "Discover Clubs"}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {clubs.map((club, i) => (
+                  <motion.div key={`club-${club.id}`}
+                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 6) * 0.05 }}
+                    className="flex items-center gap-4 p-4 rounded-2xl"
+                    style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-accent-primary-muted">
+                      <Shield className="w-6 h-6 text-accent-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[15px] font-bold text-foreground leading-tight block mb-0.5">{club.name}</span>
+                      <p className="text-[11px] text-ink-muted">
+                        {club.member_count} member{club.member_count !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <div className="shrink-0">
+                      {club.my_status === "none" && (
+                        <LockedFeatureWrapper showLockIcon={false}>
+                          <button onClick={() => handleJoinClub(club)} disabled={joiningId === club.id}
+                            className="h-9 px-4 rounded-xl text-[12px] font-bold text-white bg-accent-primary active:scale-95 transition-all disabled:opacity-60">
+                            {joiningId === club.id ? "..." : "Join"}
+                          </button>
+                        </LockedFeatureWrapper>
+                      )}
+                      {club.my_status === "pending" && (
+                        <div className="h-9 px-3 rounded-xl flex items-center justify-center gap-1.5 text-[12px] font-bold bg-[rgba(255,186,59,0.1)] text-accent-warning border border-[rgba(255,186,59,0.2)]">
+                          Pending
+                        </div>
+                      )}
+                      {(club.my_status === "member" || club.my_status === "admin") && (
+                        <div className="h-9 px-3 rounded-xl flex items-center justify-center gap-1.5 text-[12px] font-bold bg-accent-primary-muted text-accent-primary">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {players.length === 0 && clubs.length === 0 && search && (
+            <EmptyState icon={Search} title="No results found" subtitle={`We couldn't find anyone or any club matching "${search}"`} />
+          )}
+
+        </div>
+      )}
+    </div>
+  );
+}

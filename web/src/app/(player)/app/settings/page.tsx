@@ -79,9 +79,17 @@ export default function PlayerSettingsTab() {
 
   useEffect(() => {
     async function fetchIdentities() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setIdentities(user.identities || []);
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error("Supabase auth error:", error);
+          return;
+        }
+        if (user) {
+          setIdentities(user.identities || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch identities:", err);
       }
     }
     fetchIdentities();
@@ -248,7 +256,7 @@ export default function PlayerSettingsTab() {
         <AvatarUpload />
       </motion.div>
 
-      {user?.role === "owner" ? (
+      {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") ? (
         <div className="flex flex-col gap-4 mb-8">
           <WalletPill />
           {!user?.facilitySetupComplete && (
@@ -269,9 +277,11 @@ export default function PlayerSettingsTab() {
               </div>
             </div>
           )}
+          
+
         </div>
       ) : (
-        user?.role === "player" && (
+        (user?.role === "player" || user?.role === "demo") && (
           <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
             <WalletPill />
             
@@ -306,7 +316,7 @@ export default function PlayerSettingsTab() {
               </div>
             </VerificationGate>
 
-            <div onClick={() => router.push("/app/owner-onboarding")}
+            <div onClick={() => router.push("/app/owner-application")}
               className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
               <div className="flex items-center gap-4 relative z-10">
                 <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-cyan-500/20 text-cyan-500 shadow-inner">

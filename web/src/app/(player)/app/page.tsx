@@ -14,6 +14,18 @@ export default function PlayTab() {
   const [search, setSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [locationName, setLocationName] = useState("Metro Manila");
+
+  useEffect(() => {
+    const savedLocation = localStorage.getItem("picklers_user_location");
+    if (savedLocation) {
+      setLocationName(savedLocation);
+    }
+  }, []);
+
+  const updateLocation = (name: string) => {
+    setLocationName(name);
+    localStorage.setItem("picklers_user_location", name);
+  };
   const [isLocating, setIsLocating] = useState(false);
   const { facilities, favoritedFacilities, setFavoritedFacilities } = useApp();
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
@@ -57,7 +69,7 @@ export default function PlayTab() {
                 fullName = `${feature.text}, ${placeContext.text}`;
               }
             }
-            setLocationName(fullName);
+            updateLocation(fullName);
           } else {
             throw new Error("Location not found");
           }

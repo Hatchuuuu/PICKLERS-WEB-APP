@@ -109,6 +109,7 @@ export type ClubMember = {
   id: string;
   user_id: string;
   name: string;
+  avatar_url?: string;
   level?: string;
   status: "pending" | "member" | "admin";
   joined_at: string;
@@ -126,6 +127,7 @@ export type DirectMessage = {
 export type Conversation = {
   user_id: string;
   name: string;
+  avatar_url?: string;
   level?: string;
   online: boolean;
   last_message: string;
@@ -136,6 +138,7 @@ export type Conversation = {
 export type CommunityPlayer = {
   id: string;
   name: string;
+  avatar_url?: string;
   level: string;
   gold: number;
   silver: number;
@@ -143,4 +146,29 @@ export type CommunityPlayer = {
   online: boolean;
   like_count: number;
   i_liked: boolean;
+};
+
+export type FeedPost = {
+  id: string;
+  author_id: string;
+  author_name: string;
+  author_avatar_url?: string | null;
+  author_level?: string;
+  content: string | null;
+  image_url: string | null;
+  like_count: number;
+  comment_count: number;
+  i_liked: boolean;
+  created_at: string;
+  recent_comments?: FeedComment[];
+};
+
+export type FeedComment = {
+  id: string;
+  post_id: string;
+  author_id: string;
+  author_name: string;
+  author_avatar_url?: string | null;
+  content: string;
+  created_at: string;
 };

@@ -49,19 +49,20 @@ export async function GET(
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const userIds = (members ?? []).map((m: any) => m.user_id);
-  let nameMap: Record<string, { name: string; level: string }> = {};
+  let nameMap: Record<string, { name: string; level: string; avatar_url: string | null }> = {};
   if (userIds.length > 0) {
     const { data: profiles } = await supabase
       .from("player_profiles")
-      .select("id, name, level")
+      .select("id, name, level, avatar_url")
       .in("id", userIds);
-    (profiles ?? []).forEach((p: any) => { nameMap[p.id] = { name: p.name, level: p.level }; });
+    (profiles ?? []).forEach((p: any) => { nameMap[p.id] = { name: p.name, level: p.level, avatar_url: p.avatar_url ?? null }; });
   }
 
   const enriched = (members ?? []).map((m: any) => ({
     id: m.id,
     user_id: m.user_id,
     name: nameMap[m.user_id]?.name ?? "Unknown",
+    avatar_url: nameMap[m.user_id]?.avatar_url ?? null,
     level: nameMap[m.user_id]?.level ?? "2.5",
     status: m.status,
     joined_at: m.joined_at,

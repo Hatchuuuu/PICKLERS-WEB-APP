@@ -320,7 +320,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="bg-surface-base rounded-2xl shadow-2xl border border-border w-full max-w-[500px] max-h-full overflow-hidden flex flex-col"
+        className="bg-surface-base rounded-2xl shadow-2xl border border-border w-full max-w-[500px] max-h-[85vh] overflow-hidden flex flex-col"
       >
         <div className="px-6 py-5 flex justify-between items-center bg-surface-base z-20 shrink-0 border-b border-border">
             <h2 className="text-xl font-black tracking-tight text-foreground flex items-center gap-2">
@@ -358,7 +358,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                 })}
             </StepperNav>
 
-            <StepperPanel className="flex-1 relative pb-[80px]">
+            <StepperPanel className="flex-1">
                 {/* STEP 1: Basic Details */}
                 <StepperContent value={1} className="flex flex-col gap-6">
                     <div>
@@ -654,51 +654,51 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                         </div>
                     )}
                 </StepperContent>
-
-                {/* Bottom Action Bar */}
-                <div className="absolute bottom-0 left-0 right-0 pt-4 mt-6 bg-[#0F172A] z-20 flex gap-3">
-                    {activeStep > 1 && (
-                        <button 
-                            type="button"
-                            onClick={() => setActiveStep(prev => prev - 1)}
-                            className="p-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.1] text-white font-bold transition-colors active:scale-95 shadow-sm"
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-                    )}
-                    
-                    {activeStep < 3 ? (
-                        <button 
-                            type="button"
-                            onClick={() => setActiveStep(prev => prev + 1)}
-                            disabled={activeStep === 1 ? !isStep1Complete : !isStep2Complete}
-                            className={cn(
-                                "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2",
-                                (activeStep === 1 ? isStep1Complete : isStep2Complete)
-                                    ? "bg-[#0BCE83] text-[#0A1121] shadow-[0_10px_30px_rgba(11,206,131,0.25)] hover:shadow-[0_10px_40px_rgba(11,206,131,0.4)] hover:scale-[1.02] active:scale-[0.98]" 
-                                    : "bg-white/[0.03] text-slate-500 cursor-not-allowed border border-white/[0.05]"
-                            )}
-                        >
-                            Next Step <ChevronRight className="w-5 h-5" />
-                        </button>
-                    ) : (
-                        <button 
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={!isStep3Complete}
-                            className={cn(
-                                "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2 shadow-xl",
-                                isStep3Complete
-                                    ? "bg-[#0BCE83] text-[#0A1121] shadow-[0_10px_30px_rgba(11,206,131,0.25)] hover:shadow-[0_10px_40px_rgba(11,206,131,0.4)] hover:scale-[1.02] active:scale-[0.98]" 
-                                    : "bg-white/[0.03] text-slate-500 cursor-not-allowed border border-white/[0.05]"
-                            )}
-                        >
-                            Create Tournament <Check className="w-5 h-5" />
-                        </button>
-                    )}
-                </div>
             </StepperPanel>
           </Stepper>
+        </div>
+
+        {/* Bottom Action Bar */}
+        <div className="px-6 py-4 bg-surface-base border-t border-border z-20 shrink-0 flex gap-3">
+            {activeStep > 1 && (
+                <button 
+                    type="button"
+                    onClick={() => setActiveStep(prev => prev - 1)}
+                    className="p-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.1] text-white font-bold transition-colors active:scale-95 shadow-sm"
+                >
+                    <ChevronLeft className="w-5 h-5" />
+                </button>
+            )}
+            
+            {activeStep < 3 ? (
+                <button 
+                    type="button"
+                    onClick={() => setActiveStep(prev => prev + 1)}
+                    disabled={activeStep === 1 ? !isStep1Complete : !isStep2Complete}
+                    className={cn(
+                        "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2",
+                        (activeStep === 1 ? isStep1Complete : isStep2Complete)
+                            ? "bg-[#0BCE83] text-[#0A1121] shadow-[0_10px_30px_rgba(11,206,131,0.25)] hover:shadow-[0_10px_40px_rgba(11,206,131,0.4)] hover:scale-[1.02] active:scale-[0.98]" 
+                            : "bg-white/[0.03] text-slate-500 cursor-not-allowed border border-white/[0.05]"
+                    )}
+                >
+                    Next Step <ChevronRight className="w-5 h-5" />
+                </button>
+            ) : (
+                <button 
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={!isStep3Complete}
+                    className={cn(
+                        "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2 shadow-xl",
+                        isStep3Complete
+                            ? "bg-[#0BCE83] text-[#0A1121] shadow-[0_10px_30px_rgba(11,206,131,0.25)] hover:shadow-[0_10px_40px_rgba(11,206,131,0.4)] hover:scale-[1.02] active:scale-[0.98]" 
+                            : "bg-white/[0.03] text-slate-500 cursor-not-allowed border border-white/[0.05]"
+                    )}
+                >
+                    Create Tournament <Check className="w-5 h-5" />
+                </button>
+            )}
         </div>
       </motion.div>
     </div>

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProvider } from "@/contexts/AppContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { InitUserStore } from "@/components/InitUserStore";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // QueryClient must be created inside the component to prevent
@@ -25,6 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ToastProvider>
           <AuthProvider>
             <AppProvider>
+              <InitUserStore />
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>

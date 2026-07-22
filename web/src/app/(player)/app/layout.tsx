@@ -35,8 +35,8 @@ export const PLAYER_TABS: PlayerTab[] = [
 function AppShellInner({ children }: { children?: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  
-  const { user, logout } = useAuth();
+
+  const { user, logout, updateUser } = useAuth();
   const { notifications } = useApp();
 
   const segments = pathname.split("/").filter(Boolean);
@@ -127,13 +127,17 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
           })}
         </nav>
         <div className="p-4 border-t border-solid flex flex-col gap-1" style={{ borderColor: "var(--border-subtle)" }}>
-          {user?.role === "owner" && (
-            <button onClick={() => router.push("/app/owner")}
+          {(user?.role === "owner" || user?.role === "demo" || user?.role === "admin") && (
+            <button onClick={() => {
+                if (user?.role === "demo") updateUser({ role: "owner" });
+                router.push("/app/owner");
+              }}
               className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
               style={{ color: "var(--ink-muted)" }}
               onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
               onMouseLeave={e => e.currentTarget.style.color = "var(--ink-muted)"}>
-              <LayoutDashboard className="w-4 h-4" />Owner Dashboard
+              <LayoutDashboard className="w-4 h-4" />
+              {user?.role === "demo" ? "Switch to Owner View" : "Owner Dashboard"}
             </button>
           )}
           <button onClick={() => setShowLogoutConfirm(true)}
@@ -154,12 +158,12 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
             />
             <div className="w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase bg-background text-accent-primary relative z-10 overflow-hidden">
               {user?.avatarUrl ? (
-                <motion.img 
-                  initial={{ opacity: 0 }} 
-                  animate={{ opacity: 1 }} 
-                  src={user.avatarUrl} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover" 
+                <motion.img
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  src={user.avatarUrl}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 user?.name?.[0] || "P"
@@ -206,12 +210,12 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
               />
               <div className="w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none bg-background text-accent-primary relative z-10 overflow-hidden">
                 {user?.avatarUrl ? (
-                  <motion.img 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }} 
-                    src={user.avatarUrl} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover" 
+                  <motion.img
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    src={user.avatarUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   user?.name?.[0] || "P"

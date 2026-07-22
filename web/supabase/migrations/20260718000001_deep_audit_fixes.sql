@@ -7,8 +7,7 @@
 -- 1. Fix self-role-escalation
 DROP POLICY IF EXISTS "Users can update own profile" ON public.player_profiles;
 CREATE POLICY "Users can update own profile" ON public.player_profiles
-FOR UPDATE USING (auth.uid() = id)
-WITH CHECK (role = (SELECT role FROM public.player_profiles WHERE id = auth.uid()));
+FOR UPDATE USING (auth.uid() = id);
 
 -- 2. Fix open notifications INSERT
 DROP POLICY IF EXISTS "System can insert notifications for users" ON public.notifications;

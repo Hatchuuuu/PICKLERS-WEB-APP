@@ -9,10 +9,13 @@ import { ChevronRight, Check, CreditCard, Banknote, Coins } from "lucide-react";
 import { slotHours } from "@/lib/timeUtils";
 import { PaymentData } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
+import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
+import { useApp } from "@/contexts/AppContext";
 
 export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBack: () => void; onDone: () => void }) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { setBookings } = useApp();
   const [method, setMethod] = useState<"gcash" | "maya" | "cash" | "credits">("gcash");
   const [stage, setStage] = useState<"idle" | "processing" | "success" | "failed">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -47,7 +50,7 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
         return;
       }
 
-      const { error } = await supabase.from('bookings').insert({
+      const { data: insertedBooking, error } = await supabase.from('bookings').insert({
         user_id: session.user.id,
         facility_id: data.facility.id,
         court_name: data.court.name,
@@ -56,9 +59,25 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
         duration: `${hours}h`,
         price: total,
         status: "upcoming"
-      });
+      }).select('*, facilities(name)').single();
 
       if (error) throw error;
+
+      if (insertedBooking) {
+        setBookings(prev => [{
+            id: String(insertedBooking.id),
+            facility_id: Number(insertedBooking.facility_id),
+            facility: String((insertedBooking.facilities as any)?.name || data.facility.name),
+            court: String(insertedBooking.court_name),
+            court_name: String(insertedBooking.court_name),
+            date: String(insertedBooking.date),
+            time: String(insertedBooking.time),
+            duration: String(insertedBooking.duration),
+            price: Number(insertedBooking.price),
+            status: "upcoming",
+            players: []
+        }, ...prev]);
+      }
 
       // Update react-query cache for the owner view
       const newRequest = {
@@ -232,9 +251,9 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
               { id: "maya", label: "Maya", sub: "Pay via Maya wallet", icon: <span className="font-black text-[15px] tracking-tighter" style={{ color: "#42d6a4", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>maya</span>, iconBg: "#fff", recommended: false },
               { id: "cash", label: "Cash on Site", sub: "Pay at the front desk", icon: <Banknote className="w-5 h-5 text-foreground" strokeWidth={2.5} />, iconBg: "#8E8E93", recommended: false },
               { id: "credits", label: "Pickle Credits", sub: `Balance: ₱1,200`, icon: <Coins className="w-5 h-5 text-foreground" strokeWidth={2.5} />, iconBg: "#34C759", recommended: false },
-            ] as const).map((opt, i) => (
-              <div key={opt.id} className="relative group">
-                 <button onClick={() => setMethod(opt.id)}
+            ] as const).map((opt, i) => {
+              const optionNode = (
+                <button onClick={() => setMethod(opt.id)}
                   className="flex items-center pl-4 text-left w-full transition-colors hover:bg-surface-interactive border border-border active:bg-surface-raised border border-border/[0.12]">
 
                   {/* iOS Style Icon */}
@@ -271,8 +290,20 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
                     </div>
                   </div>
                 </button>
-              </div>
-            ))}
+              );
+
+              return (
+                <div key={opt.id} className="relative group">
+                  {opt.id === "cash" ? (
+                    <LockedFeatureWrapper featureLabel="use Cash on Site payment" showLockIcon={false}>
+                      {optionNode}
+                    </LockedFeatureWrapper>
+                  ) : (
+                    optionNode
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 

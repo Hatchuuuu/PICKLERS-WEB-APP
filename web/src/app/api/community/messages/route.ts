@@ -20,6 +20,10 @@ async function makeSupabase() {
   );
 }
 
+/**
+ * GET /api/community/messages?with=<userId>&before=<timestamp>&limit=<n>
+ * Paginated messages with cursor-based pagination
+ */
 export async function GET(req: NextRequest) {
   const supabase = await makeSupabase();
   const { data: { session } } = await supabase.auth.getSession();
@@ -29,15 +33,26 @@ export async function GET(req: NextRequest) {
   if (!withUserId) return NextResponse.json({ error: "Missing `with` param" }, { status: 400 });
 
   const myId = session.user.id;
+  const limit = parseInt(req.nextUrl.searchParams.get("limit") ?? "50");
+  const before = req.nextUrl.searchParams.get("before");
 
-  const { data: messages, error } = await supabase
+  let query = supabase
     .from("direct_messages")
     .select("*")
     .or(`and(sender_id.eq.${myId},receiver_id.eq.${withUserId}),and(sender_id.eq.${withUserId},receiver_id.eq.${myId})`)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  // Cursor-based pagination: fetch messages older than `before`
+  if (before) {
+    query = query.lt("created_at", before);
+  }
+
+  const { data: messages, error } = await query;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Mark unread messages from this partner as read
   await supabase
     .from("direct_messages")
     .update({ read: true })
@@ -45,7 +60,8 @@ export async function GET(req: NextRequest) {
     .eq("sender_id", withUserId)
     .eq("read", false);
 
-  return NextResponse.json(messages ?? []);
+  // Return in chronological order (oldest first) for display
+  return NextResponse.json((messages ?? []).reverse());
 }
 
 export async function POST(req: NextRequest) {

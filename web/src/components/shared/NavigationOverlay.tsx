@@ -97,28 +97,31 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
         </div>
 
         {/* Top Instruction Banner */}
-        <div className="relative z-10 pt-12 px-4 pointer-events-none">
+        <div className="relative z-10 pt-14 sm:pt-16 px-4 sm:px-6 pointer-events-none">
           <motion.div 
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring", bounce: 0.3 }}
-            className="bg-gradient-to-r from-emerald-600/95 to-emerald-700/95 backdrop-blur-3xl rounded-2xl p-4 flex items-center gap-4 shadow-2xl pointer-events-auto max-w-lg mx-auto border border-white/20"
-            style={{ boxShadow: "0 24px 48px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.3)" }}
+            className="bg-[#1A1D21]/95 backdrop-blur-2xl rounded-[20px] p-3.5 flex items-center gap-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.5)] pointer-events-auto max-w-lg mx-auto border border-white/10"
           >
-            <div className="flex flex-col items-center justify-center w-12 h-12">
-              <ArrowUp className="w-9 h-9 text-white stroke-[3] drop-shadow-md" />
+            {/* Turn Icon */}
+            <div className="w-12 h-12 bg-emerald-500 rounded-[14px] flex items-center justify-center shrink-0 shadow-inner">
+              <ArrowUp className="w-7 h-7 text-white stroke-[2.5]" />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="bg-white text-emerald-700 font-black text-[13px] px-2 py-0.5 rounded-md shrink-0 shadow-sm">7</div>
-                <div className="text-white font-bold text-[18px] tracking-tight truncate drop-shadow-sm">{destination}</div>
+            
+            {/* Instruction Text */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              <div className="flex items-center gap-2 mb-0.5">
+                <div className="bg-[#2A2E33] border border-white/10 text-white font-bold text-[12px] px-1.5 py-0.5 rounded flex items-center justify-center shrink-0">
+                  7
+                </div>
+                <div className="text-white font-bold text-[18px] tracking-tight truncate leading-none">
+                  {destination}
+                </div>
               </div>
-              <div className="text-emerald-50 text-[14px] font-medium leading-tight line-clamp-2">
+              <div className="text-white/60 text-[14px] font-medium truncate leading-tight">
                 Road / Negros South Road / Western Nautical Hwy
               </div>
-            </div>
-            <div className="w-12 h-12 bg-black/20 border border-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
-              <Compass className="w-6 h-6 text-white" />
             </div>
           </motion.div>
         </div>
@@ -156,7 +159,7 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
             initial={{ y: 150 }}
             animate={{ y: 0 }}
             transition={{ delay: 0.3, type: "spring", bounce: 0 }}
-            className="bg-surface-base/95 dark:bg-[#0A1118]/95 backdrop-blur-3xl rounded-t-[32px] p-6 pb-28 sm:pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.4)] border-t border-black/5 dark:border-white/10 pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-4"
+            className="bg-[#1A1D21]/95 backdrop-blur-3xl rounded-t-[32px] p-6 pb-20 md:pb-8 shadow-[0_-16px_40px_rgba(0,0,0,0.5)] border-t border-white/5 pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-4"
           >
             <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-black/10 dark:bg-white/20 rounded-full" />
             
@@ -172,13 +175,13 @@ export function NavigationOverlay({ destination, onClose }: NavigationOverlayPro
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button className="w-[52px] h-[52px] rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center active:scale-95 transition-all">
-                  <Navigation className="w-6 h-6 text-foreground" />
+              <div className="flex items-center gap-2.5">
+                <button className="w-[48px] h-[48px] rounded-[16px] bg-[#2A2E33] border border-white/5 flex items-center justify-center active:scale-95 transition-all shadow-sm">
+                  <Navigation className="w-5 h-5 text-white" />
                 </button>
                 <button 
                   onClick={onClose}
-                  className="px-8 py-3.5 rounded-full bg-[#FF3B30] hover:bg-[#FF453A] flex items-center justify-center font-bold text-white text-[17px] active:scale-95 transition-all shadow-[0_8px_16px_rgba(255,59,48,0.3)]"
+                  className="px-6 py-3 rounded-[16px] bg-red-500 hover:bg-red-600 flex items-center justify-center font-bold text-white text-[16px] active:scale-95 transition-all shadow-sm"
                 >
                   End
                 </button>

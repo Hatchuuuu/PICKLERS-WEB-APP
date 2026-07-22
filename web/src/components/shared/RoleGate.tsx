@@ -11,12 +11,18 @@ export function RoleGate({ role, children }: { role: UserRole, children: React.R
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && user?.role !== role) {
-      router.replace('/app');
+    if (!isLoading && user) {
+      const allowedRoles = role === 'owner' ? ['owner', 'demo', 'admin'] : [role];
+      if (!allowedRoles.includes(user.role)) {
+        router.replace('/app');
+      }
     }
   }, [isLoading, user, role, router]);
 
-  if (isLoading || user?.role !== role) return null;
+  if (isLoading || !user) return null;
+  
+  const allowedRoles = role === 'owner' ? ['owner', 'demo', 'admin'] : [role];
+  if (!allowedRoles.includes(user.role)) return null;
 
   return <>{children}</>;
 }

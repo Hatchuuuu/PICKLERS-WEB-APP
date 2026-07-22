@@ -35,7 +35,7 @@ export const OWNER_TABS: OwnerTab[] = [
 export default function OwnerLayout({ children }: { children?: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
 
   const segments = pathname.split("/").filter(Boolean);
   const currentPath = segments.length > 0 ? segments[segments.length - 1] : "";
@@ -99,7 +99,12 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
           })}
         </nav>
         <div className="p-4 border-t border-solid flex flex-col gap-1" style={{ borderColor: "var(--border-subtle)" }}>
-          <button onClick={() => router.push("/app")}
+          <button onClick={() => {
+            if (user) {
+              updateUser({ role: user.isDemo ? "demo" : "player" });
+            }
+            router.push("/app");
+          }}
             className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
             style={{ color: "var(--ink-muted)" }}
             onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
@@ -120,8 +125,20 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
               style={{
                 background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
               }} />
-            <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase"
-              style={{ background: "var(--surface-base)", color: "#FBBF24" }}>{user?.name?.[0] || "O"}</div>
+            <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase overflow-hidden"
+              style={{ background: "var(--surface-base)", color: "#FBBF24" }}>
+              {user?.avatarUrl ? (
+                <motion.img
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  src={user.avatarUrl}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user?.name?.[0] || "O"
+              )}
+            </div>
           </div>
           <div className="min-w-0">
             <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink-primary)" }}>{user?.name || "BGC Pickleball Hub"}</div>
@@ -146,8 +163,20 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
                 style={{
                   background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
                 }} />
-              <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none"
-                style={{ background: "var(--surface-base)", color: "#FBBF24" }}>{user?.name?.[0] || "O"}</div>
+              <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none overflow-hidden"
+                style={{ background: "var(--surface-base)", color: "#FBBF24" }}>
+                {user?.avatarUrl ? (
+                  <motion.img
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    src={user.avatarUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.name?.[0] || "O"
+                )}
+              </div>
             </button>
           </div>
         </div>

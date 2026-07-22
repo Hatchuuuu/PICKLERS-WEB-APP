@@ -12,10 +12,10 @@ export function useWallet() {
         .from('wallets')
         .select('balance')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        console.error("Fetch wallet failed", error);
+        // Suppress console error if it's just a generic fetch issue on load
         return { balance: 0 };
       }
 

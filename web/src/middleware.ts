@@ -50,14 +50,16 @@ export async function middleware(request: NextRequest) {
     }
 
     // Role-based protection for /owner
+    // Allowed: 'owner' (primary), 'demo' (Player↔Owner bridge), 'admin' (full access)
     if (pathname.startsWith('/app/owner')) {
       const { data: roleData } = await supabase
         .from('player_profiles')
         .select('role')
         .eq('id', user.id)
         .single()
-      
-      if (!roleData || roleData.role !== 'owner') {
+
+      const ownerAccessRoles = ['owner', 'demo', 'admin'];
+      if (!roleData || !ownerAccessRoles.includes(roleData.role)) {
         const url = request.nextUrl.clone()
         url.pathname = '/app'
         return NextResponse.redirect(url)

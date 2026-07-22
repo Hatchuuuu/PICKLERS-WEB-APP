@@ -16,6 +16,7 @@ export type AppNotification = {
 export interface PlayerProfile {
   id: string | number;
   name: string;
+  avatarUrl?: string;
   level: string;
   gold: number;
   silver: number;
@@ -138,6 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
            const mappedPlayers = dbPlayers.map((p: Record<string, unknown>) => ({
              id: String(p.id),
              name: String(p.name),
+             avatarUrl: p.avatar_url ? String(p.avatar_url) : undefined,
              level: String(p.level || "2.5"),
              gold: Number(p.gold_medals || 0),
              silver: Number(p.silver_medals || 0),

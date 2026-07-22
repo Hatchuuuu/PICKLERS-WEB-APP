@@ -6,9 +6,10 @@ interface PlayerAvatarProps {
   teamName?: string | null;
   teamType?: 'SINGLES' | 'DOUBLES';
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  avatarUrl?: string | null;
 }
 
-export function PlayerAvatar({ teamName, teamType = 'DOUBLES', size = 'sm' }: PlayerAvatarProps) {
+export function PlayerAvatar({ teamName, teamType = 'DOUBLES', size = 'sm', avatarUrl }: PlayerAvatarProps) {
   const s = size === 'sm' ? 28 : size === 'md' ? 36 : size === 'lg' ? 64 : 112;
   const iconS = size === 'sm' ? 12 : size === 'md' ? 16 : size === 'lg' ? 28 : 48;
   const fontSize = size === 'sm' ? '10px' : size === 'md' ? '13px' : size === 'lg' ? '24px' : '42px';
@@ -69,6 +70,12 @@ export function PlayerAvatar({ teamName, teamType = 'DOUBLES', size = 'sm' }: Pl
           <span className="font-bold text-white drop-shadow-md" style={{ fontSize }}>{p2Initial}</span>
         </div>
       </div>
+    );
+  }
+
+  if (avatarUrl) {
+    return (
+      <img src={avatarUrl} alt={teamName} className="rounded-full object-cover shrink-0 shadow-[0_0_8px_rgba(0,0,0,0.3)]" style={{ width: s, height: s }} />
     );
   }
 

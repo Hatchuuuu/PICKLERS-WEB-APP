@@ -165,7 +165,7 @@ function AuthContent() {
             )}
           </AnimatePresence>
 
-          <form onSubmit={view === "verify-code" || view === "verify-phone" ? (e) => { e.preventDefault(); handleVerifyCode(otpCode); } : form.handleSubmit(onSubmit, (errs) => console.error("Form Validation Failed:", errs))} className="flex flex-col gap-3 sm:gap-3 flex-1 justify-start">
+          <form onSubmit={view === "verify-code" || view === "verify-phone" ? (e) => { e.preventDefault(); handleVerifyCode(otpCode); } : form.handleSubmit(onSubmit)} className="flex flex-col gap-3 sm:gap-3 flex-1 justify-start">
             <fieldset disabled={loading || (view === "forgot-password" && countdown > 0)} className="flex flex-col gap-3 sm:gap-3 flex-1 justify-start pt-1 transition-opacity duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-none p-0 m-0 w-full">
               <AnimatePresence mode="popLayout">
                 <motion.div key={view} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex flex-col gap-3 sm:gap-4">
@@ -481,9 +481,9 @@ function AuthContent() {
                   <AnimatePresence>
                     {authError && (
                       <motion.div role="alert" aria-live="assertive" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                        <div className="flex items-start gap-2 mt-3 mb-1 px-4 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-destructive/10 border-destructive/20">
-                          <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                          <p className="text-xs text-destructive font-medium leading-relaxed text-left">
+                        <div className="flex items-center gap-2 mt-3 mb-1 px-4 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-red-500/10 border-red-500/20">
+                          <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+                          <p className="text-xs text-red-500 dark:text-red-400 font-medium leading-relaxed text-left">
                             {authError}
                           </p>
                         </div>
@@ -494,11 +494,11 @@ function AuthContent() {
                   <AnimatePresence>
                     {successMessage && !authError && (
                       <motion.div role="alert" aria-live="polite" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                        <div className="flex items-start gap-2 mt-3 mb-1 px-4 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-primary/10 border-primary/20">
-                          <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        <div className="flex items-center gap-2 mt-3 mb-1 px-4 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-emerald-500/10 border-emerald-500/20">
+                          <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                           </div>
-                          <p className="text-xs text-primary font-medium leading-relaxed text-left">
+                          <p className="text-xs text-emerald-500 dark:text-emerald-400 font-medium leading-relaxed text-left">
                             {successMessage}
                           </p>
                         </div>

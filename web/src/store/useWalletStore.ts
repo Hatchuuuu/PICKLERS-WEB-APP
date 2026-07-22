@@ -15,23 +15,30 @@ export const useWalletStore = create<WalletState>((set) => ({
   isTopUpModalOpen: false,
   setTopUpModalOpen: (open) => set({ isTopUpModalOpen: open }),
   fetchBalance: async (userId: string) => {
+    if (!userId) {
+      set({ balance: 0, isLoadingBalance: false });
+      return;
+    }
+    
     set({ isLoadingBalance: true });
     try {
       const { data, error } = await supabase
         .from('wallets')
         .select('balance')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       
-      if (!error && data) {
+      if (error) {
+        // Suppress empty object error logs on component mount
+        set({ balance: 0, isLoadingBalance: false });
+      } else if (data) {
         set({ balance: data.balance, isLoadingBalance: false });
       } else {
-        console.error("Failed to fetch wallet balance:", error);
-        set({ isLoadingBalance: false });
+        // Wallet doesn't exist yet, default to 0
+        set({ balance: 0, isLoadingBalance: false });
       }
     } catch (e) {
-      console.error(e);
-      set({ isLoadingBalance: false });
+      set({ balance: 0, isLoadingBalance: false });
     }
   }
 }));

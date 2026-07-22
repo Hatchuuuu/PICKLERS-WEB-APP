@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 import { MatchCard } from "@/components/shared/MatchCard";
 import { useToast } from "@/contexts/ToastContext";
+import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
 import { useTheme } from "next-themes";
 import { useApp } from "@/contexts/AppContext";
 import { useQuery } from "@tanstack/react-query";
@@ -110,29 +111,31 @@ export default function ExploreTab() {
               return (
               <motion.div key={m.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }}
                 transition={{ delay: i * 0.04, ease: "easeOut" }}>
-                <MatchCard m={cardData} joined={joined.has(m.id)} onJoin={() => {
-                  setJoined(prev => new Set(prev).add(m.id));
-                  setBookings(prev => {
-                    if (joined.has(m.id)) return prev;
-                    const newBooking: Booking = {
-                      id: `PKL-OP-${m.id}${Date.now().toString().slice(-3)}`,
-                      facility_id: 0, // placeholder
-                      court_name: `Open Play • ${m.level}`,
-                      court: `Open Play • ${m.level}`,
-                      facility: m.facility_name || "Unknown Facility",
-                      date: m.date,
-                      time: m.time,
-                      duration: "2h",
-                      price: m.price,
-                      total: m.price,
-                      status: "upcoming",
-                      payment: "Pay at Venue",
-                      players: [],
-                      isNew: true // For animation
-                    };
-                    return [newBooking, ...prev];
-                  });
-                }} />
+                <LockedFeatureWrapper featureLabel="join open play sessions" showLockIcon={true}>
+                  <MatchCard m={cardData} joined={joined.has(m.id)} onJoin={() => {
+                    setJoined(prev => new Set(prev).add(m.id));
+                    setBookings(prev => {
+                      if (joined.has(m.id)) return prev;
+                      const newBooking: Booking = {
+                        id: `PKL-OP-${m.id}${Date.now().toString().slice(-3)}`,
+                        facility_id: 0, // placeholder
+                        court_name: `Open Play • ${m.level}`,
+                        court: `Open Play • ${m.level}`,
+                        facility: m.facility_name || "Unknown Facility",
+                        date: m.date,
+                        time: m.time,
+                        duration: "2h",
+                        price: m.price,
+                        total: m.price,
+                        status: "upcoming",
+                        payment: "Pay at Venue",
+                        players: [],
+                        isNew: true // For animation
+                      };
+                      return [newBooking, ...prev];
+                    });
+                  }} />
+                </LockedFeatureWrapper>
               </motion.div>
               );
             })}

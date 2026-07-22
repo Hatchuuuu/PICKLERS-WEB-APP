@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "./ToastContext";
 
-export type UserRole = "player" | "owner";
+export type UserRole = "player" | "owner" | "admin" | "demo";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
@@ -16,6 +16,7 @@ export interface User {
   phone?: string;
   avatarUrl?: string;
   role: UserRole;
+  isDemo?: boolean;
   verificationStatus: VerificationStatus;
   facilitySetupComplete?: boolean;
   notifications?: {
@@ -77,13 +78,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let dbVerificationStatus: VerificationStatus = "unverified";
         const { data: profile } = await supabase
           .from('player_profiles')
-          .select('role, verification_status')
+          .select('role, verification_status, avatar_url, is_demo, facility_setup_complete')
           .eq('id', session.user.id)
           .single();
-        
-        if (profile?.role === 'owner') {
-          assignedRole = "owner";
-        }
+
+        if (profile?.role === 'owner')      assignedRole = "owner";
+        else if (profile?.role === 'admin') assignedRole = "admin";
+        else if (profile?.role === 'demo')  assignedRole = "demo";
+
         if (profile?.verification_status) {
           dbVerificationStatus = profile.verification_status as VerificationStatus;
         }
@@ -94,8 +96,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: name,
           email: email,
           phone: session.user.phone,
+          avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
           role: assignedRole,
-          verificationStatus: assignedRole === "owner" ? "verified" : dbVerificationStatus
+          isDemo: profile?.is_demo ?? false,
+          facilitySetupComplete: profile?.facility_setup_complete ?? false,
+          verificationStatus: (assignedRole === "owner" || assignedRole === "admin" || assignedRole === "demo")
+            ? "verified"
+            : dbVerificationStatus
         };
 
         setUser(userObj);
@@ -170,9 +177,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const dbUpdates: any = {};
       if (data.name !== undefined) dbUpdates.name = data.name;
-      // Removed insecure local storage persistence
+      if (data.avatarUrl !== undefined) dbUpdates.avatar_url = data.avatarUrl;
+      if (data.role !== undefined) dbUpdates.role = data.role;
+      if (data.facilitySetupComplete !== undefined) dbUpdates.facility_setup_complete = data.facilitySetupComplete;
+      
       if (Object.keys(dbUpdates).length > 0) {
-        await supabase.from('player_profiles').update(dbUpdates).eq('id', user.id);
+        const { error } = await supabase.from('player_profiles').update(dbUpdates).eq('id', user.id);
+        if (error) {
+          console.error("Failed to update user profile in Supabase:", error);
+          showToast(`Error updating profile: ${error.message}`, "error");
+        }
       }
     }
   };

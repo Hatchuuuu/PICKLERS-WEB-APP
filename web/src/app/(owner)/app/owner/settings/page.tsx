@@ -10,9 +10,11 @@ import { useTheme } from "next-themes";
 import { TimePicker } from "@/components/shared/TimePicker";
 import { cn } from "@/lib/utils";
 import { SettingsGroup, containerVariants } from "@/components/shared/SettingsUI";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function OwnerSettings() {
   const router = useRouter();
+  const { user, updateUser } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   
@@ -373,7 +375,14 @@ export default function OwnerSettings() {
 
       {/* SWITCH TO PLAYER VIEW */}
       <div className="mt-10 flex justify-center pb-8">
-        <button onClick={() => router.push("/app")}
+        <button onClick={() => {
+            if (user?.isDemo) {
+              updateUser({ role: "demo" });
+            } else {
+              updateUser({ role: "player" });
+            }
+            router.push("/app");
+          }}
           className="group flex items-center gap-2 text-[13px] font-bold text-muted-foreground hover:text-foreground transition-colors">
           Switch to Player Dashboard <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
