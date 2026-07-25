@@ -307,7 +307,7 @@ export function useAuthForm() {
     try {
       let nextTarget = "/app";
       if (redirect) {
-        nextTarget = redirect.startsWith("http") ? redirect : redirect;
+        nextTarget = (redirect.startsWith("/") && !redirect.startsWith("//")) ? redirect : "/app";
       } else if (intent === "owner") {
         nextTarget = "/app/owner";
       }

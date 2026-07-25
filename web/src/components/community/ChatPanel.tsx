@@ -1,45 +1,10 @@
-"use client";
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
 import { Send, ChevronLeft, MessageCircle, Check, CheckCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DirectMessage } from "@/types";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
-
-function Avatar({ name, size = 44, online, avatarUrl }: { name: string; size?: number; online?: boolean; avatarUrl?: string | null }) {
-  const colors = [
-    "from-emerald-500 to-teal-600",
-    "from-blue-500 to-indigo-600",
-    "from-violet-500 to-purple-600",
-    "from-rose-500 to-pink-600",
-    "from-amber-500 to-orange-600",
-  ];
-  const color = colors[(name?.charCodeAt(0) ?? 0) % colors.length];
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <div className={`w-full h-full rounded-full bg-gradient-to-br ${color} flex items-center justify-center font-bold text-white overflow-hidden`}
-        style={{ fontSize: size * 0.38 }}>
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          name?.[0]?.toUpperCase() || "P"
-        )}
-      </div>
-      {online && (
-        <motion.span
-          animate={{ opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-0 right-0 rounded-full border-2 border-background bg-emerald-400"
-          style={{ width: size * 0.28, height: size * 0.28 }} />
-      )}
-    </div>
-  );
-}
+import { Avatar } from "@/components/ui/Avatar";
 
 function formatTime(dateStr: string): string {
   const d = new Date(dateStr);

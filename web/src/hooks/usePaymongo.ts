@@ -12,6 +12,8 @@ export const usePaymongo = () => {
   };
 
   const createCheckoutSession = async (amount: number, userId: string, description: string = "Picklers Wallet Top-Up") => {
+    if (isLoading) return;
+
     if (amount < 100) {
       shakeError("Minimum top-up amount is ₱100.");
       return;

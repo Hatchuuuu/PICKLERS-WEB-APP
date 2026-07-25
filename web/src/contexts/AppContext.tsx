@@ -163,10 +163,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     fetchCoreData();
 
-    // Subscribe to booking changes
+    // Subscribe to booking changes - update bookings targetedly without re-fetching all core data
     const bookingSub = supabase.channel('bookings_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-        fetchCoreData(); // Refresh bookings dynamically
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && mounted) {
+          const { data: dbBookings, error: bError } = await supabase.from('bookings').select('*, facilities(name)').eq('user_id', session.user.id);
+          if (dbBookings && !bError && mounted) {
+            const mappedBookings = dbBookings.map((b: Record<string, unknown>) => ({
+              id: String(b.id),
+              facility_id: Number(b.facility_id || 1),
+              facility: String((b.facilities as Record<string, unknown>)?.name || "Unknown Facility"),
+              court: String(b.court_name),
+              court_name: String(b.court_name),
+              date: String(b.date),
+              time: String(b.time),
+              duration: String(b.duration),
+              price: Number(b.price),
+              status: String(b.status) as "upcoming" | "completed" | "cancelled",
+              players: []
+            }));
+            setBookings(mappedBookings);
+          }
+        }
       })
       .subscribe();
 

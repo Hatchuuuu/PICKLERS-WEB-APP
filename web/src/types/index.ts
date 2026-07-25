@@ -8,6 +8,7 @@ export type CourtData = {
   price: number;
   image?: string;
   status?: "available" | "maintenance" | "occupied";
+  occupiedFrom?: string;
   occupiedUntil?: string;
   occupiedBy?: string;
 };

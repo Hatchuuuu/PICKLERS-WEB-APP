@@ -1,41 +1,14 @@
-"use client";
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Heart, MessageCircle, Send, Image as ImageIcon, X, MoreHorizontal,
-  Trash2, MessageSquare
+  Trash2, MessageSquare, AlertTriangle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FeedPost, FeedComment, CommunityPlayer } from "@/types";
 import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
-
-function Avatar({ name, size = 40, avatarUrl }: { name: string; size?: number; avatarUrl?: string | null }) {
-  const colors = [
-    "from-emerald-500 to-teal-600",
-    "from-blue-500 to-indigo-600",
-    "from-violet-500 to-purple-600",
-    "from-rose-500 to-pink-600",
-    "from-amber-500 to-orange-600",
-  ];
-  const color = colors[(name?.charCodeAt(0) ?? 0) % colors.length];
-  return (
-    <div className="shrink-0 rounded-full overflow-hidden" style={{ width: size, height: size }}>
-      <div className={`w-full h-full bg-gradient-to-br ${color} flex items-center justify-center font-bold text-white`}
-        style={{ fontSize: size * 0.38 }}>
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          name?.[0]?.toUpperCase() || "P"
-        )}
-      </div>
-    </div>
-  );
-}
+import { Avatar } from "@/components/ui/Avatar";
+import { useActionLock } from "@/hooks/useActionLock";
 
 function relativeTime(dateStr: string): string {
   const now = Date.now();
@@ -126,6 +99,10 @@ function CreatePostModal({ open, onClose, onCreated }: {
       if (uploadRes.ok) {
         const { url } = await uploadRes.json();
         image_url = url;
+      } else {
+        setPosting(false);
+        alert("Failed to upload image. Please try again.");
+        return;
       }
     }
 
@@ -259,15 +236,51 @@ function FeedPostCard({ post, onLike, onDelete, onComment, onOpenProfile }: {
   const [showComments, setShowComments] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [imageExpanded, setImageExpanded] = useState(false);
   const isMe = post.author_id === user?.id;
 
   return (
     <motion.div
       layout
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden relative"
       style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
     >
+      {/* Delete Confirmation Overlay */}
+      <AnimatePresence>
+        {showConfirmDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-30 bg-background/90 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center gap-3"
+          >
+            <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-1">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h4 className="font-bold text-foreground text-base">Delete this post?</h4>
+            <p className="text-xs text-ink-muted max-w-xs">This action cannot be undone and will permanently remove your post.</p>
+            <div className="flex items-center gap-3 mt-2">
+              <button
+                onClick={() => setShowConfirmDelete(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-surface-interactive text-foreground hover:bg-surface-hover transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirmDelete(false);
+                  onDelete(post.id);
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm"
+              >
+                Delete Post
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Author Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <button onClick={() => onOpenProfile?.(post.author_id)} className="shrink-0 transition-transform hover:scale-105 active:scale-95">
@@ -300,7 +313,7 @@ function FeedPostCard({ post, onLike, onDelete, onComment, onOpenProfile }: {
                 className="absolute right-0 top-10 z-10 w-36 rounded-xl shadow-xl overflow-hidden"
                 style={{ background: "var(--surface-base)", border: "1px solid var(--border-subtle)" }}>
                 <button
-                  onClick={() => { onDelete(post.id); setShowMenu(false); }}
+                  onClick={() => { setShowConfirmDelete(true); setShowMenu(false); }}
                   className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium text-red-500 hover:bg-surface-interactive transition-colors">
                   <Trash2 className="w-4 h-4" /> Delete
                 </button>
@@ -566,81 +579,89 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
     return () => observer.disconnect();
   }, [hasMore, loading, cursor, fetchPosts]);
 
+  const { runWithLock } = useActionLock();
+
   async function handleLike(postId: string) {
-    // Optimistic update
-    setPosts(prev => prev.map(p =>
-      p.id === postId
-        ? { ...p, i_liked: !p.i_liked, like_count: p.like_count + (p.i_liked ? -1 : 1) }
-        : p
-    ));
-    const res = await fetch(`/api/community/feed/${postId}/like`, { method: "POST" });
-    if (!res.ok) {
-      // Rollback
+    runWithLock(async () => {
+      // Optimistic update
       setPosts(prev => prev.map(p =>
         p.id === postId
           ? { ...p, i_liked: !p.i_liked, like_count: p.like_count + (p.i_liked ? -1 : 1) }
           : p
       ));
-    }
+      const res = await fetch(`/api/community/feed/${postId}/like`, { method: "POST" });
+      if (!res.ok) {
+        // Rollback
+        setPosts(prev => prev.map(p =>
+          p.id === postId
+            ? { ...p, i_liked: !p.i_liked, like_count: p.like_count + (p.i_liked ? -1 : 1) }
+            : p
+        ));
+      }
+    });
   }
 
   async function handleDelete(postId: string) {
-    setPosts(prev => prev.filter(p => p.id !== postId));
-    await fetch(`/api/community/feed/${postId}`, { method: "DELETE" });
+    runWithLock(async () => {
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      await fetch(`/api/community/feed/${postId}`, { method: "DELETE" });
+    });
   }
 
   async function handleComment(postId: string, content: string) {
-    const tempId = Math.random().toString();
-    const tempComment: FeedComment = {
-      id: tempId,
-      post_id: postId,
-      author_id: user?.id ?? "",
-      author_name: user?.name ?? "You",
-      author_avatar_url: null,
-      content,
-      created_at: new Date().toISOString()
-    };
-    
-    // Optimistic update
-    setPosts(prev => prev.map(p =>
-      p.id === postId
-        ? {
-          ...p,
-          comment_count: p.comment_count + 1,
-          recent_comments: [...(p.recent_comments ?? []), tempComment].slice(-2),
-        }
-        : p
-    ));
+    runWithLock(async () => {
+      const tempId = Math.random().toString();
+      const tempComment: FeedComment = {
+        id: tempId,
+        post_id: postId,
+        author_id: user?.id ?? "",
+        author_name: user?.name ?? "You",
+        author_avatar_url: null,
+        content,
+        created_at: new Date().toISOString()
+      };
+      
+      // Optimistic update
+      setPosts(prev => prev.map(p =>
+        p.id === postId
+          ? {
+            ...p,
+            comment_count: p.comment_count + 1,
+            recent_comments: [...(p.recent_comments ?? []), tempComment].slice(-2),
+          }
+          : p
+      ));
 
-    const res = await fetch(`/api/community/feed/${postId}/comments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+      const res = await fetch(`/api/community/feed/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      
+      if (res.ok) {
+        const comment: FeedComment = await res.json();
+        // Replace temp with real
+        setPosts(prev => prev.map(p =>
+          p.id === postId
+            ? {
+              ...p,
+              recent_comments: (p.recent_comments ?? []).map(c => c.id === tempId ? comment : c)
+            }
+            : p
+        ));
+      } else {
+        // Revert if failed
+        setPosts(prev => prev.map(p =>
+          p.id === postId
+            ? {
+              ...p,
+              comment_count: p.comment_count - 1,
+              recent_comments: (p.recent_comments ?? []).filter(c => c.id !== tempId)
+            }
+            : p
+        ));
+      }
     });
-    
-    if (res.ok) {
-      const comment: FeedComment = await res.json();
-      // Replace temp with real
-      setPosts(prev => prev.map(p =>
-        p.id === postId
-          ? {
-            ...p,
-            recent_comments: (p.recent_comments ?? []).map(c => c.id === tempId ? comment : c)
-          }
-          : p
-      ));
-    } else {
-      // Revert if failed
-      setPosts(prev => prev.map(p =>
-        p.id === postId
-          ? {
-            ...p,
-            comment_count: p.comment_count - 1,
-            recent_comments: (p.recent_comments ?? []).filter(c => c.id !== tempId)
-          }
-          : p
-      ));
-    }
   }
 
   function handlePostCreated(post: FeedPost) {

@@ -1,24 +1,55 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { redis } from '@/lib/redis';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || session.user.id;
+    const rateLimitKey = `ratelimit:chat:${ip}`;
+    const requestCount = await redis.incr(rateLimitKey);
+
+    if (requestCount === 1) {
+      await redis.expire(rateLimitKey, 60);
+    }
+
+    if (requestCount > 10) {
+      return NextResponse.json(
+        { error: 'Too many chat requests. Please wait a moment.' },
+        { status: 429 }
+      );
+    }
+
     const { message } = await req.json();
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    let apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey || apiKey.includes('your_actua')) {
-      try {
-        const envFile = fs.readFileSync(path.join(process.cwd(), '.env'), 'utf-8');
-        const match = envFile.match(/^OPENROUTER_API_KEY=(.*)$/m);
-        if (match) apiKey = match[1].trim();
-      } catch (e) {
-        console.error("Failed to read .env file manually", e);
-      }
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Chat service unavailable' }, { status: 503 });
     }
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -45,7 +76,7 @@ export async function POST(req: Request) {
     if (!response.ok) {
       const errText = await response.text();
       console.error("OpenRouter API error:", errText);
-      return NextResponse.json({ error: 'Failed to fetch response', details: errText }, { status: response.status });
+      return NextResponse.json({ error: 'Failed to fetch response' }, { status: response.status });
     }
 
     const data = await response.json();

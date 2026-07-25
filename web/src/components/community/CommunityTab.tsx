@@ -1,37 +1,11 @@
-"use client";
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
 import { Search, Heart, Shield, MessageCircle, CheckCircle2, Medal, X } from "lucide-react";
 import type { CommunityPlayer, Club } from "@/types";
 import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
-
-function Avatar({ name, size = 44, online, avatarUrl }: { name: string; size?: number; online?: boolean; avatarUrl?: string | null }) {
-  const colors = [
-    "from-emerald-500 to-teal-600",
-    "from-blue-500 to-indigo-600",
-    "from-violet-500 to-purple-600",
-    "from-rose-500 to-pink-600",
-    "from-amber-500 to-orange-600",
-  ];
-  const color = colors[(name?.charCodeAt(0) ?? 0) % colors.length];
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <div className={`w-full h-full rounded-full bg-gradient-to-br ${color} flex items-center justify-center font-bold text-white overflow-hidden`}
-        style={{ fontSize: size * 0.38 }}>
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          name?.[0]?.toUpperCase() || "P"
-        )}
-      </div>
-      {online && (
-        <span className="absolute bottom-0 right-0 rounded-full border-2 border-background bg-emerald-400"
-          style={{ width: size * 0.28, height: size * 0.28 }} />
-      )}
-    </div>
-  );
-}
+import { Avatar } from "@/components/ui/Avatar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { useActionLock } from "@/hooks/useActionLock";
 
 function LevelBadge({ level }: { level: string }) {
   return (
@@ -39,19 +13,6 @@ function LevelBadge({ level }: { level: string }) {
       style={{ background: "var(--accent-primary-muted)", color: "var(--accent-primary)" }}>
       {level}
     </span>
-  );
-}
-
-function EmptyState({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 text-center px-8">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-        style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
-        <Icon className="w-7 h-7" style={{ color: "var(--ink-muted)" }} />
-      </div>
-      <p className="text-sm font-semibold text-foreground mb-1">{title}</p>
-      <p className="text-xs" style={{ color: "var(--ink-muted)" }}>{subtitle}</p>
-    </div>
   );
 }
 
@@ -97,32 +58,38 @@ export default function CommunityTab({
     searchRef.current = setTimeout(() => fetchData(v), 300);
   }
 
+  const { runWithLock } = useActionLock();
+
   // --- Actions ---
 
   async function toggleLike(p: CommunityPlayer) {
-    // Optimistic
-    setPlayers(prev => prev.map(pl =>
-      pl.id === p.id ? { ...pl, i_liked: !pl.i_liked, like_count: pl.like_count + (pl.i_liked ? -1 : 1) } : pl
-    ));
-    const res = await fetch("/api/community/likes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ liked_id: p.id }),
+    runWithLock(async () => {
+      // Optimistic
+      setPlayers(prev => prev.map(pl =>
+        pl.id === p.id ? { ...pl, i_liked: !pl.i_liked, like_count: pl.like_count + (pl.i_liked ? -1 : 1) } : pl
+      ));
+      const res = await fetch("/api/community/likes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ liked_id: p.id }),
+      });
+      if (!res.ok) {
+        // Revert
+        setPlayers(prev => prev.map(pl => pl.id === p.id ? { ...pl, i_liked: p.i_liked, like_count: p.like_count } : pl));
+      }
     });
-    if (!res.ok) {
-      // Revert
-      setPlayers(prev => prev.map(pl => pl.id === p.id ? { ...pl, i_liked: p.i_liked, like_count: p.like_count } : pl));
-    }
   }
 
   async function handleJoinClub(club: Club) {
     if (club.my_status !== "none") return;
-    setJoiningId(club.id);
-    const res = await fetch(`/api/community/clubs/${club.id}/join`, { method: "POST" });
-    if (res.ok) {
-      setClubs(prev => prev.map(c => c.id === club.id ? { ...c, my_status: "pending" } : c));
-    }
-    setJoiningId(null);
+    runWithLock(async () => {
+      setJoiningId(club.id);
+      const res = await fetch(`/api/community/clubs/${club.id}/join`, { method: "POST" });
+      if (res.ok) {
+        setClubs(prev => prev.map(c => c.id === club.id ? { ...c, my_status: "pending" } : c));
+      }
+      setJoiningId(null);
+    });
   }
 
   return (

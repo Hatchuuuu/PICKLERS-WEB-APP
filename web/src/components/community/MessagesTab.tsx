@@ -1,49 +1,9 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Search, MessageCircle, X } from "lucide-react";
 import type { Conversation } from "@/types";
-
-function Avatar({ name, size = 44, online, avatarUrl }: { name: string; size?: number; online?: boolean; avatarUrl?: string | null }) {
-  const colors = [
-    "from-emerald-500 to-teal-600",
-    "from-blue-500 to-indigo-600",
-    "from-violet-500 to-purple-600",
-    "from-rose-500 to-pink-600",
-    "from-amber-500 to-orange-600",
-  ];
-  const color = colors[(name?.charCodeAt(0) ?? 0) % colors.length];
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <div className={`w-full h-full rounded-full bg-gradient-to-br ${color} flex items-center justify-center font-bold text-white overflow-hidden`}
-        style={{ fontSize: size * 0.38 }}>
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          name?.[0]?.toUpperCase() || "P"
-        )}
-      </div>
-      {online && (
-        <span className="absolute bottom-0 right-0 rounded-full border-2 border-background bg-emerald-400"
-          style={{ width: size * 0.28, height: size * 0.28 }} />
-      )}
-    </div>
-  );
-}
-
-function EmptyState({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 text-center px-8">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-        style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
-        <Icon className="w-7 h-7" style={{ color: "var(--ink-muted)" }} />
-      </div>
-      <p className="text-sm font-semibold text-foreground mb-1">{title}</p>
-      <p className="text-xs" style={{ color: "var(--ink-muted)" }}>{subtitle}</p>
-    </div>
-  );
-}
+import { Avatar } from "@/components/ui/Avatar";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function MessagesTab({
   onOpenChat,

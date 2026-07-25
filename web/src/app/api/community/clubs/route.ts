@@ -24,6 +24,7 @@ async function makeSupabase() {
 export async function GET(_req: NextRequest) {
   const supabase = await makeSupabase();
   const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: clubs, error } = await supabase
     .from("clubs")

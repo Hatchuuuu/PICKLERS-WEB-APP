@@ -55,14 +55,15 @@ export async function GET(req: NextRequest) {
   const myFollowedIds = new Set<string>();
 
   if (!q.trim() && !idParam) {
-    const { data: myProfile } = await supabase.from("player_profiles").select("level").eq("id", myId).single();
-    if (myProfile) myLevel = myProfile.level;
+    const [myProfileRes, myClubsRes, myLikesRes] = await Promise.all([
+      supabase.from("player_profiles").select("level").eq("id", myId).single(),
+      supabase.from("club_members").select("club_id").eq("user_id", myId),
+      supabase.from("player_likes").select("liked_id").eq("liker_id", myId),
+    ]);
 
-    const { data: myClubs } = await supabase.from("club_members").select("club_id").eq("user_id", myId);
-    (myClubs ?? []).forEach(c => myClubIds.add(c.club_id));
-
-    const { data: myLikes } = await supabase.from("player_likes").select("liked_id").eq("liker_id", myId);
-    (myLikes ?? []).forEach(l => myFollowedIds.add(l.liked_id));
+    if (myProfileRes.data) myLevel = myProfileRes.data.level;
+    (myClubsRes.data ?? []).forEach(c => myClubIds.add(c.club_id));
+    (myLikesRes.data ?? []).forEach(l => myFollowedIds.add(l.liked_id));
   }
 
   // 2. Their Data

@@ -100,9 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: assignedRole,
           isDemo: profile?.is_demo ?? false,
           facilitySetupComplete: profile?.facility_setup_complete ?? false,
-          verificationStatus: (assignedRole === "owner" || assignedRole === "admin" || assignedRole === "demo")
+          verificationStatus: ((assignedRole === "owner" || assignedRole === "admin" || assignedRole === "demo")
             ? "verified"
-            : dbVerificationStatus
+            : dbVerificationStatus) as VerificationStatus
         };
 
         setUser(userObj);
@@ -172,13 +172,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUser = async (data: Partial<User>) => {
     if (user) {
+      // NOTE: `role` is intentionally NOT updated in DB from client-side updateUser 
+      // to prevent role-escalation security vulnerabilities. Roles are server-managed.
       const updatedUser = { ...user, ...data };
       setUser(updatedUser);
       
       const dbUpdates: any = {};
       if (data.name !== undefined) dbUpdates.name = data.name;
       if (data.avatarUrl !== undefined) dbUpdates.avatar_url = data.avatarUrl;
-      if (data.role !== undefined) dbUpdates.role = data.role;
       if (data.facilitySetupComplete !== undefined) dbUpdates.facility_setup_complete = data.facilitySetupComplete;
       
       if (Object.keys(dbUpdates).length > 0) {

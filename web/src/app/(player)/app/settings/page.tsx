@@ -286,34 +286,41 @@ export default function PlayerSettingsTab() {
             <WalletPill />
             
             <VerificationGate onVerifiedClick={() => { }}>
-              <div className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
-                <div className="flex items-center gap-4 relative z-10">
-                  <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
-                    {user?.verificationStatus === "verified" ? (
-                      <BadgeCheck className="w-6 h-6" />
-                    ) : user?.verificationStatus === "pending" ? (
-                      <ShieldAlert className="w-6 h-6 animate-pulse text-amber-500" />
-                    ) : (
-                      <ShieldAlert className="w-6 h-6" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-[16px] font-bold text-foreground mb-0.5">
-                      {user?.verificationStatus === "verified" ? "Identity Verified" :
-                        user?.verificationStatus === "pending" ? "Verification Pending" :
-                          "Verify Identity"}
+              {(() => {
+                const vStatus = (user?.verificationStatus as string) || "unverified";
+                const isVerified = vStatus === "verified";
+                const isPending = vStatus === "pending";
+                return (
+                  <div className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
+                        {isVerified ? (
+                          <BadgeCheck className="w-6 h-6" />
+                        ) : isPending ? (
+                          <ShieldAlert className="w-6 h-6 animate-pulse text-amber-500" />
+                        ) : (
+                          <ShieldAlert className="w-6 h-6" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-[16px] font-bold text-foreground mb-0.5">
+                          {isVerified ? "Identity Verified" :
+                            isPending ? "Verification Pending" :
+                              "Verify Identity"}
+                        </div>
+                        <div className="text-[14px] text-foreground/60 font-medium">
+                          {isVerified ? "Your account is trusted & secure" :
+                            isPending ? "We are reviewing your ID" :
+                              "Verify now to unlock all player features"}
+                        </div>
+                      </div>
+                      {!isVerified && !isPending && (
+                        <ChevronRight className="w-5 h-5 text-foreground/30" />
+                      )}
                     </div>
-                    <div className="text-[14px] text-foreground/60 font-medium">
-                      {user?.verificationStatus === "verified" ? "Your account is trusted & secure" :
-                        user?.verificationStatus === "pending" ? "We are reviewing your ID" :
-                          "Verify now to unlock all player features"}
-                    </div>
                   </div>
-                  {user?.verificationStatus !== "verified" && user?.verificationStatus !== "pending" && (
-                    <ChevronRight className="w-5 h-5 text-foreground/30" />
-                  )}
-                </div>
-              </div>
+                );
+              })()}
             </VerificationGate>
 
             <div onClick={() => router.push("/app/owner-application")}
