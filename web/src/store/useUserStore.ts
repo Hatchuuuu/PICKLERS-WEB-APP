@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 
-export type UserRole = "player" | "owner" | "admin" | "demo";
+export type UserRole = "player" | "owner" | "demo";
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
 interface UserState {

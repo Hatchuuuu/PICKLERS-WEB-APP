@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "./ToastContext";
 
-export type UserRole = "player" | "owner" | "admin" | "demo";
+export type UserRole = "player" | "owner" | "demo";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
@@ -83,7 +83,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (profile?.role === 'owner')      assignedRole = "owner";
-        else if (profile?.role === 'admin') assignedRole = "admin";
         else if (profile?.role === 'demo')  assignedRole = "demo";
 
         if (profile?.verification_status) {
@@ -100,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: assignedRole,
           isDemo: profile?.is_demo ?? false,
           facilitySetupComplete: profile?.facility_setup_complete ?? false,
-          verificationStatus: ((assignedRole === "owner" || assignedRole === "admin" || assignedRole === "demo")
+          verificationStatus: ((assignedRole === "owner" || assignedRole === "demo")
             ? "verified"
             : dbVerificationStatus) as VerificationStatus
         };
@@ -172,15 +171,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUser = async (data: Partial<User>) => {
     if (user) {
-      // NOTE: `role` is intentionally NOT updated in DB from client-side updateUser 
+      // NOTE: `role`, `id`, and `verificationStatus` are intentionally stripped from client-side updateUser 
       // to prevent role-escalation security vulnerabilities. Roles are server-managed.
-      const updatedUser = { ...user, ...data };
+      const { role, id, verificationStatus, ...safeData } = data;
+      const updatedUser = { ...user, ...safeData };
       setUser(updatedUser);
       
       const dbUpdates: any = {};
-      if (data.name !== undefined) dbUpdates.name = data.name;
-      if (data.avatarUrl !== undefined) dbUpdates.avatar_url = data.avatarUrl;
-      if (data.facilitySetupComplete !== undefined) dbUpdates.facility_setup_complete = data.facilitySetupComplete;
+      if (safeData.name !== undefined) dbUpdates.name = safeData.name;
+      if (safeData.avatarUrl !== undefined) dbUpdates.avatar_url = safeData.avatarUrl;
+      if (safeData.facilitySetupComplete !== undefined) dbUpdates.facility_setup_complete = safeData.facilitySetupComplete;
       
       if (Object.keys(dbUpdates).length > 0) {
         const { error } = await supabase.from('player_profiles').update(dbUpdates).eq('id', user.id);

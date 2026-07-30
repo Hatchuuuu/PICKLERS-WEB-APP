@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { z } from "zod";
 
 async function makeSupabase() {
   const cookieStore = await cookies();
@@ -26,13 +27,13 @@ async function makeSupabase() {
  */
 export async function GET(req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const withUserId = req.nextUrl.searchParams.get("with");
   if (!withUserId) return NextResponse.json({ error: "Missing `with` param" }, { status: 400 });
 
-  const myId = session.user.id;
+  const myId = user.id;
   const limit = parseInt(req.nextUrl.searchParams.get("limit") ?? "50");
   const before = req.nextUrl.searchParams.get("before");
 
@@ -66,17 +67,25 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { receiver_id, content } = await req.json();
-  if (!receiver_id || !content?.trim()) {
-    return NextResponse.json({ error: "receiver_id and content required" }, { status: 400 });
+  const body = await req.json();
+  const schema = z.object({
+    receiver_id: z.string().uuid(),
+    content: z.string().min(1, "Message cannot be empty").max(2000, "Message too long")
+  });
+
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
+
+  const { receiver_id, content } = parsed.data;
 
   const { data: msg, error } = await supabase
     .from("direct_messages")
-    .insert({ sender_id: session.user.id, receiver_id, content: content.trim() })
+    .insert({ sender_id: user.id, receiver_id, content: content.trim() })
     .select()
     .single();
 

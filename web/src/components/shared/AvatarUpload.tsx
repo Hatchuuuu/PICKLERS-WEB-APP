@@ -42,7 +42,6 @@ export function AvatarUpload() {
       {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") && (
         <button
           onClick={() => {
-            updateUser({ role: "owner" });
             user.facilitySetupComplete ? router.push('/app/owner') : setShowSetup(true);
           }}
           className="absolute top-0 left-[calc(50%+45px)] flex items-center gap-1.5 px-3 py-1.5 bg-surface-interactive border border-border rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors shadow-sm whitespace-nowrap"

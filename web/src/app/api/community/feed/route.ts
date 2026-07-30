@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { z } from "zod";
 
 async function makeSupabase() {
   const cookieStore = await cookies();
@@ -23,10 +24,10 @@ async function makeSupabase() {
 /** GET /api/community/feed — paginated feed of posts from people you follow + your own */
 export async function GET(req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const myId = session.user.id;
+  const myId = user.id;
   const cursor = req.nextUrl.searchParams.get("cursor");
   const limit = 20;
 
@@ -119,19 +120,28 @@ export async function GET(req: NextRequest) {
 /** POST /api/community/feed — create a new post */
 export async function POST(req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { content, image_url } = await req.json();
+  const body = await req.json();
+  const schema = z.object({
+    content: z.string().max(3000, "Post too long").optional().nullable(),
+    image_url: z.string().url().max(1000).optional().nullable()
+  }).refine(data => data.content?.trim() || data.image_url, {
+    message: "Post must have content or an image"
+  });
 
-  if (!content?.trim() && !image_url) {
-    return NextResponse.json({ error: "Post must have content or an image" }, { status: 400 });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
+
+  const { content, image_url } = parsed.data;
 
   const { data: post, error } = await supabase
     .from("feed_posts")
     .insert({
-      author_id: session.user.id,
+      author_id: user.id,
       content: content?.trim() || null,
       image_url: image_url || null,
     })
@@ -144,7 +154,7 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await supabase
     .from("player_profiles")
     .select("name, avatar_url, level")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
 
   return NextResponse.json({

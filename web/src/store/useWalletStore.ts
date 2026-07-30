@@ -5,7 +5,7 @@ interface WalletState {
   balance: number;
   isTopUpModalOpen: boolean;
   setTopUpModalOpen: (open: boolean) => void;
-  fetchBalance: (userId: string) => Promise<void>;
+  fetchBalance: (userId: string, isDemo?: boolean) => Promise<void>;
   isLoadingBalance: boolean;
 }
 
@@ -14,7 +14,11 @@ export const useWalletStore = create<WalletState>((set) => ({
   isLoadingBalance: false,
   isTopUpModalOpen: false,
   setTopUpModalOpen: (open) => set({ isTopUpModalOpen: open }),
-  fetchBalance: async (userId: string) => {
+  fetchBalance: async (userId: string, isDemo?: boolean) => {
+    if (isDemo) {
+      set({ balance: 2500, isLoadingBalance: false });
+      return;
+    }
     if (!userId) {
       set({ balance: 0, isLoadingBalance: false });
       return;

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { redis } from '@/lib/redis';
 import { z } from 'zod';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 const CheckoutPayloadSchema = z.object({
   amount: z.number().min(100, "Invalid amount. Minimum is ₱100."),
@@ -11,9 +13,29 @@ const CheckoutPayloadSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Rate Limiting via Upstash Redis
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous_ip';
-    const rateLimitKey = `ratelimit:checkout:${ip}`;
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 1. Rate Limiting via Upstash Redis using User ID
+    const rateLimitKey = `ratelimit:checkout:${user.id}`;
     const requestCount = await redis.incr(rateLimitKey);
     
     if (requestCount === 1) {
@@ -37,6 +59,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { amount, userId, description } = parsedBody.data;
+
+    if (userId !== user.id) {
+      return NextResponse.json({ error: "Unauthorized user ID." }, { status: 403 });
+    }
 
     // 3. Call Paymongo API securely from the Server
     // Convert amount to centavos (e.g., ₱500.00 -> 50000)

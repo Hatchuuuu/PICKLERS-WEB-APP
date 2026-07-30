@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FeedPost, FeedComment, CommunityPlayer } from "@/types";
+import { DEMO_FEED_POSTS } from "@/lib/demoData";
 import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
 import { Avatar } from "@/components/ui/Avatar";
 import { useActionLock } from "@/hooks/useActionLock";
@@ -548,17 +549,32 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
   const [showCreateModal, setShowCreateModal] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
 
+  const isDemo = user?.isDemo || user?.role === "demo";
+
   const fetchPosts = useCallback(async (currentCursor: string | null, append = false) => {
     const url = currentCursor ? `/api/community/feed?cursor=${encodeURIComponent(currentCursor)}` : `/api/community/feed`;
-    const res = await fetch(url);
-    if (res.ok) {
-      const data: FeedPost[] = await res.json();
-      if (data.length < 20) setHasMore(false);
-      if (data.length > 0) setCursor(data[data.length - 1].created_at);
-      setPosts(prev => append ? [...prev, ...data] : data);
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const data: FeedPost[] = await res.json();
+        let finalPosts = data;
+        if (isDemo && !append) {
+          const dbIds = new Set(data.map(p => p.id));
+          finalPosts = [...DEMO_FEED_POSTS.filter((dp: FeedPost) => !dbIds.has(dp.id)), ...data];
+        }
+        if (data.length < 20) setHasMore(false);
+        if (data.length > 0) setCursor(data[data.length - 1].created_at);
+        setPosts(prev => append ? [...prev, ...finalPosts] : finalPosts);
+      } else if (isDemo && !append) {
+        setPosts(DEMO_FEED_POSTS);
+      }
+    } catch {
+      if (isDemo && !append) {
+        setPosts(DEMO_FEED_POSTS);
+      }
     }
     setLoading(false);
-  }, []);
+  }, [isDemo]);
 
   useEffect(() => {
     fetchPosts(null);

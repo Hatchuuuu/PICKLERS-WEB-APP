@@ -35,8 +35,10 @@ export async function middleware(request: NextRequest) {
   )
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
+  
+  const user = session?.user
 
   const { pathname } = request.nextUrl
 
@@ -50,15 +52,15 @@ export async function middleware(request: NextRequest) {
     }
 
     // Role-based protection for /owner
-    // Allowed: 'owner' (primary), 'demo' (Player↔Owner bridge), 'admin' (full access)
-    if (pathname.startsWith('/app/owner')) {
+    // Allowed: 'owner' (primary), 'demo' (Player↔Owner bridge)
+    if (pathname.startsWith('/app/owner') || pathname.startsWith('/app/create-tournament')) {
       const { data: roleData } = await supabase
         .from('player_profiles')
         .select('role')
         .eq('id', user.id)
         .single()
 
-      const ownerAccessRoles = ['owner', 'demo', 'admin'];
+      const ownerAccessRoles = ['owner', 'demo'];
       if (!roleData || !ownerAccessRoles.includes(roleData.role)) {
         const url = request.nextUrl.clone()
         url.pathname = '/app'

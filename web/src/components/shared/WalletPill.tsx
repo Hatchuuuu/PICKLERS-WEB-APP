@@ -14,9 +14,10 @@ export function WalletPill({ className = "" }: { className?: string }) {
 
   useEffect(() => {
     if (user?.id) {
-      fetchBalance(user.id);
+      const isDemo = user.isDemo || user.role === "demo";
+      fetchBalance(user.id, isDemo);
     }
-  }, [user?.id, fetchBalance]);
+  }, [user?.id, user?.isDemo, user?.role, fetchBalance]);
 
   useEffect(() => {
     if (balance !== displayBalance) {

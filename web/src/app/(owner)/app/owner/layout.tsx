@@ -15,6 +15,7 @@ import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
 import { RoleGate } from "@/components/shared/RoleGate";
 import { useTournamentStore } from "@/store/useTournamentStore";
 import { OwnerProvider } from "@/contexts/OwnerContext";
+import { DemoBanner } from "@/components/shared/DemoBanner";
 
 type OwnerTabId = "owner-dashboard" | "owner-courts" | "owner-tournaments" | "owner-staff" | "owner-settings";
 
@@ -35,7 +36,7 @@ export const OWNER_TABS: OwnerTab[] = [
 export default function OwnerLayout({ children }: { children?: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout } = useAuth();
 
   const segments = pathname.split("/").filter(Boolean);
   const currentPath = segments.length > 0 ? segments[segments.length - 1] : "";
@@ -100,9 +101,6 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
         </nav>
         <div className="p-4 border-t border-solid flex flex-col gap-1" style={{ borderColor: "var(--border-subtle)" }}>
           <button onClick={() => {
-            if (user) {
-              updateUser({ role: user.isDemo ? "demo" : "player" });
-            }
             router.push("/app");
           }}
             className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
@@ -142,7 +140,9 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
           </div>
           <div className="min-w-0">
             <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink-primary)" }}>{user?.name || "BGC Pickleball Hub"}</div>
-            <div className="text-[12px]" style={{ color: "var(--accent-success)" }}>● Verified Owner</div>
+            <div className="text-[12px]" style={{ color: "var(--accent-success)" }}>
+              {user?.role === "demo" ? "● Demo Account — Owner View" : "● Verified Owner"}
+            </div>
           </div>
         </div>
       </aside>
@@ -181,6 +181,8 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
           </div>
         </div>
 
+        <DemoBanner />
+
         <div className="flex-1 flex flex-col pt-2 md:pt-4">
           <AnimatePresence mode="wait">
             <motion.div key={pathname} className="flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ ease: "easeInOut", duration: 0.25 }}>
@@ -190,21 +192,25 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
         </div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-solid z-40 pb-safe bg-background border-border shadow-lg">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-border z-40 bg-surface-base/95 backdrop-blur-2xl shadow-2xl" style={{ paddingBottom: "env(safe-area-inset-bottom, 12px)" }}>
         {OWNER_TABS.map(tab => {
           const active = view === tab.id;
           const Icon = tab.icon;
           return (
-            <button key={tab.id} onClick={() => router.push(`/app/owner/${tab.id.replace("owner-", "") === "dashboard" ? "" : tab.id.replace("owner-", "")}`)}
-              className="flex-1 flex flex-col items-center justify-center gap-1.5 py-4 transition-colors relative"
+            <button key={tab.id} onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              router.push(`/app/owner/${tab.id.replace("owner-", "") === "dashboard" ? "" : tab.id.replace("owner-", "")}`);
+            }}
+              className="flex-1 flex flex-col items-center justify-center gap-1 min-h-[56px] py-2.5 transition-colors relative active:scale-95"
+              aria-label={tab.label}
               style={{ color: active ? "#FBBF24" : "var(--ink-muted)" }}>
               {active && (
-                <motion.div layoutId="owner-mobile-active-indicator" className="absolute top-0 inset-x-0 h-[2px] mx-auto w-8 rounded-full"
+                <motion.div layoutId="owner-mobile-active-indicator" className="absolute top-0 inset-x-0 h-[3px] mx-auto w-10 rounded-full"
                   style={{ background: "#FBBF24" }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }} />
               )}
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className="text-[11px] font-semibold tracking-tight">{tab.label}</span>
             </button>
           );
         })}

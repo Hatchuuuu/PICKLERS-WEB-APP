@@ -1,10 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useWallet() {
+  const { user } = useAuth();
+  const isDemo = user?.isDemo || user?.role === 'demo';
+
   return useQuery({
-    queryKey: ['wallet'],
+    queryKey: ['wallet', user?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return { balance: 2500 };
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return { balance: 0 };
 
@@ -24,3 +32,4 @@ export function useWallet() {
     staleTime: 1000 * 60,
   });
 }
+

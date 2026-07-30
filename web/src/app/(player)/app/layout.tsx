@@ -15,6 +15,7 @@ import { NotificationDropdown } from "@/components/shared/NotificationDropdown";
 // VerificationGate removed
 import { TopUpModal } from "@/components/modals/TopUpModal";
 import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
+import { DemoBanner } from "@/components/shared/DemoBanner";
 
 type PlayerTabId = "player-play" | "player-explore" | "player-bookings" | "player-community" | "player-settings";
 
@@ -36,7 +37,7 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout } = useAuth();
   const { notifications } = useApp();
 
   const segments = pathname.split("/").filter(Boolean);
@@ -79,7 +80,7 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
   }, [showNotifs]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-[100dvh] overflow-hidden bg-background">
       <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20 bg-surface-base/75 backdrop-blur-2xl border-border">
         <div className="px-6 py-5 border-b border-solid flex items-center justify-between" style={{ borderColor: "var(--border-subtle)" }}>
           <div className="flex items-center gap-1">
@@ -127,9 +128,8 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
           })}
         </nav>
         <div className="p-4 border-t border-solid flex flex-col gap-1" style={{ borderColor: "var(--border-subtle)" }}>
-          {(user?.role === "owner" || user?.role === "demo" || user?.role === "admin") && (
+          {(user?.role === "owner" || user?.role === "demo") && (
             <button onClick={() => {
-                if (user?.role === "demo") updateUser({ role: "owner" });
                 router.push("/app/owner");
               }}
               className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
@@ -177,7 +177,7 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
         </div>
       </aside>
 
-      <main ref={mainScrollRef} className="flex-1 overflow-y-auto pb-[calc(74px+env(safe-area-inset-bottom))] md:pb-0 relative bg-background flex flex-col">
+      <main ref={mainScrollRef} className="flex-1 overflow-y-auto pb-[calc(68px+env(safe-area-inset-bottom,16px))] md:pb-0 relative bg-background flex flex-col">
         {/* Mobile Premium Header */}
         <motion.div
           animate={{ y: isHeaderVisible ? 0 : "-100%", z: 100 }}
@@ -189,19 +189,19 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-4 relative">
             <div className="relative" ref={notifRef}>
-              <button data-notif-toggle="true" onClick={() => setShowNotifs(!showNotifs)} className="relative active:scale-95 transition-transform flex items-center justify-center">
+              <button data-notif-toggle="true" onClick={() => setShowNotifs(!showNotifs)} className="relative active:scale-95 transition-transform flex items-center justify-center p-2 rounded-full hover:bg-surface-raised min-w-[44px] min-h-[44px]">
                 <Bell className="w-5 h-5 pointer-events-none" style={{ color: "var(--ink-secondary)" }} />
                 {notifications.some(n => !n.read) && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-[1.5px]" style={{ borderColor: "var(--surface-base)", background: "var(--accent-primary)" }} />
+                  <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-[1.5px]" style={{ borderColor: "var(--surface-base)", background: "var(--accent-primary)" }} />
                 )}
               </button>
 
               <AnimatePresence>
-                {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} className="top-[calc(100%+16px)] right-[-48px] origin-top w-[calc(100vw-30px)] sm:w-[360px] max-w-[380px]" />}
+                {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} className="top-[calc(100%+8px)] right-0 origin-top-right w-[calc(100vw-32px)] sm:w-[360px] max-w-[380px]" />}
               </AnimatePresence>
             </div>
 
-            <button onClick={() => setShowLogoutConfirm(true)} className="relative w-8 h-8 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden">
+            <button onClick={() => setShowLogoutConfirm(true)} className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px]">
               <motion.div
                 className="absolute inset-0 rounded-full"
                 style={{ background: "conic-gradient(from 180deg at 50% 50%, var(--accent-primary) 0deg, var(--accent-secondary) 180deg, var(--accent-primary) 360deg)" }}
@@ -225,7 +225,7 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
           </div>
         </motion.div>
 
-
+        <DemoBanner />
 
         <div className="flex-1 flex flex-col pt-2 md:pt-4">
           <AnimatePresence mode="wait">
@@ -236,21 +236,25 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
         </div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-border z-40 pb-safe bg-background shadow-lg">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-black/5 dark:border-white/[0.08] z-40 bg-white/80 dark:bg-[#0c0d10]/85 backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.06)]" style={{ paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
         {PLAYER_TABS.map(tab => {
           const active = view === tab.id;
           const Icon = tab.icon;
           return (
-            <button key={tab.id} onClick={() => router.push(`/app/${tab.id.replace("player-", "") === "play" ? "" : tab.id.replace("player-", "")}`)}
-              className="flex-1 flex flex-col items-center justify-center gap-1.5 py-4 transition-colors relative"
+            <button key={tab.id} onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              router.push(`/app/${tab.id.replace("player-", "") === "play" ? "" : tab.id.replace("player-", "")}`);
+            }}
+              className="flex-1 flex flex-col items-center justify-center gap-1 min-h-[50px] py-1.5 transition-colors relative active:scale-95"
+              aria-label={tab.label}
               style={{ color: active ? "var(--accent-primary)" : "var(--ink-muted)" }}>
               {active && (
-                <motion.div layoutId="mobile-active-indicator" className="absolute top-0 inset-x-0 h-[2px] mx-auto w-8 rounded-full"
+                <motion.div layoutId="mobile-active-indicator" className="absolute top-0 inset-x-0 h-[3px] mx-auto w-10 rounded-full"
                   style={{ background: "var(--accent-primary)" }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }} />
               )}
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className="text-[11px] font-semibold tracking-tight">{tab.label}</span>
             </button>
           );
         })}

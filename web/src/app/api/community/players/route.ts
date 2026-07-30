@@ -22,12 +22,12 @@ async function makeSupabase() {
 
 export async function GET(req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const q = req.nextUrl.searchParams.get("q") ?? "";
   const idParam = req.nextUrl.searchParams.get("id");
-  const myId = session.user.id;
+  const myId = user.id;
 
   let query = supabase.from("player_profiles").select("*").neq("id", myId);
 

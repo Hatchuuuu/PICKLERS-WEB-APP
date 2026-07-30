@@ -30,10 +30,10 @@ async function makeSupabase() {
  */
 export async function GET(_req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const myId = session.user.id;
+  const myId = user.id;
 
   // Step 1: Get recent messages (limited set) to identify active conversations
   const { data: sentMessages } = await supabase

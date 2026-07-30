@@ -25,8 +25,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const clubId = params.id;
 
@@ -34,7 +34,7 @@ export async function GET(
     .from("club_members")
     .select("status")
     .eq("club_id", clubId)
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .maybeSingle();
 
   const isAdmin = myMem?.status === "admin";
@@ -76,8 +76,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const clubId = params.id;
   const { member_user_id, action } = await req.json();
@@ -86,7 +86,7 @@ export async function PATCH(
     .from("club_members")
     .select("status")
     .eq("club_id", clubId)
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .maybeSingle();
 
   if (myMem?.status !== "admin") {

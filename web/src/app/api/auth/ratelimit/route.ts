@@ -4,11 +4,12 @@ import { redis } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
-    // Attempt to get the user's IP address from headers
-    const ip = request.headers.get('x-forwarded-for') || 
+    // Attempt to get the user's IP address securely (request.ip available on Vercel/Edge)
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = request.ip || 
+               (forwardedFor ? forwardedFor.split(',')[0].trim() : null) || 
                request.headers.get('x-real-ip') || 
                'anonymous_ip';
-    
     // Create a unique rate limit key for auth attempts
     const rateLimitKey = `ratelimit:auth:${ip}`;
     
@@ -31,8 +32,8 @@ export async function POST(request: NextRequest) {
     // Otherwise, allow the request to proceed
     return NextResponse.json({ success: true, count: requestCount }, { status: 200 });
   } catch (error: unknown) {
-    // If Redis fails for any reason, fail open to prevent locking out real users due to infrastructure issues
+    // Fail closed to prevent bypassing rate limit through malicious redis errors
     console.error('Rate Limiter Redis Error:', error);
-    return NextResponse.json({ success: true, warning: 'Rate limit bypass due to error' }, { status: 200 });
+    return NextResponse.json({ error: 'Too many attempts or service unavailable. Please wait.' }, { status: 429 });
   }
 }

@@ -26,8 +26,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const postId = params.id;
   const page = parseInt(req.nextUrl.searchParams.get("page") ?? "0");
@@ -73,8 +73,8 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const postId = params.id;
   const { content } = await req.json();
@@ -87,7 +87,7 @@ export async function POST(
     .from("feed_comments")
     .insert({
       post_id: postId,
-      author_id: session.user.id,
+      author_id: user.id,
       content: content.trim(),
     })
     .select()
@@ -99,7 +99,7 @@ export async function POST(
   const { data: profile } = await supabase
     .from("player_profiles")
     .select("name, avatar_url")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
 
   return NextResponse.json({

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 
 import { motion, AnimatePresence } from "motion/react";
 import { Check, ChevronRight, Send, AlertCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,7 +28,6 @@ export default function OwnerApplication() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
-  const { updateUser } = useAuth();
 
   const { register, handleSubmit, trigger, formState: { errors } } = useForm<ApplicationForm>({
     resolver: zodResolver(applicationSchema),
@@ -66,7 +64,6 @@ export default function OwnerApplication() {
 
   const onSubmit = () => {
     setSubmitted(true);
-    updateUser({ role: 'owner' });
   };
 
   if (submitted) {

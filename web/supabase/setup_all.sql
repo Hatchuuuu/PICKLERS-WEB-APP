@@ -377,8 +377,9 @@ DROP POLICY IF EXISTS "Users can insert own notifications" ON public.notificatio
 CREATE POLICY "Users can insert own notifications" ON public.notifications FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 DROP POLICY IF EXISTS "Users can delete their own notifications" ON public.notifications;
 CREATE POLICY "Users can delete their own notifications" ON public.notifications FOR DELETE USING (auth.uid() = user_id);
 
@@ -394,6 +395,12 @@ CREATE TABLE public.wallets (
 ALTER TABLE public.wallets ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own wallet" ON public.wallets;
 CREATE POLICY "Users can view own wallet" ON public.wallets FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Deny insert on wallets" ON public.wallets;
+CREATE POLICY "Deny insert on wallets" ON public.wallets FOR INSERT WITH CHECK (false);
+DROP POLICY IF EXISTS "Deny update on wallets" ON public.wallets;
+CREATE POLICY "Deny update on wallets" ON public.wallets FOR UPDATE USING (false);
+DROP POLICY IF EXISTS "Deny delete on wallets" ON public.wallets;
+CREATE POLICY "Deny delete on wallets" ON public.wallets FOR DELETE USING (false);
 
 CREATE TABLE public.facility_applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -561,7 +568,8 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.increment_wallet_balance(INTEGER, UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.increment_wallet_balance(INTEGER, UUID) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.increment_wallet_balance(INTEGER, UUID) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.increment_wallet_balance(INTEGER, UUID) TO service_role;
 
 CREATE OR REPLACE FUNCTION public.get_tournament_games(t_id uuid)
 RETURNS SETOF public.match_games

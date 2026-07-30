@@ -11,11 +11,15 @@ import { PaymentData } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 
 export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBack: () => void; onDone: () => void }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { setBookings } = useApp();
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const [method, setMethod] = useState<"gcash" | "maya" | "cash" | "credits">("gcash");
   const [stage, setStage] = useState<"idle" | "processing" | "success" | "failed">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -32,14 +36,12 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
     : new Date(data.date + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
 
   async function handleConfirm() {
+    if (user?.isDemo || user?.role === "demo") {
+      showToast("This is a demo — sign up to book for real!", "error");
+      return;
+    }
     setStage("processing");
     try {
-      // 30% chance to fail for demo purposes if GCash is used
-      if (method === "gcash" && Math.random() < 0.3) {
-        setStage("failed");
-        setErrorMsg("Payment failed because you are using a demo account.");
-        return;
-      }
 
       if (navigator.vibrate) navigator.vibrate([20, 10, 40]);
 

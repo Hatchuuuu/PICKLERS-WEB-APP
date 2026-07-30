@@ -5,6 +5,8 @@ import { Check } from "lucide-react";
 import { createPortal } from "react-dom";
 import { VerificationGate } from "@/components/shared/VerificationGate";
 
+import { useActionLock } from "@/hooks/useActionLock";
+
 export interface CardMatchData {
   id: string | number;
   level: string;
@@ -22,7 +24,8 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
   const [showJoinConfirm, setShowJoinConfirm] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simSuccess, setSimSuccess] = useState(false);
-  const joinTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { isLocked, runWithLock } = useActionLock();
+  const isMountedRef = useRef(true);
 
   const CapacityRing = ({ filled, max }: { filled: number, max: number }) => {
     return (
@@ -38,9 +41,11 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
       </div>
     );
   };
+
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
-      if (joinTimeoutRef.current) clearTimeout(joinTimeoutRef.current);
+      isMountedRef.current = false;
     };
   }, []);
 
@@ -48,27 +53,38 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
   const full = filled >= m.max;
 
   function handleJoin() {
-    if (joined || full || loading || isSimulating || simSuccess) return;
+    if (joined || full || loading || isSimulating || simSuccess || isLocked) return;
     setShowJoinConfirm(true);
   }
 
-  function confirmJoin() {
-    if (isSimulating || simSuccess) return;
-    setIsSimulating(true);
+  async function confirmJoin() {
+    if (isSimulating || simSuccess || isLocked) return;
+    
+    await runWithLock(async () => {
+      if (!isMountedRef.current) return;
+      setIsSimulating(true);
 
-    // Simulate high-concurrency network latency
-    joinTimeoutRef.current = setTimeout(() => {
+      // Simulate high-concurrency network latency
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!isMountedRef.current) return;
+
       setIsSimulating(false);
       setSimSuccess(true);
 
-      // Give the user 600ms to visually register the satisfying checkmark before closing
-      setTimeout(() => {
-        setShowJoinConfirm(false);
-        setSimSuccess(false); // reset for future
-        setLoading(true);
-        setTimeout(() => { setLoading(false); onJoin?.(); }, 400);
-      }, 600);
-    }, 1500);
+      // Give the user 400ms to visually register the satisfying checkmark before closing
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      if (!isMountedRef.current) return;
+
+      setShowJoinConfirm(false);
+      setSimSuccess(false);
+      setLoading(true);
+      
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      if (!isMountedRef.current) return;
+
+      setLoading(false);
+      onJoin?.();
+    });
   }
 
   return (

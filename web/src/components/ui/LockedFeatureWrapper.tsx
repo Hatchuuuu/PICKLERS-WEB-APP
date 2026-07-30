@@ -26,8 +26,8 @@ export function LockedFeatureWrapper({
     return <div className={`relative ${className}`}>{children}</div>;
   }
 
-  // Admins and Demo accounts bypass the verification gate entirely
-  const isBypassed = role === "admin" || role === "demo";
+  // Demo accounts bypass the verification gate entirely
+  const isBypassed = role === "demo";
   const isVerified = verificationStatus === "verified";
   
   const isLocked = !isBypassed && !isVerified;

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import {
   ChevronRight, User, Phone, Bell, Smartphone, Users,
-  ShieldCheck, BadgeCheck, ShieldAlert,
+  ShieldCheck, BadgeCheck, ShieldAlert, Sparkles,
   LogOut, KeyRound
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -256,10 +256,38 @@ export default function PlayerSettingsTab() {
         <AvatarUpload />
       </motion.div>
 
-      {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") ? (
+      {(user?.isDemo || user?.role === "demo") ? (
+        <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
+          <WalletPill />
+          <div className="rounded-[16px] p-4 relative overflow-hidden bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[16px] font-bold text-foreground mb-0.5">Demo Mode Active</div>
+                <div className="text-[14px] text-foreground/60 font-medium">Exploration account with access across Player & Owner portals</div>
+              </div>
+            </div>
+          </div>
+          <div onClick={() => router.push("/app/owner-application")}
+            className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-cyan-500/20 text-cyan-500 shadow-inner">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[16px] font-bold text-foreground mb-0.5">Own a court?</div>
+                <div className="text-[14px] text-foreground/60 font-medium">Apply to list your facility</div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-foreground/30" />
+            </div>
+          </div>
+        </motion.div>
+      ) : (user?.role === "owner" || user?.verificationStatus === "verified") ? (
         <div className="flex flex-col gap-4 mb-8">
           <WalletPill />
-          {!user?.facilitySetupComplete && (
+          {(user?.role === "owner" && !user?.facilitySetupComplete) && (
             <div className="rounded-[20px] p-5 relative overflow-hidden group cursor-pointer"
               onClick={() => setShowSetup(true)}
               style={{ background: "var(--surface-raised)", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
@@ -277,67 +305,63 @@ export default function PlayerSettingsTab() {
               </div>
             </div>
           )}
-          
-
         </div>
       ) : (
-        (user?.role === "player" || user?.role === "demo") && (
-          <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
-            <WalletPill />
-            
-            <VerificationGate onVerifiedClick={() => { }}>
-              {(() => {
-                const vStatus = (user?.verificationStatus as string) || "unverified";
-                const isVerified = vStatus === "verified";
-                const isPending = vStatus === "pending";
-                return (
-                  <div className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
-                    <div className="flex items-center gap-4 relative z-10">
-                      <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
-                        {isVerified ? (
-                          <BadgeCheck className="w-6 h-6" />
-                        ) : isPending ? (
-                          <ShieldAlert className="w-6 h-6 animate-pulse text-amber-500" />
-                        ) : (
-                          <ShieldAlert className="w-6 h-6" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[16px] font-bold text-foreground mb-0.5">
-                          {isVerified ? "Identity Verified" :
-                            isPending ? "Verification Pending" :
-                              "Verify Identity"}
-                        </div>
-                        <div className="text-[14px] text-foreground/60 font-medium">
-                          {isVerified ? "Your account is trusted & secure" :
-                            isPending ? "We are reviewing your ID" :
-                              "Verify now to unlock all player features"}
-                        </div>
-                      </div>
-                      {!isVerified && !isPending && (
-                        <ChevronRight className="w-5 h-5 text-foreground/30" />
+        <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
+          <WalletPill />
+          
+          <VerificationGate onVerifiedClick={() => { }}>
+            {(() => {
+              const vStatus = (user?.verificationStatus as string) || "unverified";
+              const isVerified = vStatus === "verified";
+              const isPending = vStatus === "pending";
+              return (
+                <div className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
+                      {isVerified ? (
+                        <BadgeCheck className="w-6 h-6" />
+                      ) : isPending ? (
+                        <ShieldAlert className="w-6 h-6 animate-pulse text-amber-500" />
+                      ) : (
+                        <ShieldAlert className="w-6 h-6" />
                       )}
                     </div>
+                    <div className="flex-1">
+                      <div className="text-[16px] font-bold text-foreground mb-0.5">
+                        {isVerified ? "Identity Verified" :
+                          isPending ? "Verification Pending" :
+                            "Verify Identity"}
+                      </div>
+                      <div className="text-[14px] text-foreground/60 font-medium">
+                        {isVerified ? "Your account is trusted & secure" :
+                          isPending ? "We are reviewing your ID" :
+                            "Verify now to unlock all player features"}
+                      </div>
+                    </div>
+                    {!isVerified && !isPending && (
+                      <ChevronRight className="w-5 h-5 text-foreground/30" />
+                    )}
                   </div>
-                );
-              })()}
-            </VerificationGate>
+                </div>
+              );
+            })()}
+          </VerificationGate>
 
-            <div onClick={() => router.push("/app/owner-application")}
-              className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-cyan-500/20 text-cyan-500 shadow-inner">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[16px] font-bold text-foreground mb-0.5">Own a court?</div>
-                  <div className="text-[14px] text-foreground/60 font-medium">Apply to list your facility</div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-foreground/30" />
+          <div onClick={() => router.push("/app/owner-application")}
+            className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-cyan-500/20 text-cyan-500 shadow-inner">
+                <ShieldCheck className="w-6 h-6" />
               </div>
+              <div className="flex-1">
+                <div className="text-[16px] font-bold text-foreground mb-0.5">Own a court?</div>
+                <div className="text-[14px] text-foreground/60 font-medium">Apply to list your facility</div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-foreground/30" />
             </div>
-          </motion.div>
-        )
+          </div>
+        </motion.div>
       )}
 
       <motion.div variants={containerVariants} initial="hidden" animate="show">

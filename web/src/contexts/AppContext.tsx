@@ -57,6 +57,8 @@ type AppContextType = {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 import { useToast } from "./ToastContext";
+import { useAuth } from "./AuthContext";
+import { DEMO_FACILITIES, DEMO_BOOKINGS, DEMO_PLAYERS, DEMO_NOTIFICATIONS } from "@/lib/demoData";
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -64,6 +66,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isDemo = user?.isDemo || user?.role === "demo";
   
   const [joinedMatches, setJoinedMatches] = useState<Set<number>>(new Set());
   const [chatMessages, setChatMessages] = useState<Record<string | number, ChatMessage[]>>({});
@@ -81,7 +85,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const { data: dbFacilities, error: fError } = await supabase.from('facilities').select('*');
         if (dbFacilities && !fError && mounted) {
-          const mappedFacilities = dbFacilities.map((f: Record<string, unknown>) => ({
+          const mappedFacilities: Facility[] = dbFacilities.map((f: Record<string, unknown>) => ({
             id: Number(f.id),
             name: String(f.name),
             address: String(f.location || "Unknown Location"),
@@ -99,20 +103,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
             indoor: String(f.type || "").toLowerCase().includes('indoor'),
             tags: []
           }));
-          if (mappedFacilities.length > 0) {
-             setFacilities(mappedFacilities);
+          if (isDemo) {
+            const dbIds = new Set(mappedFacilities.map((f: Facility) => f.id));
+            const merged = [...mappedFacilities, ...DEMO_FACILITIES.filter(df => !dbIds.has(df.id))];
+            setFacilities(merged);
           } else {
-             setFacilities([]);
+            setFacilities(mappedFacilities);
           }
         } else if (mounted) {
-          setFacilities([]);
+          setFacilities(isDemo ? DEMO_FACILITIES : []);
         }
         // Fetch Bookings
         const { data: { session } } = await supabase.auth.getSession();
         if (session && mounted) {
           const { data: dbBookings, error: bError } = await supabase.from('bookings').select('*, facilities(name)').eq('user_id', session.user.id);
           if (dbBookings && !bError && dbBookings.length > 0) {
-             const mappedBookings = dbBookings.map((b: Record<string, unknown>) => ({
+             const mappedBookings: Booking[] = dbBookings.map((b: Record<string, unknown>) => ({
                id: String(b.id),
                facility_id: Number(b.facility_id || 1),
                facility: String((b.facilities as Record<string, unknown>)?.name || "Unknown Facility"),
@@ -125,18 +131,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
                status: String(b.status) as "upcoming" | "completed" | "cancelled",
                players: []
              }));
-             setBookings(mappedBookings);
+             if (isDemo) {
+               const dbIds = new Set(mappedBookings.map((b: Booking) => b.id));
+               const merged = [...DEMO_BOOKINGS.filter(db => !dbIds.has(db.id)), ...mappedBookings];
+               setBookings(merged);
+             } else {
+               setBookings(mappedBookings);
+             }
           } else {
-             setBookings([]);
+             setBookings(isDemo ? DEMO_BOOKINGS : []);
           }
         } else if (mounted) {
-           setBookings([]);
+           setBookings(isDemo ? DEMO_BOOKINGS : []);
         }
 
         // Fetch Real Players
-        const { data: dbPlayers, error: pError } = await supabase.from('player_profiles').select('*');
+        const { data: dbPlayers, error: pError } = await supabase.from('player_profiles').select('id, name, avatar_url, level, gold_medals, silver_medals, bronze_medals, online');
         if (dbPlayers && !pError && mounted) {
-           const mappedPlayers = dbPlayers.map((p: Record<string, unknown>) => ({
+           const mappedPlayers: PlayerProfile[] = dbPlayers.map((p: Record<string, unknown>) => ({
              id: String(p.id),
              name: String(p.name),
              avatarUrl: p.avatar_url ? String(p.avatar_url) : undefined,
@@ -146,12 +158,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
              bronze: Number(p.bronze_medals || 0),
              online: Boolean(p.online || false)
            }));
-           setPlayers(mappedPlayers);
+           if (isDemo) {
+             const dbIds = new Set(mappedPlayers.map((p: PlayerProfile) => String(p.id)));
+             const merged = [...mappedPlayers, ...DEMO_PLAYERS.filter(dp => !dbIds.has(String(dp.id)))];
+             setPlayers(merged);
+           } else {
+             setPlayers(mappedPlayers);
+           }
+        } else if (mounted && isDemo) {
+           setPlayers(DEMO_PLAYERS);
+        }
+
+        if (mounted && isDemo) {
+          setNotifications(DEMO_NOTIFICATIONS);
         }
       } catch (err) {
         console.error("Failed to fetch core data from Supabase", err);
-        setFacilities([]);
-        setBookings([]);
+        setFacilities(isDemo ? DEMO_FACILITIES : []);
+        setBookings(isDemo ? DEMO_BOOKINGS : []);
+        if (isDemo) {
+          setPlayers(DEMO_PLAYERS);
+          setNotifications(DEMO_NOTIFICATIONS);
+        }
         if (mounted) {
           setHasError(true);
           showToast("Failed to load some data. Please check your connection.", "error");
@@ -170,7 +198,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (session && mounted) {
           const { data: dbBookings, error: bError } = await supabase.from('bookings').select('*, facilities(name)').eq('user_id', session.user.id);
           if (dbBookings && !bError && mounted) {
-            const mappedBookings = dbBookings.map((b: Record<string, unknown>) => ({
+            const mappedBookings: Booking[] = dbBookings.map((b: Record<string, unknown>) => ({
               id: String(b.id),
               facility_id: Number(b.facility_id || 1),
               facility: String((b.facilities as Record<string, unknown>)?.name || "Unknown Facility"),
@@ -183,7 +211,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
               status: String(b.status) as "upcoming" | "completed" | "cancelled",
               players: []
             }));
-            setBookings(mappedBookings);
+            if (isDemo) {
+              const dbIds = new Set(mappedBookings.map((b: Booking) => b.id));
+              const merged = [...DEMO_BOOKINGS.filter(db => !dbIds.has(db.id)), ...mappedBookings];
+              setBookings(merged);
+            } else {
+              setBookings(mappedBookings);
+            }
           }
         }
       })
@@ -193,7 +227,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       mounted = false;
       bookingSub.unsubscribe(); 
     };
-  }, []);
+  }, [isDemo]);
 
   const markAllNotificationsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));

@@ -27,20 +27,14 @@ export default function PlayTab() {
     localStorage.setItem("picklers_user_location", name);
   };
   const [isLocating, setIsLocating] = useState(false);
-  const { facilities, favoritedFacilities, setFavoritedFacilities } = useApp();
+  const { facilities, favoritedFacilities, setFavoritedFacilities, isDataLoaded } = useApp();
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const { showToast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoading = !isDataLoaded;
   
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterType, setFilterType] = useState<"All" | "Indoor" | "Outdoor">("All");
   const [filterSort, setFilterSort] = useState<"Recommended" | "Price (Low to High)" | "Rating (High to Low)">("Recommended");
-
-  useEffect(() => {
-    // Simulate network latency for loading skeleton showcase
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {

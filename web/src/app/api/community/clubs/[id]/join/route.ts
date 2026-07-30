@@ -25,8 +25,8 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const clubId = params.id;
 
@@ -34,7 +34,7 @@ export async function POST(
     .from("club_members")
     .select("status")
     .eq("club_id", clubId)
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .maybeSingle();
 
   if (existing) {
@@ -43,7 +43,7 @@ export async function POST(
 
   const { error } = await supabase.from("club_members").insert({
     club_id: clubId,
-    user_id: session.user.id,
+    user_id: user.id,
     status: "pending",
   });
 

@@ -23,8 +23,8 @@ async function makeSupabase() {
 /** GET /api/community/clubs — list all clubs with current user membership status */
 export async function GET(_req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: clubs, error } = await supabase
     .from("clubs")
@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const userId = session?.user?.id;
+  const userId = user?.id;
 
   const adminIds = [...new Set((clubs ?? []).map((c: any) => c.admin_id).filter(Boolean))];
   let adminNameMap: Record<string, string> = {};
@@ -66,15 +66,15 @@ export async function GET(_req: NextRequest) {
 /** POST /api/community/clubs — create a new club */
 export async function POST(req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { name, description } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
   const { data: club, error } = await supabase
     .from("clubs")
-    .insert({ name: name.trim(), description: description?.trim() ?? null, admin_id: session.user.id })
+    .insert({ name: name.trim(), description: description?.trim() ?? null, admin_id: user.id })
     .select()
     .single();
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
   await supabase.from("club_members").insert({
     club_id: club.id,
-    user_id: session.user.id,
+    user_id: user.id,
     status: "admin",
   });
 

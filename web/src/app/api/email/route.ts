@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only allow sending email to authenticated user's own email address
-    if (session.user.email && to.toLowerCase() !== session.user.email.toLowerCase()) {
+    if (user.email && to.toLowerCase() !== user.email.toLowerCase()) {
       return NextResponse.json({ error: 'Forbidden: Recipient email must match account email' }, { status: 403 });
     }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       from: 'Picklers <noreply@picklers.com>',
       to: to,
       subject: subject,
-      html: body,
+      text: body,
     });
 
     return NextResponse.json({ success: true, data }, { status: 200 });

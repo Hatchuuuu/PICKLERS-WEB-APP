@@ -1,77 +1,87 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import crypto from 'crypto';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    // 1. Extract the raw body and signature
-    const rawBody = await request.text();
-    const signatureHeader = request.headers.get('paymongo-signature');
-    const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET;
+    const payload = await req.text(); // Raw body required for signature validation
+    const signatureHeader = req.headers.get('paymongo-signature');
+    const secret = process.env.PAYMONGO_WEBHOOK_SECRET;
 
-    if (!webhookSecret) {
-      console.error("CRITICAL: PAYMONGO_WEBHOOK_SECRET is missing. Webhook rejected.");
-      return NextResponse.json({ error: "Unauthorized: Server misconfigured" }, { status: 401 });
+    if (!secret) {
+      console.error("PAYMONGO_WEBHOOK_SECRET is not configured");
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
     }
 
     if (!signatureHeader) {
-      return NextResponse.json({ error: "Unauthorized: Missing signature" }, { status: 401 });
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
     }
 
-    // 2. Verify Paymongo Signature
-      // Paymongo signature format: t=<timestamp>,te=<test_signature>,li=<live_signature>
-      const parts = signatureHeader.split(',');
-      let timestamp = '';
-      let signature = '';
+    // 1. Verify PayMongo Signature
+    // Format is like: t=1611111111,te=signature_string,li=another_signature
+    const parts = signatureHeader.split(',');
+    let timestamp = '';
+    let testSignature = '';
+    let liveSignature = '';
 
-      for (const part of parts) {
-        const [key, value] = part.split('=');
-        if (key === 't') timestamp = value;
-        // In test mode, we might use 'te', in live mode 'li'
-        if (key === 'te' || key === 'li') signature = value;
-      }
+    for (const part of parts) {
+      const [key, value] = part.split('=');
+      if (key === 't') timestamp = value;
+      if (key === 'te') testSignature = value;
+      if (key === 'li') liveSignature = value;
+    }
 
-      const signaturePayload = `${timestamp}.${rawBody}`;
-      const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(signaturePayload)
-        .digest('hex');
+    // Determine which signature to check (live or test) based on the environment
+    const signatureToCheck = process.env.NODE_ENV === 'production' && liveSignature ? liveSignature : (testSignature || liveSignature);
 
-      if (!signature || !crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))) {
-        return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
-      }
+    if (!timestamp || !signatureToCheck) {
+      return NextResponse.json({ error: 'Invalid signature format' }, { status: 401 });
+    }
 
-    // 3. Parse the Event
-    const event = JSON.parse(rawBody);
+    const signatureString = `${timestamp}.${payload}`;
+    const expectedSignature = crypto.createHmac('sha256', secret).update(signatureString).digest('hex');
 
-    // 4. Handle specific events
-    if (event.data.type === 'checkout_session.payment.paid') {
-      const checkoutSession = event.data.attributes.data;
-      const amountPaid = checkoutSession.attributes.amount;
+    if (signatureToCheck !== expectedSignature) {
+      console.error("Signature mismatch");
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
 
-      const userId = checkoutSession.attributes.metadata?.user_id;
+    const event = JSON.parse(payload);
 
-      if (!userId) {
-        console.error("Missing user_id in session metadata. Cannot credit wallet.");
-        return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
-      }
-
-      const { error } = await supabaseAdmin.rpc('increment_wallet_balance', { amount: amountPaid / 100, user_id: userId });
+    // 2. Safely Process Payment
+    if (event.data?.attributes?.type === 'checkout_session.payment.paid') {
+      const checkoutSession = event.data.attributes.data.attributes;
+      const metadata = checkoutSession.metadata;
       
+      if (!metadata || !metadata.user_id) {
+        console.error("No user_id found in metadata");
+        return NextResponse.json({ error: 'Missing metadata.user_id' }, { status: 400 });
+      }
+
+      // Convert centavos back to standard currency amount
+      const amountToAdd = Math.floor(checkoutSession.amount / 100);
+
+      if (amountToAdd <= 0) {
+        return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+      }
+
+      // 3. Update Supabase via Admin Client (bypassing RLS securely)
+      const { error } = await supabaseAdmin.rpc('increment_wallet_balance', { 
+         amount: amountToAdd,
+         user_id: metadata.user_id
+      });
+
       if (error) {
-        console.error("Failed to credit wallet in Supabase:", error);
-        return NextResponse.json({ error: "Database update failed" }, { status: 500 });
+        console.error("Error updating wallet balance:", error);
+        return NextResponse.json({ error: 'Failed to update balance' }, { status: 500 });
       }
-      
-      // Payment successful! Credited to user
+
+      console.log(`Successfully credited ${amountToAdd} to user ${metadata.user_id}`);
     }
 
-    // 5. Always return a 200 OK so Paymongo knows we received it
-    return NextResponse.json({ received: true }, { status: 200 });
-
-  } catch (error: unknown) {
-    console.error('Webhook Error:', error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

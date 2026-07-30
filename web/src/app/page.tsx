@@ -784,11 +784,21 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1], delay: i * 0.05 }}
-                className={`overflow-hidden rounded-2xl transition-colors duration-300 cursor-pointer border ${openFaq === i ? 'bg-black/[0.04] border-black/[0.08] dark:bg-white/[0.04] dark:border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.04] dark:bg-white/[0.02] dark:border-white/[0.04]'}`}
+                className={`overflow-hidden rounded-2xl transition-colors duration-300 cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${openFaq === i ? 'bg-black/[0.04] border-black/[0.08] dark:bg-white/[0.04] dark:border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.04] dark:bg-white/[0.02] dark:border-white/[0.04]'}`}
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={openFaq === i}
+                aria-controls={`faq-answer-${i}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setOpenFaq(openFaq === i ? null : i);
+                  }
+                }}
               >
                 <div className="px-6 py-5 flex items-center justify-between">
-                  <h4 className="text-base font-semibold tracking-tight pr-4 text-foreground" >
+                  <h4 className="text-base font-semibold tracking-tight pr-4 text-foreground" id={`faq-question-${i}`}>
                     {faq.q}
                   </h4>
                   <motion.div
@@ -806,6 +816,9 @@ export default function LandingPage() {
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                      id={`faq-answer-${i}`}
+                      role="region"
+                      aria-labelledby={`faq-question-${i}`}
                     >
                       <div className="px-6 pb-5 pt-0 text-[15px] leading-relaxed" style={{ color: "var(--ink-muted)" }}>
                         <motion.div

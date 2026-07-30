@@ -65,8 +65,8 @@ export function FacilitySetupWizard({ onClose }: FacilitySetupWizardProps) {
       });
     }
     
-    // Give the user owner access and mark setup as complete so they can enter the dashboard
-    await updateUser({ role: 'owner', facilitySetupComplete: true });
+    // Mark setup as complete so they can enter the dashboard
+    await updateUser({ facilitySetupComplete: true });
     router.push('/app/owner');
   };
 

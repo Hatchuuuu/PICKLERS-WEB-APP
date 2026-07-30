@@ -21,13 +21,12 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || session.user.id;
-    const rateLimitKey = `ratelimit:chat:${ip}`;
+    const rateLimitKey = `ratelimit:chat:${user.id}`;
     const requestCount = await redis.incr(rateLimitKey);
 
     if (requestCount === 1) {

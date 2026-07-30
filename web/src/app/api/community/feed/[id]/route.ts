@@ -26,8 +26,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const postId = params.id;
 
@@ -39,7 +39,7 @@ export async function DELETE(
     .single();
 
   if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
-  if (post.author_id !== session.user.id) {
+  if (post.author_id !== user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

@@ -9,6 +9,8 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, en
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { PlayerAvatar } from '@/components/tournament/PlayerAvatar';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
   Stepper,
   StepperContent,
@@ -173,6 +175,8 @@ function PremiumSelect({ value, onChange, options, labelMap }: { value: string |
 export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const addTournament = useTournamentStore(state => state.addTournament);
   const router = useRouter();
+  const { user } = useAuth();
+  const { showToast } = useToast();
 
   const FORMAT_LABELS: Record<string, string> = {
       single: "Single Elimination",
@@ -286,6 +290,11 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!isStep1Complete || !isStep2Complete || !isStep3Complete) return;
+
+    if (user?.isDemo || user?.role === "demo") {
+      showToast("This is a demo — sign up to create tournaments for real!", "error");
+      return;
+    }
 
     const id = Date.now().toString();
     

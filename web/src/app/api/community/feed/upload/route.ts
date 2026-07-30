@@ -23,8 +23,8 @@ async function makeSupabase() {
 /** POST /api/community/feed/upload — upload a feed image to Supabase Storage */
 export async function POST(req: NextRequest) {
   const supabase = await makeSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.name.split(".").pop() ?? "jpg";
-  const fileName = `${session.user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from("feed-images")
