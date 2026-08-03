@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from 'react';
+import { memo, useMemo, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Trophy } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -317,7 +317,7 @@ interface BracketCanvasProps {
   onMatchWin?: (matchId: string, winnerId: string | null) => void;
 }
 
-export function BracketCanvas({
+function BracketCanvasInner({
   winnersRounds,
   losersRounds,
   grandFinalRounds,
@@ -489,7 +489,7 @@ export function BracketCanvas({
             </filter>
           </defs>
           {layout.allConnectors.map((conn, i) => (
-            <ConnectorSVGPath key={i} {...conn} />
+            <MemoizedConnectorSVGPath key={i} {...conn} />
           ))}
         </svg>
 
@@ -547,9 +547,9 @@ function ConnectorSVGPath({ d, isActive, isLoserBracket, delay, isDropPath }: Co
   // Hide drop paths until the match is completed and the loser is known
   if (isDropPath && !isActive) return null;
 
-  const activeColor = isLoserBracket 
-    ? (isLight ? '#DC2626' : '#EF4444') 
-    : (isLight ? '#16A34A' : '#32D74B'); 
+  const activeColor = isLoserBracket
+    ? (isLight ? '#DC2626' : '#EF4444')
+    : (isLight ? '#16A34A' : '#32D74B');
   const inactiveColor = isLight ? '#E2E8F0' : '#334155';
 
   return (
@@ -565,7 +565,7 @@ function ConnectorSVGPath({ d, isActive, isLoserBracket, delay, isDropPath }: Co
           opacity={isLight ? 0.8 : 0.3}
         />
       )}
-      
+
       {/* Animated Foreground Track (Active) */}
       {isActive && (
         <motion.path
@@ -577,10 +577,10 @@ function ConnectorSVGPath({ d, isActive, isLoserBracket, delay, isDropPath }: Co
           strokeDasharray={isDropPath ? '6 5' : undefined}
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ pathLength: 1, opacity: isDropPath ? 0.9 : 1 }}
-          transition={{ 
-            delay: 0.3 + delay, 
-            duration: 0.65, 
-            ease: [0.23, 1, 0.32, 1] 
+          transition={{
+            delay: 0.3 + delay,
+            duration: 0.65,
+            ease: [0.23, 1, 0.32, 1]
           }}
           style={{ filter: isLight ? `drop-shadow(0px 2px 4px rgba(${isLoserBracket ? '220,38,38' : '22,163,74'}, 0.4))` : `url(#glow-${isLoserBracket ? 'red' : 'green'})` }}
         />
@@ -588,3 +588,9 @@ function ConnectorSVGPath({ d, isActive, isLoserBracket, delay, isDropPath }: Co
     </>
   );
 }
+
+// Memoize the connector path component to prevent unnecessary re-renders
+const MemoizedConnectorSVGPath = memo(ConnectorSVGPath);
+
+// Export the memoized main component
+export const BracketCanvas = memo(BracketCanvasInner);

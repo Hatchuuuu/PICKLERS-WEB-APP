@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, ShieldAlert, X, IdCard, Clock, Loader2, ScanFace, ChevronDown } from "lucide-react";
@@ -14,6 +14,11 @@ export function VerificationGate({ children, onVerifiedClick, disabled = false }
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [step, setStep] = useState<Step>("primer");
   const [showIds, setShowIds] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const status = user?.verificationStatus ?? "unverified";
 
@@ -61,7 +66,7 @@ export function VerificationGate({ children, onVerifiedClick, disabled = false }
       </div>
 
       {/* PENDING MODAL */}
-      {typeof document !== "undefined" && createPortal(
+      {mounted && createPortal(
         <AnimatePresence>
           {showPendingModal && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -92,7 +97,7 @@ export function VerificationGate({ children, onVerifiedClick, disabled = false }
       )}
 
       {/* VERIFICATION FLOW MODAL */}
-      {typeof document !== "undefined" && createPortal(
+      {mounted && createPortal(
         <AnimatePresence>
           {showModal && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

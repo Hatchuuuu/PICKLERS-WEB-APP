@@ -83,13 +83,13 @@ export default function LandingPage() {
   useEffect(() => {
     async function loadData() {
       setIsFetching(true);
-      
+
       try {
         const [facRes, matRes] = await Promise.all([
-          supabase.from('facilities').select('*'),
-          supabase.from('matches').select('*')
+          supabase.from('facilities').select('*').limit(8),
+          supabase.from('matches').select('*').limit(6)
         ]);
-        
+
         if (facRes.data && facRes.data.length > 0) {
           setFacilities(facRes.data as unknown as Facility[]);
         }
@@ -108,8 +108,6 @@ export default function LandingPage() {
   const handleToggle = (val: "facilities" | "open-play") => {
     if (val === toggle) return;
     setToggle(val);
-    setIsFetching(true);
-    setTimeout(() => setIsFetching(false), 600); // Simulate CDN/Redis cache hit
   };
 
   // Force scroll to top on page refresh/load
@@ -575,7 +573,11 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-40px" }}
                     transition={{ delay: Math.min(i, 4) * 0.1, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}>
-                    <FacilityCard f={f} onFav={() => { }} onViewCourts={() => router.push("/auth")} />
+                    <FacilityCard f={f} onFav={() => { }} onViewCourts={() => {
+      // In a real app, this would navigate to a facility detail page
+      // For now, we'll go to explore tab to show this is where court booking would happen
+      router.push("/app/explore");
+    }} />
                   </motion.div>
                 ))}
               </div>
@@ -591,6 +593,7 @@ export default function LandingPage() {
                     slots: rawMatch.participants || m.current_players || 0,
                     max: rawMatch.max_participants || m.max_players || 0,
                     facility: rawMatch.facility || m.facility_name,
+                    location: m.location || rawMatch.location || "BGC, Taguig",
                     date: m.date,
                     time: m.time,
                     host: m.host || "Picklers Organizer",
@@ -632,7 +635,7 @@ export default function LandingPage() {
             <div className="relative z-10">
               <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-5 border border-emerald-500/20"><ShieldCheck className="w-6 h-6 md:w-7 md:h-7" /></div>
               <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 tracking-tight">Skill-Based Matchmaking</h3>
-              <p className="text-foreground/60 max-w-md leading-relaxed text-[15px] md:text-[16px]">Integrated with DUPR and self-rating systems to ensure you're always playing competitive, fun matches at your exact level.</p>
+              <p className="text-foreground/60 max-w-md leading-relaxed text-[15px] md:text-[16px]">Integrated with self-rating and skill assessment systems to ensure you're always playing competitive, fun matches at your exact level.</p>
             </div>
           </motion.div>
 
@@ -776,7 +779,7 @@ export default function LandingPage() {
               { q: "Is Picklers free to use?", a: "Yes, joining the platform and browsing venues is completely free. You only pay for the courts you book or the open play sessions you join, plus a small platform fee." },
               { q: "How do cancellations work?", a: "You can cancel any booking up to 24 hours in advance for a full refund. Cancellations made within 24 hours are subject to the venue's specific policy." },
               { q: "Can I host my own private matches?", a: "Absolutely. You can book a court and keep it private for your group, or open it up for others to join and split the cost." },
-              { q: "Are there skill levels for open play?", a: "Yes! Every open play session displays the target DUPR or self-rating skill level, so you'll always find a match that fits your competitive level." }
+              { q: "Are there skill levels for open play?", a: "Yes! Every open play session displays the target skill level (Beginner, Intermediate, Advanced), so you'll always find a match that fits your competitive level." }
             ].map((faq, i) => (
               <motion.div
                 key={i}
@@ -945,9 +948,9 @@ export default function LandingPage() {
                 The Philippines' premier pickleball booking and community platform. Find courts, join matches, and play.
               </p>
               <div className="flex items-center gap-4 text-foreground/40">
-                <button className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"><Instagram className="w-5 h-5" /></button>
-                <button className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"><Facebook className="w-5 h-5" /></button>
-                <button className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"><Twitter className="w-5 h-5" /></button>
+                <a href="https://instagram.com/picklersph" target="_blank" rel="noopener noreferrer" aria-label="Picklers on Instagram" className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"><Instagram className="w-5 h-5" /></a>
+                <a href="https://facebook.com/picklersph" target="_blank" rel="noopener noreferrer" aria-label="Picklers on Facebook" className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"><Facebook className="w-5 h-5" /></a>
+                <a href="https://x.com/picklersph" target="_blank" rel="noopener noreferrer" aria-label="Picklers on X" className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"><Twitter className="w-5 h-5" /></a>
               </div>
             </div>
 
@@ -973,7 +976,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border dark:border-white/5">
-            <span className="text-[14px]" style={{ color: "var(--ink-muted)" }}>© 2026 Picklers PH. All rights reserved.</span>
+            <span className="text-[14px]" style={{ color: "var(--ink-muted)" }}>© {new Date().getFullYear()} Picklers PH. All rights reserved.</span>
             <div className="flex gap-6 text-[14px]" style={{ color: "var(--ink-muted)" }}>
               <Link href="/terms" className="hover:text-emerald-400 transition-colors duration-200">Terms of Service</Link>
               <Link href="/privacy" className="hover:text-emerald-400 transition-colors duration-200">Privacy Policy</Link>

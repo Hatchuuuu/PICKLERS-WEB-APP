@@ -4,7 +4,11 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy123');
+const resendApiKey = process.env.RESEND_API_KEY;
+if (!resendApiKey) {
+  console.error("RESEND_API_KEY is missing. Email delivery is unavailable.");
+}
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,8 +44,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Recipient email must match account email' }, { status: 403 });
     }
 
+    if (!resend) {
+      return NextResponse.json({ error: 'Email service not configured' }, { status: 500 });
+    }
+
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'Picklers <onboarding@resend.dev>';
+
     const data = await resend.emails.send({
-      from: 'Picklers <noreply@picklers.com>',
+      from: fromAddress,
       to: to,
       subject: subject,
       text: body,

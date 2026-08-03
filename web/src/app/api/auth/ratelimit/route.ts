@@ -4,14 +4,17 @@ import { redis } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
-    // Attempt to get the user's IP address securely (request.ip available on Vercel/Edge)
     const forwardedFor = request.headers.get('x-forwarded-for');
-    const ip = request.ip || 
-               (forwardedFor ? forwardedFor.split(',')[0].trim() : null) || 
+    const ip = (forwardedFor ? forwardedFor.split(',')[0].trim() : null) || 
                request.headers.get('x-real-ip') || 
                'anonymous_ip';
     // Create a unique rate limit key for auth attempts
     const rateLimitKey = `ratelimit:auth:${ip}`;
+    
+    // If Redis is not configured (e.g. local dev), bypass rate limiting
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      return NextResponse.json({ success: true, bypassed: true }, { status: 200 });
+    }
     
     // Increment the attempt count for this IP
     const requestCount = await redis.incr(rateLimitKey);

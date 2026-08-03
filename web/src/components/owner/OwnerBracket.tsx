@@ -17,6 +17,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useApp } from '@/contexts/AppContext';
 import { useTournamentStore } from '@/store/useTournamentStore';
 import { TournamentAPI } from '@/lib/tournament/tournament-api';
+import { seedDemoBracketData } from '@/lib/tournament/demo-bracket-seeder';
 
 type Format = 'SINGLE' | 'DOUBLE' | 'ROUND_ROBIN';
 
@@ -63,11 +64,11 @@ export function OwnerBracket() {
     if (id) {
       const t = useTournamentStore.getState().teams.filter(team => team.tournament_id === id);
       const m = useTournamentStore.getState().matches.filter(match => match.tournament_id === id);
-      
+
       if (t.length === 0 || m.length === 0) {
-        // Fallback: If page was refreshed, store is empty. Fetch from DB.
+        // Fallback: If page was refreshed or demo tournament, seed/fetch data
         TournamentAPI.getTournamentData(id).then(data => {
-            if (isMounted && data) {
+            if (isMounted && data && (data.teams.length > 0 || data.matches.length > 0)) {
                 useTournamentStore.setState(state => ({
                     teams: [...state.teams.filter(st => st.tournament_id !== id), ...(data.teams || [])],
                     matches: [...state.matches.filter(sm => sm.tournament_id !== id), ...(data.matches || [])]
@@ -75,14 +76,51 @@ export function OwnerBracket() {
                 if (!useTournamentStore.getState().tournaments.find(t => t.id === id) && data.tournament) {
                     setTournamentName(data.tournament.name);
                     setTeamCount(data.tournament.teams_count || data.tournament.maxTeams || 8);
-                    const formatStr = data.tournament.format.toLowerCase();
+                    const formatStr = (data.tournament.format || "").toLowerCase();
                     if (formatStr.includes('round_robin')) setFormat('ROUND_ROBIN');
                     else if (formatStr.includes('double')) setFormat('DOUBLE');
                     else setFormat('SINGLE');
                     setTeamType(data.tournament.play_type === 'singles' ? 'SINGLES' : 'DOUBLES');
                 }
+            } else if (isMounted) {
+                const tourneyObj = useTournamentStore.getState().tournaments.find(t => t.id === id);
+                const formatVal = tourneyObj?.format || (id === 'tourney_2' ? 'double' : 'single');
+                const countVal = tourneyObj?.teams || tourneyObj?.maxTeams || 8;
+                const mock = seedDemoBracketData(id, formatVal, countVal);
+
+                useTournamentStore.setState(state => ({
+                    teams: [...state.teams.filter(st => st.tournament_id !== id), ...mock.teams],
+                    matches: [...state.matches.filter(sm => sm.tournament_id !== id), ...mock.matches]
+                }));
+
+                if (tourneyObj) {
+                    setTournamentName(tourneyObj.name);
+                    setTeamCount(countVal);
+                    const formatStr = formatVal.toLowerCase();
+                    if (formatStr.includes('round_robin')) setFormat('ROUND_ROBIN');
+                    else if (formatStr.includes('double')) setFormat('DOUBLE');
+                    else setFormat('SINGLE');
+                }
             }
-        }).catch(err => console.error("Failed to load tournament data:", err));
+        }).catch(err => {
+            console.error("Failed to load tournament data, seeding mock bracket:", err);
+            if (isMounted) {
+                const tourneyObj = useTournamentStore.getState().tournaments.find(t => t.id === id);
+                const formatVal = tourneyObj?.format || (id === 'tourney_2' ? 'double' : 'single');
+                const countVal = tourneyObj?.teams || tourneyObj?.maxTeams || 8;
+                const mock = seedDemoBracketData(id, formatVal, countVal);
+
+                useTournamentStore.setState(state => ({
+                    teams: [...state.teams.filter(st => st.tournament_id !== id), ...mock.teams],
+                    matches: [...state.matches.filter(sm => sm.tournament_id !== id), ...mock.matches]
+                }));
+
+                if (tourneyObj) {
+                    setTournamentName(tourneyObj.name);
+                    setTeamCount(countVal);
+                }
+            }
+        });
       }
     }
     return () => { isMounted = false; };

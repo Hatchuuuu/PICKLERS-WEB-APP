@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Heart, MessageCircle, Send, Image as ImageIcon, X, MoreHorizontal,
-  Trash2, MessageSquare, AlertTriangle
+  Trash2, MessageSquare, AlertTriangle, Reply
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FeedPost, FeedComment, CommunityPlayer } from "@/types";
@@ -10,6 +10,7 @@ import { DEMO_FEED_POSTS } from "@/lib/demoData";
 import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
 import { Avatar } from "@/components/ui/Avatar";
 import { useActionLock } from "@/hooks/useActionLock";
+import { formatSkillLevel, cn } from "@/lib/utils";
 
 function relativeTime(dateStr: string): string {
   const now = Date.now();
@@ -226,19 +227,23 @@ function CreatePostModal({ open, onClose, onCreated }: {
 // FEED POST CARD
 // ─────────────────────────────────────────────────────────────────────────────
 
-function FeedPostCard({ post, onLike, onDelete, onComment, onOpenProfile }: {
+function FeedPostCard({ post, onLike, onDelete, onComment, onLikeComment, onOpenProfile }: {
   post: FeedPost;
   onLike: (id: string) => void;
   onDelete: (id: string) => void;
   onComment: (postId: string, content: string) => void;
+  onLikeComment?: (postId: string, commentId: string) => void;
   onOpenProfile?: (id: string) => void;
 }) {
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
+  const [replyingTo, setReplyingTo] = useState<{ authorName: string; commentId: string } | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [imageExpanded, setImageExpanded] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const isMe = post.author_id === user?.id;
 
   return (
@@ -254,7 +259,7 @@ function FeedPostCard({ post, onLike, onDelete, onComment, onOpenProfile }: {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 bg-background/90 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center gap-3"
+            className="absolute inset-0 z-[30] bg-background/90 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center gap-3"
           >
             <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-1">
               <AlertTriangle className="w-6 h-6" />
@@ -289,13 +294,13 @@ function FeedPostCard({ post, onLike, onDelete, onComment, onOpenProfile }: {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <button onClick={() => onOpenProfile?.(post.author_id)} className="text-[14px] font-bold text-foreground truncate hover:underline text-left">
+            <button onClick={() => onOpenProfile?.(post.author_id)} className="text-[14px] font-extrabold text-foreground truncate hover:underline text-left" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
               {post.author_name}
             </button>
             {post.author_level && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
                 style={{ background: "var(--accent-primary-muted)", color: "var(--accent-primary)" }}>
-                {post.author_level}
+                {formatSkillLevel(post.author_level)}
               </span>
             )}
           </div>
@@ -410,41 +415,131 @@ function FeedPostCard({ post, onLike, onDelete, onComment, onOpenProfile }: {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t"
-            style={{ borderColor: "var(--border-subtle)" }}
+            className="overflow-hidden border-t border-border/40 dark:border-white/[0.08]"
           >
-            {/* Recent comments */}
-            {(post.recent_comments ?? []).length > 0 && (
-              <div className="px-4 pt-3 flex flex-col gap-3">
-                {(post.recent_comments ?? []).map((c) => (
-                  <div key={c.id} className="flex gap-2.5">
-                    <Avatar name={c.author_name} size={28} avatarUrl={c.author_avatar_url} />
-                    <div className="flex-1 min-w-0">
-                      <div className="rounded-2xl px-3 py-2" style={{ background: "var(--surface-interactive)" }}>
-                        <span className="text-[12px] font-bold text-foreground">{c.author_name}</span>
-                        <p className="text-[13px] text-foreground leading-snug">{c.content}</p>
-                      </div>
-                      <span className="text-[10px] text-ink-muted ml-3">{relativeTime(c.created_at)}</span>
+            {/* Comments List */}
+            {(() => {
+              const commentsList = post.recent_comments ?? [];
+              const hasMoreComments = commentsList.length > 2;
+              const visibleComments = showAllComments ? commentsList : commentsList.slice(-2);
+
+              return (
+                <>
+                  {commentsList.length > 0 && (
+                    <div className="px-4 pt-3.5 flex flex-col gap-3">
+                      {hasMoreComments && !showAllComments && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAllComments(true)}
+                          className="text-[12px] font-extrabold text-emerald-400 hover:underline text-left self-start mb-0.5"
+                          style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
+                        >
+                          View all {commentsList.length} comments
+                        </button>
+                      )}
+
+                      {visibleComments.map((c) => (
+                        <div key={c.id} className="flex gap-2.5 items-start group">
+                          <button
+                            onClick={() => onOpenProfile?.(c.author_id)}
+                            className="shrink-0 mt-0.5 transition-transform hover:scale-105"
+                          >
+                            <Avatar name={c.author_name} size={32} avatarUrl={c.author_avatar_url} />
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="rounded-2xl px-3.5 py-2.5 bg-surface-interactive/80 dark:bg-white/[0.04] border border-border-subtle dark:border-white/10 shadow-sm">
+                              <button
+                                onClick={() => onOpenProfile?.(c.author_id)}
+                                className="text-[12.5px] font-extrabold text-foreground hover:underline text-left block"
+                                style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
+                              >
+                                {c.author_name}
+                              </button>
+                              <p className="text-[13.5px] text-foreground leading-relaxed mt-0.5 whitespace-pre-wrap">
+                                {c.content}
+                              </p>
+                            </div>
+
+                            {/* Comment Actions Row */}
+                            <div className="flex items-center gap-3 mt-1 ml-2 text-[11px] font-medium text-ink-muted">
+                              <span className="text-[10px] text-ink-muted">{relativeTime(c.created_at)}</span>
+                              <button
+                                type="button"
+                                onClick={() => onLikeComment?.(post.id, c.id)}
+                                className={cn(
+                                  "flex items-center gap-1.5 font-bold transition-all hover:text-red-500 active:scale-90",
+                                  c.i_liked ? "text-red-500" : "text-ink-muted"
+                                )}
+                              >
+                                <Heart
+                                  className={cn(
+                                    "w-3.5 h-3.5 transition-transform",
+                                    c.i_liked ? "fill-red-500 text-red-500 scale-110" : "text-ink-muted"
+                                  )}
+                                />
+                                <span>{c.like_count && c.like_count > 0 ? c.like_count : "Like"}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setReplyingTo({ authorName: c.author_name, commentId: c.id });
+                                  setCommentDraft(`@${c.author_name} `);
+                                  inputRef.current?.focus();
+                                }}
+                                className="flex items-center gap-1 font-bold text-ink-muted hover:text-emerald-400 transition-colors active:scale-90"
+                              >
+                                <Reply className="w-3.5 h-3.5" />
+                                <span>Reply</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
+                  )}
+                </>
+              );
+            })()}
+
+            {/* Replying Banner */}
+            {replyingTo && (
+              <div className="mx-3.5 mt-2.5 flex items-center justify-between px-3 py-1.5 text-xs bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 font-medium">
+                <span className="flex items-center gap-1.5 truncate">
+                  <Reply className="w-3.5 h-3.5" />
+                  Replying to <strong className="font-extrabold">{replyingTo.authorName}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReplyingTo(null);
+                    if (commentDraft.startsWith(`@${replyingTo.authorName} `)) {
+                      setCommentDraft("");
+                    }
+                  }}
+                  className="text-emerald-400 hover:text-emerald-300 ml-2"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
 
             {/* Comment input */}
-            <div className="flex items-center gap-2 p-3">
-              <Avatar name={user?.name ?? "You"} size={28} avatarUrl={null} />
+            <div className="flex items-center gap-2 p-3.5">
+              <Avatar name={user?.name ?? "You"} size={32} avatarUrl={null} />
               <input
+                ref={inputRef}
                 value={commentDraft}
                 onChange={(e) => setCommentDraft(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && commentDraft.trim()) {
                     onComment(post.id, commentDraft.trim());
                     setCommentDraft("");
+                    setReplyingTo(null);
+                    setShowAllComments(true);
                   }
                 }}
-                placeholder="Write a comment..."
-                className="flex-1 px-3 py-2 rounded-full text-[13px] outline-none bg-surface-interactive border border-border-subtle text-foreground placeholder:text-ink-muted"
+                placeholder={replyingTo ? `Reply to @${replyingTo.authorName}...` : "Write a comment..."}
+                className="flex-1 px-4 py-2.5 rounded-full text-xs sm:text-sm outline-none bg-surface-interactive/80 dark:bg-white/[0.05] border border-border-subtle dark:border-white/10 text-foreground placeholder:text-ink-muted focus:border-emerald-500/50 transition-all shadow-inner"
               />
               <motion.button
                 whileTap={{ scale: 0.9 }}
@@ -452,16 +547,19 @@ function FeedPostCard({ post, onLike, onDelete, onComment, onOpenProfile }: {
                   if (commentDraft.trim()) {
                     onComment(post.id, commentDraft.trim());
                     setCommentDraft("");
+                    setReplyingTo(null);
+                    setShowAllComments(true);
                   }
                 }}
                 disabled={!commentDraft.trim()}
-                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all"
-                style={{
-                  background: commentDraft.trim() ? "var(--accent-primary)" : "var(--surface-interactive)",
-                }}
+                className={cn(
+                  "w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all shadow-md",
+                  commentDraft.trim()
+                    ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_15px_rgba(0,217,139,0.3)] cursor-pointer"
+                    : "bg-surface-interactive text-ink-muted cursor-not-allowed opacity-50"
+                )}
               >
-                <Send className="w-3.5 h-3.5"
-                  style={{ color: commentDraft.trim() ? "var(--surface-base)" : "var(--ink-muted)" }} />
+                <Send className="w-4 h-4 stroke-[2.5]" />
               </motion.button>
             </div>
           </motion.div>
@@ -522,7 +620,7 @@ function FeedSuggestedPlayers({ onOpenProfile }: { onOpenProfile?: (id: string) 
               <button onClick={() => onOpenProfile?.(p.id)} className="text-[14px] font-bold text-foreground leading-tight truncate hover:underline text-left block">
                 {p.name}
               </button>
-              <span className="text-[11px] text-ink-muted">Level {p.level}</span>
+              <span className="text-[11px] text-ink-muted">{formatSkillLevel(p.level)}</span>
             </div>
             <motion.button whileTap={{ scale: 0.8 }} onClick={() => toggleLike(p)}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
@@ -540,7 +638,7 @@ function FeedSuggestedPlayers({ onOpenProfile }: { onOpenProfile?: (id: string) 
 // FEED TAB (Main Export)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string) => void }) {
+export function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string) => void }) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -624,6 +722,29 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
     });
   }
 
+  async function handleLikeComment(postId: string, commentId: string) {
+    runWithLock(async () => {
+      setPosts(prev => prev.map(p => {
+        if (p.id !== postId) return p;
+        const updatedComments = (p.recent_comments ?? []).map(c => {
+          if (c.id !== commentId) return c;
+          const newLiked = !c.i_liked;
+          const newCount = Math.max(0, (c.like_count ?? 0) + (newLiked ? 1 : -1));
+          return { ...c, i_liked: newLiked, like_count: newCount };
+        });
+        return { ...p, recent_comments: updatedComments };
+      }));
+
+      try {
+        await fetch(`/api/community/feed/${postId}/comments/${commentId}/like`, {
+          method: "POST",
+        });
+      } catch (e) {
+        // Ignore network failure on optimistic update
+      }
+    });
+  }
+
   async function handleComment(postId: string, content: string) {
     runWithLock(async () => {
       const tempId = Math.random().toString();
@@ -634,7 +755,9 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
         author_name: user?.name ?? "You",
         author_avatar_url: null,
         content,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        like_count: 0,
+        i_liked: false,
       };
       
       // Optimistic update
@@ -643,7 +766,7 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
           ? {
             ...p,
             comment_count: p.comment_count + 1,
-            recent_comments: [...(p.recent_comments ?? []), tempComment].slice(-2),
+            recent_comments: [...(p.recent_comments ?? []), tempComment],
           }
           : p
       ));
@@ -661,17 +784,27 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
           p.id === postId
             ? {
               ...p,
-              recent_comments: (p.recent_comments ?? []).map(c => c.id === tempId ? comment : c)
+              recent_comments: (p.recent_comments ?? []).map(c => c.id === tempId ? { ...comment, like_count: comment.like_count ?? 0, i_liked: comment.i_liked ?? false } : c)
             }
             : p
         ));
-      } else {
-        // Revert if failed
+      } else if (isDemo || postId.startsWith("demo_") || !user) {
+        // Keep comment in demo/guest/local mode so it never disappears!
         setPosts(prev => prev.map(p =>
           p.id === postId
             ? {
               ...p,
-              comment_count: p.comment_count - 1,
+              recent_comments: (p.recent_comments ?? []).map(c => c.id === tempId ? { ...tempComment, id: `comment_${Date.now()}` } : c)
+            }
+            : p
+        ));
+      } else {
+        // Revert only on authentic database failure
+        setPosts(prev => prev.map(p =>
+          p.id === postId
+            ? {
+              ...p,
+              comment_count: Math.max(0, p.comment_count - 1),
               recent_comments: (p.recent_comments ?? []).filter(c => c.id !== tempId)
             }
             : p
@@ -695,7 +828,7 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
   }
 
   return (
-    <div className="flex flex-col gap-4 pt-1 max-w-2xl mx-auto w-full">
+    <div className="flex flex-col gap-4 pt-1 w-full">
       {/* Create Post Bar */}
       <LockedFeatureWrapper featureLabel="post in the community feed" showLockIcon={true}>
         <motion.button
@@ -740,6 +873,7 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
                   onLike={handleLike}
                   onDelete={handleDelete}
                   onComment={handleComment}
+                  onLikeComment={handleLikeComment}
                   onOpenProfile={onOpenProfile}
                 />
               </motion.div>
@@ -765,3 +899,5 @@ export default function FeedTab({ onOpenProfile }: { onOpenProfile?: (id: string
     </div>
   );
 }
+
+export default FeedTab;

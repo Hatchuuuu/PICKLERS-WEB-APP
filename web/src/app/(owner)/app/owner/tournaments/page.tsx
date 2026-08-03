@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CalendarDays, Users,
@@ -9,18 +9,34 @@ import {
 import { cn } from "@/lib/utils";
 import { useRouter } from 'next/navigation';
 
+import { useAuth } from "@/contexts/AuthContext";
+import { DEMO_TOURNAMENTS } from "@/lib/demoData";
 import { useTournamentStore } from "@/store/useTournamentStore";
 import { CreateTournamentModal } from "@/components/owner/CreateTournamentModal";
+import { seedDemoBracketData } from "@/lib/tournament/demo-bracket-seeder";
 
 export default function OwnerTournaments() {
   const [tab, setTab] = useState<"upcoming" | "ongoing" | "completed">("ongoing");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
 
   // For visual prototyping we'll use the store, but override the status logic 
   // slightly to map to 'upcoming', 'ongoing', 'completed'
   const storeTournaments = useTournamentStore(state => state.tournaments);
   
+  useEffect(() => {
+    if ((user?.isDemo || user?.role === "demo") && storeTournaments.length === 0) {
+      useTournamentStore.setState({ tournaments: DEMO_TOURNAMENTS as any });
+      DEMO_TOURNAMENTS.forEach(t => {
+        const mock = seedDemoBracketData(t.id, (t as any).format || (t.id === 'tourney_2' ? 'double' : 'single'), (t as any).teams || 8);
+        useTournamentStore.setState(state => ({
+          teams: [...state.teams.filter(st => st.tournament_id !== t.id), ...mock.teams],
+          matches: [...state.matches.filter(sm => sm.tournament_id !== t.id), ...mock.matches]
+        }));
+      });
+    }
+  }, [user, storeTournaments.length]);
   // Map our new tabs to store status if needed, or just mock it.
   // The prompt asks for: 'upcoming', 'ongoing', 'completed'
   const filtered = storeTournaments.map(t => {
@@ -59,7 +75,7 @@ export default function OwnerTournaments() {
             {t}
             {tab === t && (
               <motion.div
-                layoutId="active-tab"
+                layoutId="owner-tournaments-active-tab"
                 className="absolute bottom-0 left-0 right-0 h-[2px]"
                 style={{ background: "var(--accent-primary)", boxShadow: "0 -2px 10px rgba(0,217,139,0.5)" }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -151,7 +167,7 @@ export default function OwnerTournaments() {
       {/* Floating Create Button */}
       <button
         onClick={() => setIsDrawerOpen(true)}
-        className="fixed bottom-[110px] right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-full text-white font-semibold text-sm shadow-2xl active:scale-[0.97] z-30 transition-all"
+        className="fixed bottom-[calc(110px+env(safe-area-inset-bottom,0px))] right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-full text-white font-semibold text-sm shadow-2xl active:scale-[0.97] z-[30] transition-all"
         style={{
           background: "var(--accent-success)",
           boxShadow: "0 8px 32px rgba(0,217,139,0.4)",

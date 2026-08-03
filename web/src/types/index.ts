@@ -147,6 +147,8 @@ export type CommunityPlayer = {
   online: boolean;
   like_count: number;
   i_liked: boolean;
+  follower_count?: number;
+  following_count?: number;
 };
 
 export type FeedPost = {
@@ -172,4 +174,6 @@ export type FeedComment = {
   author_avatar_url?: string | null;
   content: string;
   created_at: string;
+  like_count?: number;
+  i_liked?: boolean;
 };

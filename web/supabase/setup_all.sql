@@ -14,6 +14,8 @@ DROP TABLE IF EXISTS public.bookings CASCADE;
 DROP TABLE IF EXISTS public.notifications CASCADE;
 DROP TABLE IF EXISTS public.player_profiles CASCADE;
 DROP TABLE IF EXISTS public.wallets CASCADE;
+DROP TABLE IF EXISTS public.wallet_transactions CASCADE;
+DROP TABLE IF EXISTS public.processed_webhooks CASCADE;
 DROP TABLE IF EXISTS public.courts CASCADE;
 DROP TABLE IF EXISTS public.facilities CASCADE;
 DROP TABLE IF EXISTS public.tournaments CASCADE;
@@ -426,6 +428,94 @@ CREATE POLICY "Admins can view all facility applications" ON public.facility_app
 DROP POLICY IF EXISTS "Admins can update facility applications" ON public.facility_applications;
 CREATE POLICY "Admins can update facility applications" ON public.facility_applications
   FOR UPDATE USING (EXISTS (SELECT 1 FROM public.player_profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- =====================================================================
+-- STEP 5.5: COMMUNITY, FEED & SOCIAL TABLES
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS public.feed_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  author_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  author_name TEXT NOT NULL,
+  author_level TEXT,
+  content TEXT,
+  image_url TEXT,
+  like_count INTEGER DEFAULT 0,
+  comment_count INTEGER DEFAULT 0,
+  is_demo BOOLEAN DEFAULT false NOT NULL,
+  is_seed BOOLEAN DEFAULT false NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.feed_posts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Feed posts viewable by everyone" ON public.feed_posts;
+CREATE POLICY "Feed posts viewable by everyone" ON public.feed_posts FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can insert own feed posts" ON public.feed_posts;
+CREATE POLICY "Users can insert own feed posts" ON public.feed_posts FOR INSERT WITH CHECK (auth.uid() = author_id);
+DROP POLICY IF EXISTS "Users can delete own feed posts" ON public.feed_posts;
+CREATE POLICY "Users can delete own feed posts" ON public.feed_posts FOR DELETE USING (auth.uid() = author_id);
+
+CREATE TABLE IF NOT EXISTS public.feed_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID NOT NULL REFERENCES public.feed_posts(id) ON DELETE CASCADE,
+  author_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  author_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.feed_comments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Comments viewable by everyone" ON public.feed_comments;
+CREATE POLICY "Comments viewable by everyone" ON public.feed_comments FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can insert own comments" ON public.feed_comments;
+CREATE POLICY "Users can insert own comments" ON public.feed_comments FOR INSERT WITH CHECK (auth.uid() = author_id);
+
+CREATE TABLE IF NOT EXISTS public.clubs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  description TEXT,
+  banner_url TEXT,
+  admin_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  member_count INTEGER DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.clubs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Clubs viewable by everyone" ON public.clubs;
+CREATE POLICY "Clubs viewable by everyone" ON public.clubs FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins can insert clubs" ON public.clubs;
+CREATE POLICY "Admins can insert clubs" ON public.clubs FOR INSERT WITH CHECK (auth.uid() = admin_id);
+
+CREATE TABLE IF NOT EXISTS public.facility_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  facility_id INTEGER REFERENCES public.facilities(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_name TEXT NOT NULL,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  review_text TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.facility_reviews ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Reviews viewable by everyone" ON public.facility_reviews;
+CREATE POLICY "Reviews viewable by everyone" ON public.facility_reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can insert own reviews" ON public.facility_reviews;
+CREATE POLICY "Users can insert own reviews" ON public.facility_reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE TABLE IF NOT EXISTS public.facility_announcements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  facility_id INTEGER REFERENCES public.facilities(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_by UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.facility_announcements ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Announcements viewable by everyone" ON public.facility_announcements;
+CREATE POLICY "Announcements viewable by everyone" ON public.facility_announcements FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Owners can insert announcements" ON public.facility_announcements;
+CREATE POLICY "Owners can insert announcements" ON public.facility_announcements FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.facilities f WHERE f.id = facility_id AND f.owner_id = auth.uid()));
 
 -- =====================================================================
 -- STEP 6: INDEXES & TRIGGERS
@@ -1137,3 +1227,122 @@ GRANT EXECUTE ON FUNCTION public.admin_trigger_seed_purge() TO authenticated;
 -- 1. To populate Demo Sandbox: Run seed_demo_account.sql
 -- 2. To populate Cold-Start Launch Data: Run seed_coldstart.sql
 -- =====================================================================
+
+-- =====================================================================
+-- FACILITY APPLICATIONS TABLE
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS public.facility_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    facility_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    courts_count INTEGER DEFAULT 1 NOT NULL,
+    surface_type TEXT,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    business_permit_url TEXT,
+    proof_of_identity_url TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE public.facility_applications ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can insert own applications" ON public.facility_applications;
+CREATE POLICY "Users can insert own applications" ON public.facility_applications FOR INSERT WITH CHECK (auth.uid() = user_id OR auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Users can view own applications" ON public.facility_applications;
+CREATE POLICY "Users can view own applications" ON public.facility_applications FOR SELECT USING (auth.uid() = user_id OR (auth.jwt() ->> 'role') = 'admin');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- WALLET TRANSACTIONS TABLE & POLICIES
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.wallet_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    label TEXT NOT NULL,
+    amount NUMERIC NOT NULL,
+    type TEXT NOT NULL DEFAULT 'refund',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.wallet_transactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own wallet transactions"
+    ON public.wallet_transactions
+    FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own wallet transactions"
+    ON public.wallet_transactions
+    FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PROCESSED WEBHOOKS TABLE & POLICIES (Idempotency)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.processed_webhooks (
+    event_id TEXT PRIMARY KEY,
+    processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.processed_webhooks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Service role full access to processed_webhooks"
+    ON public.processed_webhooks
+    FOR ALL
+    USING (auth.jwt() ->> 'role' = 'service_role');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- FACILITY APPLICATIONS TABLE & POLICIES
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.facility_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    facility_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    courts_count INTEGER DEFAULT 1 NOT NULL,
+    surface_type TEXT,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    business_permit_url TEXT,
+    proof_of_identity_url TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE public.facility_applications ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can insert own applications" ON public.facility_applications;
+CREATE POLICY "Users can insert own applications" ON public.facility_applications FOR INSERT WITH CHECK (auth.uid() = user_id OR auth.uid() IS NOT NULL);
+
+-- FEED COMMENT LIKES TABLE & POLICIES
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.feed_comment_likes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    comment_id UUID REFERENCES public.feed_comments(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    UNIQUE(comment_id, user_id)
+);
+
+ALTER TABLE public.feed_comment_likes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Feed comment likes are viewable by everyone" ON public.feed_comment_likes;
+CREATE POLICY "Feed comment likes are viewable by everyone" ON public.feed_comment_likes FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Authenticated users can insert comment likes" ON public.feed_comment_likes;
+CREATE POLICY "Authenticated users can insert comment likes" ON public.feed_comment_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own comment likes" ON public.feed_comment_likes;
+CREATE POLICY "Users can delete own comment likes" ON public.feed_comment_likes FOR DELETE USING (auth.uid() = user_id);
+
+
+
+

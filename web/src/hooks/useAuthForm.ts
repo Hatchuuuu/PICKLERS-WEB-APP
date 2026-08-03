@@ -48,13 +48,15 @@ export function useAuthForm() {
   const searchParams = useSearchParams();
   const intent = searchParams.get("intent");
   const redirect = searchParams.get("redirect");
+  const tabParam = searchParams.get("tab") || searchParams.get("mode");
+  const isSignupTab = tabParam === "signup" || tabParam === "register" || intent === "signup";
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   useEffect(() => {
-    if (!isAuthLoading && isAuthenticated) {
+    if (!isAuthLoading && isAuthenticated && !isSignupTab) {
       router.replace(redirect || (intent === "owner" ? "/app/owner" : "/app"));
     }
-  }, [isAuthenticated, isAuthLoading, router, redirect, intent]);
+  }, [isAuthenticated, isAuthLoading, router, redirect, intent, isSignupTab]);
 
   const [loading, setLoading] = useState(false);
   
@@ -108,7 +110,7 @@ export function useAuthForm() {
     mode: "onChange",
     defaultValues: {
       view: "auth",
-      tab: intent === "signup" ? "signup" : "signin",
+      tab: isSignupTab ? "signup" : "signin",
       authMethod: "email",
       name: "",
       email: "",
@@ -117,6 +119,21 @@ export function useAuthForm() {
       confirmPassword: "",
     }
   });
+
+  useEffect(() => {
+    if (isSignupTab) {
+      form.reset({
+        view: "auth",
+        tab: "signup",
+        authMethod: "email",
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      });
+    }
+  }, [isSignupTab]);
 
   const view = form.watch("view");
   const tab = form.watch("tab");
@@ -165,8 +182,11 @@ export function useAuthForm() {
     let error = null;
 
     if (data.authMethod === "email") {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(data.email!.trim());
-      error = resetError;
+      const { error: signInError } = await supabase.auth.signInWithOtp({
+        email: data.email!.trim(),
+        options: { shouldCreateUser: false }
+      });
+      error = signInError;
     } else {
       const { error: signInError } = await supabase.auth.signInWithOtp({
         phone: `+63${data.phone!.replace(/\D/g, '')}`,
@@ -192,7 +212,7 @@ export function useAuthForm() {
     let error = null;
     
     if (authMethod === "email") {
-      const { error: verifyError } = await supabase.auth.verifyOtp({ email: formEmail.trim(), token, type: 'recovery' });
+      const { error: verifyError } = await supabase.auth.verifyOtp({ email: formEmail.trim(), token, type: 'email' });
       error = verifyError;
     } else {
       const { error: verifyError } = await supabase.auth.verifyOtp({ phone: `+63${formPhone.replace(/\D/g, '')}`, token, type: 'sms' });
@@ -222,6 +242,7 @@ export function useAuthForm() {
       return shakeError(error.message);
     }
     setIsSuccess(true);
+    setLoading(false);
     handleSuccessRedirect();
   };
 
@@ -284,6 +305,7 @@ export function useAuthForm() {
     }
 
     setIsSuccess(true);
+    setLoading(false);
     handleSuccessRedirect();
   };
 
@@ -294,9 +316,10 @@ export function useAuthForm() {
       if (view === "forgot-password") await handleSendCode(data);
       else if (view === "reset-password") await handleResetPassword(data);
       else await handleMainSubmit(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setLoading(false);
-      shakeError(err.message || "An unexpected frontend error occurred.");
+      const message = err instanceof Error ? err.message : "An unexpected frontend error occurred.";
+      shakeError(message);
     }
   };
 
@@ -348,6 +371,7 @@ export function useAuthForm() {
     setOtpCode,
     countdown,
     handleVerifyCode,
+    handleResetPassword,
     onSubmit,
     handleOAuth,
     handleSendCode

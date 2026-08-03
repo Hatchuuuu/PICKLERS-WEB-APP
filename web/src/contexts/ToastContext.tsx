@@ -22,37 +22,46 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const showToast = useCallback((message: string, type: ToastType = "success") => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => {
+      // Deduplicate identical messages currently being displayed
+      if (prev.some((t) => t.message === message)) return prev;
+      const id = Math.random().toString(36).substring(2, 9);
 
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+      // Auto dismiss after 3.5s
+      setTimeout(() => {
+        setToasts((current) => current.filter((t) => t.id !== id));
+      }, 3500);
+
+      // Keep maximum 2 toasts at a time
+      const trimmed = prev.length >= 2 ? prev.slice(1) : prev;
+      return [...trimmed, { id, message, type }];
+    });
   }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-[calc(74px+env(safe-area-inset-bottom)+16px)] md:bottom-8 left-0 right-0 mx-auto w-full max-w-[400px] px-4 z-[150] flex flex-col gap-3 pointer-events-none">
+      {/* Toast Floating Container - Bottom Center for Clean Non-Blocking Visibility */}
+      <div className="fixed bottom-24 sm:bottom-10 inset-x-0 mx-auto w-fit max-w-[90vw] px-4 z-[9999] flex flex-col items-center gap-2 pointer-events-none">
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
             <motion.div
               key={toast.id}
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-              className={`flex items-start sm:items-center gap-3 px-4 py-3 sm:px-5 sm:py-3.5 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl w-full ${
+              exit={{ opacity: 0, y: 12, scale: 0.95, transition: { duration: 0.15 } }}
+              className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl max-w-full text-center sm:text-left pointer-events-auto ${
                 toast.type === "success"
                   ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400"
                   : "bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400"
               }`}
             >
               {toast.type === "success" ? (
-                <CheckCircle2 className="w-5 h-5 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
               ) : (
-                <AlertCircle className="w-5 h-5 shrink-0" />
+                <AlertCircle className="w-4 h-4 shrink-0" />
               )}
-              <span className="text-[14px] font-medium tracking-tight leading-snug">
+              <span className="text-[13px] font-semibold tracking-wide leading-tight">
                 {toast.message}
               </span>
             </motion.div>

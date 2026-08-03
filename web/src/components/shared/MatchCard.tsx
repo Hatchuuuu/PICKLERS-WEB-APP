@@ -1,11 +1,14 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Check } from "lucide-react";
+import { Check, MapPin, Calendar, Clock, User } from "lucide-react";
 import { createPortal } from "react-dom";
 import { VerificationGate } from "@/components/shared/VerificationGate";
 
 import { useActionLock } from "@/hooks/useActionLock";
+
+import { formatSkillLevel } from "@/lib/utils";
+import { formatFullDate } from "@/lib/timeUtils";
 
 export interface CardMatchData {
   id: string | number;
@@ -13,13 +16,40 @@ export interface CardMatchData {
   slots: number;
   max: number;
   facility: string;
+  location?: string;
   date: string;
   time: string;
   host: string;
   price: number | string;
 }
 
-export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMatchData, publicMode?: boolean, onJoin?: () => void, joined?: boolean }) {
+export function formatTimeRange(timeStr: string): string {
+  if (!timeStr) return "";
+  if (timeStr.includes("-") || timeStr.includes("–") || timeStr.includes("to")) {
+    return timeStr;
+  }
+
+  const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return timeStr;
+
+  let [_, hoursStr, minsStr, period] = match;
+  let hours = parseInt(hoursStr, 10);
+  const mins = minsStr;
+  period = period.toUpperCase();
+
+  if (period === "PM" && hours < 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+
+  const endHours = (hours + 2) % 24;
+  const endPeriod = endHours >= 12 ? "PM" : "AM";
+  let endDisplayHours = endHours % 12;
+  if (endDisplayHours === 0) endDisplayHours = 12;
+
+  const endStr = `${endDisplayHours.toString().padStart(2, '0')}:${mins} ${endPeriod}`;
+  return `${timeStr} – ${endStr}`;
+}
+
+function MatchCardInner({ m, publicMode, onJoin, joined = false }: { m: CardMatchData, publicMode?: boolean, onJoin?: () => void, joined?: boolean }) {
   const [loading, setLoading] = useState(false);
   const [showJoinConfirm, setShowJoinConfirm] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -27,30 +57,38 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
   const { isLocked, runWithLock } = useActionLock();
   const isMountedRef = useRef(true);
 
+  const isUnlimited = !m.max || m.max === 0;
+
   const CapacityRing = ({ filled, max }: { filled: number, max: number }) => {
+    const isUnlim = !max || max === 0;
     return (
       <div className="relative w-12 h-12 shrink-0 flex items-center justify-center bg-black/5 dark:bg-white/5 rounded-full border border-black/10 dark:border-white/10 shadow-inner">
         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
           <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" strokeWidth="3" className="text-black/5 dark:text-white/5" />
-          <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" strokeWidth="3" 
-            className="text-[#3B82F6]" 
-            strokeDasharray={`${(filled / max) * 138} 138`} 
+          <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" strokeWidth="3"
+            className="text-[#3B82F6]"
+            strokeDasharray={isUnlim ? "138 138" : `${Math.min(1, filled / max) * 138} 138`}
             strokeLinecap="round" />
         </svg>
-        <div className="text-[13px] font-bold tracking-tighter leading-none whitespace-nowrap text-foreground">{filled}/{max}</div>
+        <div className="text-[14px] font-black tracking-tighter leading-none whitespace-nowrap text-foreground">
+          {isUnlim ? "∞" : `${filled}/${max}`}
+        </div>
       </div>
     );
   };
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     isMountedRef.current = true;
+    setMounted(true);
     return () => {
       isMountedRef.current = false;
     };
   }, []);
 
   const filled = joined ? m.slots + 1 : m.slots;
-  const full = filled >= m.max;
+  const full = !isUnlimited && filled >= m.max;
 
   function handleJoin() {
     if (joined || full || loading || isSimulating || simSuccess || isLocked) return;
@@ -59,7 +97,7 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
 
   async function confirmJoin() {
     if (isSimulating || simSuccess || isLocked) return;
-    
+
     await runWithLock(async () => {
       if (!isMountedRef.current) return;
       setIsSimulating(true);
@@ -78,7 +116,7 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
       setShowJoinConfirm(false);
       setSimSuccess(false);
       setLoading(true);
-      
+
       await new Promise((resolve) => setTimeout(resolve, 300));
       if (!isMountedRef.current) return;
 
@@ -89,55 +127,141 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
 
   return (
     <motion.div
-      whileHover={{ y: -6 }}
+      whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={`relative p-5 pt-[52px] flex gap-5 items-center cursor-default h-full rounded-[24px] border backdrop-blur-[20px] ${joined ? 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_8px_32px_rgba(52,211,153,0.15),inset_0_1px_1px_rgba(255,255,255,0.1)]' : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.01] dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.06)]'}`}>
+      className={`p-5 flex flex-col justify-between cursor-default h-full rounded-[24px] border backdrop-blur-[20px] transition-all duration-300 ${
+        joined
+          ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_8px_32px_rgba(16,185,129,0.15)]'
+          : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/[0.07] dark:to-white/[0.02] dark:border-white/[0.1] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+      }`}
+    >
+      {/* Header: Facility Title & Location (Left), Skill Badge (Right) */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex flex-col min-w-0 flex-1">
+          <h4 className="text-[17px] font-extrabold tracking-tight truncate leading-snug" style={{ color: "var(--ink-primary)" }}>
+            {m.facility}
+          </h4>
+          <div className="text-[12.5px] font-medium truncate mt-0.5 flex items-center gap-1.5" style={{ color: "var(--ink-muted)" }}>
+            <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="truncate">{m.location && m.location !== m.facility ? m.location : "Bonifacio Global City, Taguig"}</span>
+          </div>
+        </div>
 
-      {/* Absolute Level Badge */}
-      <div className="absolute top-4 left-5 flex items-center gap-2">
-        <span className="text-[12px] px-3 py-1 rounded-full font-bold tracking-wide bg-black/5 text-accent-primary border border-border dark:bg-white/5 dark:border-white/5 backdrop-blur-[8px]">
-          {m.level}
-        </span>
-        {joined && (
-          <span className="text-[11px] px-2.5 py-0.5 rounded-full font-semibold border border-solid"
-            style={{
-              background: "rgba(52,211,153,0.1)",
-              color: "var(--accent-success)",
-              borderColor: "rgba(52,211,153,0.25)"
-            }}>
-            Joined ✓
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11.5px] px-3 py-1 rounded-full font-bold tracking-wide bg-black/5 text-accent-primary border border-border dark:bg-white/5 dark:border-white/5 backdrop-blur-[8px]">
+            {formatSkillLevel(m.level)}
           </span>
-        )}
+          {joined && (
+            <span
+              className="text-[11px] px-2.5 py-0.5 rounded-full font-semibold border border-solid"
+              style={{
+                background: "rgba(52,211,153,0.1)",
+                color: "var(--accent-success)",
+                borderColor: "rgba(52,211,153,0.25)"
+              }}
+            >
+              Joined ✓
+            </span>
+          )}
+        </div>
       </div>
-      <CapacityRing filled={filled} max={m.max} />
-      <div className="flex-1 min-w-0">
-        <div className="text-[16px] font-bold tracking-tight truncate" style={{ color: "var(--ink-primary)" }}>{m.facility}</div>
-        <div className="text-[13px] font-medium mt-1" style={{ color: "var(--ink-secondary)" }}>{m.date} · {m.time}</div>
-        <div className="text-[12px] font-medium mt-1" style={{ color: "var(--ink-muted)" }}>Host: {m.host}</div>
+
+      {/* Metadata List (Date, Time, Host & Price) */}
+      <div className="mb-3 flex flex-col gap-2 text-[13px] font-medium" style={{ color: "var(--ink-secondary)" }}>
+        {/* Date Row */}
+        <div className="flex items-center gap-2">
+          <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+          <span className="font-semibold text-foreground">{formatFullDate(m.date)}</span>
+        </div>
+
+        {/* Time Row */}
+        <div className="flex items-center gap-2 font-bold" style={{ color: "var(--ink-primary)" }}>
+          <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <span>{formatTimeRange(m.time)}</span>
+        </div>
+
+        {/* Host & Pricing Row */}
+        <div className="flex items-center justify-between gap-2 text-[12px]" style={{ color: "var(--ink-muted)" }}>
+          <div className="flex items-center gap-2 truncate">
+            <User className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+            <span>Host: <strong className="font-bold text-foreground/80">{m.host}</strong></span>
+          </div>
+
+          <div className="text-right shrink-0 flex items-baseline gap-1">
+            <span className="font-bold text-[16px]" style={{ color: "var(--accent-primary)" }}>
+              ₱{m.price}
+            </span>
+            <span className="text-[11px] font-medium" style={{ color: "var(--ink-muted)" }}>
+              your share
+            </span>
+          </div>
+        </div>
       </div>
-      <div className="text-right shrink-0">
-        <div className="font-bold text-[16px]" style={{ color: "var(--accent-primary)" }}>₱{m.price}</div>
-        <div className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-muted)" }}>your share</div>
-        {publicMode ? (
-          <button onClick={onJoin} disabled={joined || full}
-            className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none' : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
-            {joined ? "Joined" : full ? "Full" : "Join"}
-          </button>
-        ) : (
-          <VerificationGate disabled={joined || full} onVerifiedClick={handleJoin}>
-            <button disabled={joined || full}
-              className={`text-[14px] px-6 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[72px] ${joined ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none' : full ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none' : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'}`}>
-              {loading ? (
-                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
-                  className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full" />
-              ) : joined ? "Joined" : full ? "Full" : "Join"}
+
+      {/* Footer: Capacity Ring + Spots on Left, Join CTA on Right (Below Border Line) */}
+      <div className="pt-3 border-t border-border/60 dark:border-white/10 flex items-center justify-between gap-3">
+        {/* Capacity Indicator & Label */}
+        <div className="flex items-center gap-3">
+          <CapacityRing filled={filled} max={m.max} />
+          <div className="flex flex-col">
+            <span className="text-[12.5px] font-bold text-foreground leading-tight">
+              {isUnlimited ? `${filled} players joined` : `${filled} of ${m.max} spots filled`}
+            </span>
+            <span className="text-[11px] text-muted-foreground font-medium">
+              {isUnlimited ? "Unlimited Spots" : full ? "Session full" : `${m.max - filled} spot${m.max - filled === 1 ? '' : 's'} left`}
+            </span>
+          </div>
+        </div>
+
+        {/* Join CTA Button */}
+        <div className="shrink-0">
+          {publicMode ? (
+            <button
+              onClick={onJoin}
+              disabled={joined || full}
+              className={`text-[14px] px-7 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[84px] ${
+                joined
+                  ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none'
+                  : full
+                  ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none'
+                  : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'
+              }`}
+            >
+              {joined ? "Joined" : full ? "Full" : "Join"}
             </button>
-          </VerificationGate>
-        )}
+          ) : (
+            <VerificationGate disabled={joined || full} onVerifiedClick={handleJoin}>
+              <button
+                disabled={joined || full}
+                className={`text-[14px] px-7 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[84px] ${
+                  joined
+                    ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none'
+                    : full
+                    ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none'
+                    : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'
+                }`}
+              >
+                {loading ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
+                    className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full"
+                  />
+                ) : joined ? (
+                  "Joined"
+                ) : full ? (
+                  "Full"
+                ) : (
+                  "Join"
+                )}
+              </button>
+            </VerificationGate>
+          )}
+        </div>
       </div>
 
       {/* Join Confirm Modal */}
-      {createPortal(
+      {mounted && createPortal(
         <AnimatePresence>
           {showJoinConfirm && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pb-8">
@@ -155,8 +279,7 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
                     </div>
                     <h3 className="text-[20px] font-bold text-foreground tracking-tight mb-2" >Join Match?</h3>
                     <p className="text-[14px] text-foreground/70 leading-relaxed font-medium px-2">
-                      Join <span className="font-bold text-foreground">{m.level}</span> match at <span className="font-bold text-foreground">{m.facility}</span> on <span className="font-bold text-foreground">{m.date}</span> for <span className="font-bold text-emerald-400">₱{m.price}</span>?
-                    </p>
+                      Join <span className="font-bold text-foreground">{m.level}</span> match at <span className="font-bold text-foreground">{m.facility}</span> on <span className="font-bold text-foreground">{formatFullDate(m.date)}</span> for <span className="font-bold text-emerald-400">₱{m.price}</span>?</p>
                   </div>
                   <div className="p-5 pt-0 flex gap-2.5">
                     <button onClick={() => setShowJoinConfirm(false)} className="flex-1 py-3.5 rounded-[16px] text-[15px] font-semibold text-foreground bg-black/10 hover:bg-black/20 dark:bg-white/10 dark:hover:bg-white/20 active:scale-[0.98] transition-all">
@@ -189,3 +312,19 @@ export function MatchCard({ m, publicMode, onJoin, joined = false }: { m: CardMa
     </motion.div>
   );
 }
+
+// Custom comparison function for React.memo that skips function prop comparison
+function areEqual(prevProps: any, nextProps: any) {
+  // Compare the match object reference (if it changes, we want to re-render)
+  if (prevProps.m !== nextProps.m) return false;
+  // Compare primitive props
+  if (prevProps.publicMode !== nextProps.publicMode) return false;
+  if (prevProps.joined !== nextProps.joined) return false;
+  // We do not compare onJoin because it may be a new function each render.
+  // If the parent wraps onJoin in useCallback, this will still work.
+  // If not, the component will re-render when onJoin changes, which is fine.
+  return true;
+}
+
+export const MatchCard = memo(MatchCardInner, areEqual);
+export default MatchCard;

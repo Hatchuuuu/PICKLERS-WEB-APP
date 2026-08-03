@@ -41,12 +41,31 @@ export async function POST(req: Request) {
     const signatureString = `${timestamp}.${payload}`;
     const expectedSignature = crypto.createHmac('sha256', secret).update(signatureString).digest('hex');
 
-    if (signatureToCheck !== expectedSignature) {
-      console.error("Signature mismatch");
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    // Timing-safe signature comparison (Vuln 3 mitigation)
+    const sigBuffer = Buffer.from(signatureToCheck);
+    const expBuffer = Buffer.from(expectedSignature);
+
+    if (sigBuffer.length !== expBuffer.length || !crypto.timingSafeEqual(sigBuffer, expBuffer)) {
+      console.error("Webhook signature mismatch");
+      return NextResponse.json({ error: 'Unauthorized request' }, { status: 401 });
     }
 
     const event = JSON.parse(payload);
+    const eventId = event.id || event.data?.id;
+
+    // Idempotency check (Vuln 1 mitigation)
+    if (eventId) {
+      const { data: existing } = await supabaseAdmin
+        .from('processed_webhooks')
+        .select('event_id')
+        .eq('event_id', eventId)
+        .single();
+
+      if (existing) {
+        console.log(`Webhook event ${eventId} already processed.`);
+        return NextResponse.json({ received: true, note: 'Duplicate event ignored' });
+      }
+    }
 
     // 2. Safely Process Payment
     if (event.data?.attributes?.type === 'checkout_session.payment.paid') {
@@ -55,14 +74,17 @@ export async function POST(req: Request) {
       
       if (!metadata || !metadata.user_id) {
         console.error("No user_id found in metadata");
-        return NextResponse.json({ error: 'Missing metadata.user_id' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid request payload' }, { status: 400 });
       }
 
       // Convert centavos back to standard currency amount
       const amountToAdd = Math.floor(checkoutSession.amount / 100);
 
-      if (amountToAdd <= 0) {
-        return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+      // Payment upper bounds checking (Vuln 4 mitigation: Max ₱1,000,000 per transaction)
+      const MAX_PAYMENT_AMOUNT = 1000000;
+      if (amountToAdd <= 0 || amountToAdd > MAX_PAYMENT_AMOUNT) {
+        console.error(`Invalid payment amount: ${amountToAdd}`);
+        return NextResponse.json({ error: 'Invalid payment amount' }, { status: 400 });
       }
 
       // 3. Update Supabase via Admin Client (bypassing RLS securely)
@@ -73,10 +95,13 @@ export async function POST(req: Request) {
 
       if (error) {
         console.error("Error updating wallet balance:", error);
-        return NextResponse.json({ error: 'Failed to update balance' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
       }
 
-      console.log(`Successfully credited ${amountToAdd} to user ${metadata.user_id}`);
+      // Mark webhook event as processed for idempotency
+      if (eventId) {
+        await supabaseAdmin.from('processed_webhooks').insert({ event_id: eventId });
+      }
     }
 
     return NextResponse.json({ received: true });

@@ -23,6 +23,7 @@ export interface User {
     booking: boolean;
     matches: boolean;
     community: boolean;
+    chat?: boolean;
   };
 }
 
@@ -57,56 +58,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const hasOAuthHash = typeof window !== "undefined" && window.location.hash.includes("access_token=");
       
       setIsLoading(true); // FIX: Ensure loading state is active while processing session changes
-      // 1. Check for real Supabase Session
-      const { data: { session } } = await supabase.auth.getSession();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
 
-      if (session && session.user) {
-        const email = session.user.email;
-        const name = session.user.user_metadata?.full_name || email?.split('@')[0] || "Player";
+        if (session && session.user) {
+          const email = session.user.email;
+          const name = session.user.user_metadata?.full_name || email?.split('@')[0] || "Player";
 
-        const intent = sessionStorage.getItem("picklers_oauth_intent");
-        if (intent === "signup") {
-          const createdAt = new Date(session.user.created_at).getTime();
-          // If created more than 60 seconds ago, it's an existing account
-          if (Date.now() - createdAt > 60000) {
-            showToast("This account is already connected to an existing account");
+          const intent = sessionStorage.getItem("picklers_oauth_intent");
+          if (intent === "signup") {
+            const createdAt = new Date(session.user.created_at).getTime();
+            if (Date.now() - createdAt > 60000) {
+              showToast("This account is already connected to an existing account");
+            }
           }
+          sessionStorage.removeItem("picklers_oauth_intent");
+
+          let assignedRole: UserRole = "player";
+          let dbVerificationStatus: VerificationStatus = "unverified";
+          const { data: profile } = await supabase
+            .from('player_profiles')
+            .select('role, verification_status, avatar_url, is_demo, facility_setup_complete')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile?.role === 'owner')      assignedRole = "owner";
+          else if (profile?.role === 'demo')  assignedRole = "demo";
+
+          if (profile?.verification_status) {
+            dbVerificationStatus = profile.verification_status as VerificationStatus;
+          }
+
+          const userObj: User = {
+            id: session.user.id,
+            name: name,
+            email: email,
+            phone: session.user.phone,
+            avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
+            role: assignedRole,
+            isDemo: profile?.is_demo ?? false,
+            facilitySetupComplete: profile?.facility_setup_complete ?? false,
+            verificationStatus: ((assignedRole === "owner" || assignedRole === "demo")
+              ? "verified"
+              : dbVerificationStatus) as VerificationStatus
+          };
+
+          setUser(userObj);
+          setIsLoading(false);
+          return;
         }
-        sessionStorage.removeItem("picklers_oauth_intent");
-
-        let assignedRole: UserRole = "player";
-        let dbVerificationStatus: VerificationStatus = "unverified";
-        const { data: profile } = await supabase
-          .from('player_profiles')
-          .select('role, verification_status, avatar_url, is_demo, facility_setup_complete')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile?.role === 'owner')      assignedRole = "owner";
-        else if (profile?.role === 'demo')  assignedRole = "demo";
-
-        if (profile?.verification_status) {
-          dbVerificationStatus = profile.verification_status as VerificationStatus;
-        }
-
-        // Map Supabase User directly to our internal UI format without using mock data
-        const userObj: User = {
-          id: session.user.id,
-          name: name,
-          email: email,
-          phone: session.user.phone,
-          avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
-          role: assignedRole,
-          isDemo: profile?.is_demo ?? false,
-          facilitySetupComplete: profile?.facility_setup_complete ?? false,
-          verificationStatus: ((assignedRole === "owner" || assignedRole === "demo")
-            ? "verified"
-            : dbVerificationStatus) as VerificationStatus
-        };
-
-        setUser(userObj);
-        setIsLoading(false);
-        return;
+      } catch (err) {
+        console.warn("Supabase auth session check offline fallback:", err);
       }
 
       // 3. Do not stop loading if we started processing with an OAuth redirect hash
@@ -177,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const updatedUser = { ...user, ...safeData };
       setUser(updatedUser);
       
-      const dbUpdates: any = {};
+      const dbUpdates: Record<string, unknown> = {};
       if (safeData.name !== undefined) dbUpdates.name = safeData.name;
       if (safeData.avatarUrl !== undefined) dbUpdates.avatar_url = safeData.avatarUrl;
       if (safeData.facilitySetupComplete !== undefined) dbUpdates.facility_setup_complete = safeData.facilitySetupComplete;

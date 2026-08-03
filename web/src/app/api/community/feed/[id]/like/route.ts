@@ -32,6 +32,17 @@ export async function POST(
   const postId = params.id;
   const myId = user.id;
 
+  // Check if post exists
+  const { data: post, error: postError } = await supabase
+    .from("feed_posts")
+    .select("id")
+    .eq("id", postId)
+    .single();
+
+  if (postError || !post) {
+    return NextResponse.json({ error: "Post not found" }, { status: 404 });
+  }
+
   // Check if already liked
   const { data: existing } = await supabase
     .from("feed_likes")
@@ -44,20 +55,31 @@ export async function POST(
     // Unlike
     await supabase.from("feed_likes").delete().eq("id", existing.id);
     // Get updated count
-    const { data: post } = await supabase
+    const { data: updatedPost, error: updateError } = await supabase
       .from("feed_posts")
       .select("like_count")
       .eq("id", postId)
       .single();
-    return NextResponse.json({ liked: false, like_count: post?.like_count ?? 0 });
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ liked: false, like_count: updatedPost?.like_count ?? 0 });
   } else {
     // Like
     await supabase.from("feed_likes").insert({ post_id: postId, user_id: myId });
-    const { data: post } = await supabase
+    // Get updated count
+    const { data: updatedPost, error: updateError } = await supabase
       .from("feed_posts")
       .select("like_count")
       .eq("id", postId)
       .single();
-    return NextResponse.json({ liked: true, like_count: post?.like_count ?? 0 });
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ liked: true, like_count: updatedPost?.like_count ?? 0 });
   }
 }

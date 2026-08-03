@@ -4,20 +4,22 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from "motion/react";
 import {
-  LayoutDashboard, Map, Settings,
-  Trophy, UserCheck, LogOut, Grid2x2
+  LayoutDashboard, User, Settings,
+  Trophy, LogOut, Grid2x2, Bell, MessageCircle
 } from "lucide-react";
 import { PicklersLogo } from "@/components/ui/PicklersLogo";
 import ShinyText from "@/components/ui/ShinyText";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useApp } from "@/contexts/AppContext";
+import { NotificationDropdown } from "@/components/shared/NotificationDropdown";
 import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
 import { RoleGate } from "@/components/shared/RoleGate";
 import { useTournamentStore } from "@/store/useTournamentStore";
 import { OwnerProvider } from "@/contexts/OwnerContext";
 import { DemoBanner } from "@/components/shared/DemoBanner";
 
-type OwnerTabId = "owner-dashboard" | "owner-courts" | "owner-tournaments" | "owner-staff" | "owner-settings";
+type OwnerTabId = "owner-dashboard" | "owner-courts" | "owner-open-play" | "owner-tournaments" | "owner-messages" | "owner-notifications" | "owner-settings";
 
 interface OwnerTab {
   id: OwnerTabId;
@@ -29,7 +31,7 @@ export const OWNER_TABS: OwnerTab[] = [
   { id: "owner-dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "owner-courts", label: "My Courts", icon: Grid2x2 },
   { id: "owner-tournaments", label: "Tournaments", icon: Trophy },
-  { id: "owner-staff", label: "Staff", icon: UserCheck },
+  { id: "owner-messages", label: "Messages", icon: MessageCircle },
   { id: "owner-settings", label: "Settings", icon: Settings },
 ];
 
@@ -37,6 +39,8 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { notifications } = useApp();
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const segments = pathname.split("/").filter(Boolean);
   const currentPath = segments.length > 0 ? segments[segments.length - 1] : "";
@@ -72,12 +76,37 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
     <OwnerProvider>
     <div className="flex h-screen overflow-hidden bg-background">
       <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20 bg-surface-base/75 backdrop-blur-2xl border-border">
-        <div className="px-6 py-5 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
-          <div className="flex items-center gap-2 mb-1">
-            <PicklersLogo size={32} />
-            <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+        <div className="px-6 py-5 border-b border-solid flex items-center justify-between relative" style={{ borderColor: "var(--border-subtle)" }}>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <PicklersLogo size={32} />
+              <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+            </div>
+            <div className="text-[12px] font-medium" style={{ color: "var(--accent-success)" }}>Owner Portal</div>
           </div>
-          <div className="text-[12px] font-medium" style={{ color: "var(--accent-success)" }}>Owner Portal</div>
+          
+          <div className="relative">
+            <button
+              data-notif-toggle
+              onClick={() => setShowNotifs(!showNotifs)}
+              aria-label="Notifications"
+              className="relative p-2 rounded-xl border border-border hover:bg-surface-interactive text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center shadow-md">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            <AnimatePresence>
+              {showNotifs && (
+                <div ref={notifRef} className="absolute right-0 top-12 z-50">
+                  <NotificationDropdown onClose={() => setShowNotifs(false)} />
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto relative">
           {OWNER_TABS.map(tab => {
@@ -107,7 +136,7 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
             style={{ color: "var(--ink-muted)" }}
             onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
             onMouseLeave={e => e.currentTarget.style.color = "var(--ink-muted)"}>
-            <Map className="w-4 h-4" />Player Dashboard
+            <User className="w-5 h-5" />Player Dashboard
           </button>
           <button onClick={() => setShowLogoutConfirm(true)}
             className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
@@ -150,20 +179,38 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
       <main className="flex-1 overflow-y-auto pb-[120px] md:pb-0 relative bg-background flex flex-col">
         {/* Mobile Premium Header */}
         <div
-          className="md:hidden sticky top-0 z-30 flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/75 backdrop-blur-3xl">
+          className="md:hidden sticky top-0 z-[100] flex items-center justify-between px-[15px] py-[6px] border-b border-white/10 bg-[#0A1628]/95 dark:bg-[#0A1628]/95 backdrop-blur-3xl saturate-200">
           <div className="flex items-center gap-1">
-            <PicklersLogo size={42} />
+            <PicklersLogo size={36} />
             <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-2 relative">
+            <div className="relative" ref={notifRef}>
+              <button
+                data-notif-toggle="true"
+                onClick={() => setShowNotifs(!showNotifs)}
+                className="relative active:scale-95 transition-transform flex items-center justify-center p-2 rounded-full hover:bg-surface-raised min-w-[44px] min-h-[44px]"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5 pointer-events-none" style={{ color: "var(--ink-secondary)" }} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-[1.5px]" style={{ borderColor: "var(--surface-base)", background: "var(--accent-primary)" }} />
+                )}
+              </button>
 
+              <AnimatePresence>
+                {showNotifs && (
+                  <NotificationDropdown onClose={() => setShowNotifs(false)} className="!fixed !top-[60px] !left-[15px] !right-[15px] !w-auto !max-w-none origin-top" />
+                )}
+              </AnimatePresence>
+            </div>
 
-            <button onClick={() => setShowLogoutConfirm(true)} className="relative w-8 h-8 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden">
+            <button onClick={() => setShowLogoutConfirm(true)} className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px]">
               <div className="absolute inset-0 w-full h-full"
                 style={{
                   background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
                 }} />
-              <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none overflow-hidden"
+              <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-[15px] font-extrabold uppercase pointer-events-none overflow-hidden"
                 style={{ background: "var(--surface-base)", color: "#FBBF24" }}>
                 {user?.avatarUrl ? (
                   <motion.img
@@ -192,7 +239,7 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
         </div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-border z-40 bg-surface-base/95 backdrop-blur-2xl shadow-2xl" style={{ paddingBottom: "env(safe-area-inset-bottom, 12px)" }}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/10 z-40 bg-[#0A1628] dark:bg-[#0A1628] backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.5)]" style={{ background: "#0A1628", paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
         {OWNER_TABS.map(tab => {
           const active = view === tab.id;
           const Icon = tab.icon;
@@ -203,10 +250,10 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
             }}
               className="flex-1 flex flex-col items-center justify-center gap-1 min-h-[56px] py-2.5 transition-colors relative active:scale-95"
               aria-label={tab.label}
-              style={{ color: active ? "#FBBF24" : "var(--ink-muted)" }}>
+              style={{ color: active ? "#10b981" : "var(--ink-muted)" }}>
               {active && (
                 <motion.div layoutId="owner-mobile-active-indicator" className="absolute top-0 inset-x-0 h-[3px] mx-auto w-10 rounded-full"
-                  style={{ background: "#FBBF24" }}
+                  style={{ background: "#10b981" }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }} />
               )}
               <Icon className="w-5 h-5" />
@@ -218,12 +265,9 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
 
       <AnimatePresence>
         {showLogoutConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl"
-              onClick={() => setShowLogoutConfirm(false)} />
-            <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
+          <motion.div key="logout-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl" onClick={() => setShowLogoutConfirm(false)}>
+            <motion.div key="logout-modal" initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center" onClick={e => e.stopPropagation()}>
               <div className="w-[340px] bg-background dark:bg-surface-base border border-border rounded-3xl shadow-2xl relative p-6 pb-7 text-center flex flex-col items-center">
                 <div className="w-14 h-14 relative z-10 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-5 mt-2">
                   <LogOut className="w-6 h-6 text-red-500" style={{ marginLeft: "-2px" }} strokeWidth={2.5} />
@@ -242,7 +286,7 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
                 </div>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

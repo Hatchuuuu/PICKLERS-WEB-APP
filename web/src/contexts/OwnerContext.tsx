@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "./AuthContext";
-
+import { DEMO_OWNER_COURTS } from "@/lib/demoData";
 export type BlockedSlot = {
   id: string;
   date: string;
@@ -29,11 +29,6 @@ type OwnerContextType = {
   addCourt: (court: OwnerCourt) => Promise<void>;
   updateCourt: (id: number, updates: Partial<OwnerCourt>) => Promise<void>;
 };
-
-const INITIAL_OWNER_COURTS: OwnerCourt[] = [
-  { id: 1, name: "Court 1", surface: "Indoor · Hard", price: 400, available: true, blockedDates: [] },
-  { id: 2, name: "Court 2", surface: "Indoor · Hard", price: 400, available: false, blockedDates: [], currentBooking: { userName: "Juan Dela Cruz", time: "6:00 PM - 8:00 PM" } },
-];
 
 const OwnerContext = createContext<OwnerContextType | undefined>(undefined);
 
@@ -84,10 +79,14 @@ export function OwnerProvider({ children }: { children: ReactNode }) {
               blockedDates: Array.isArray(c.blocked_dates) ? c.blocked_dates : []
             }));
             
-            setOwnerCourts(mappedCourts.length > 0 ? mappedCourts : INITIAL_OWNER_COURTS);
+            if (dbCourts.length === 0 && (user?.isDemo || user?.role === "demo")) {
+              setOwnerCourts(DEMO_OWNER_COURTS);
+            } else {
+              setOwnerCourts(mappedCourts);
+            }
           }
         } else if (mounted) {
-          setOwnerCourts(INITIAL_OWNER_COURTS);
+          setOwnerCourts(user?.isDemo || user?.role === "demo" ? DEMO_OWNER_COURTS : []);
         }
       } catch (e) {
         console.error("Error fetching owner courts:", e);
@@ -127,7 +126,7 @@ export function OwnerProvider({ children }: { children: ReactNode }) {
   };
 
   const updateCourt = async (id: number, updates: Partial<OwnerCourt>) => {
-    const dbUpdates: any = {};
+    const dbUpdates: Record<string, unknown> = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
     if (updates.surface !== undefined) {
       dbUpdates.surface = updates.surface;

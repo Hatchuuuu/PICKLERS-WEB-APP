@@ -33,20 +33,22 @@ export function CustomDatePicker({
       <PopoverPrimitive.Trigger asChild>
         <button
           className={cn(
-            "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium outline-none transition-all border shadow-sm",
-            "bg-surface-interactive border-border dark:bg-white/[0.02] dark:border-white/10 hover:dark:bg-white/[0.04]",
-            !value && "text-muted-foreground"
+            "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[14px] font-semibold outline-none transition-all border shadow-sm whitespace-nowrap min-h-[48px] shrink-0",
+            "bg-white/[0.06] border-white/15 hover:border-white/25 text-white",
+            !value && "text-slate-400 font-medium"
           )}
         >
-          <CalendarIcon className="w-5 h-5 opacity-70" />
-          {value ? format(date!, "PPP") : <span>Pick a date</span>}
+          <div className="flex items-center gap-2.5 truncate">
+            <CalendarIcon className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="truncate">{value ? format(date!, "MMM d, yyyy") : <span>Pick a date</span>}</span>
+          </div>
         </button>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
-          align="center"
+          align="start"
           sideOffset={8}
-          className="z-[9999] w-auto p-3 bg-surface-base border border-border dark:bg-[#0A1124] dark:border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl outline-none"
+          className="z-[9999] w-[280px] sm:w-[300px] p-4 bg-[#0C172E] border border-white/20 rounded-[24px] shadow-[0_25px_70px_rgba(0,0,0,0.95)] outline-none"
         >
           <DayPicker
             mode="single"

@@ -153,7 +153,7 @@ function AuthContent() {
             {view === "auth" && (
               <motion.div role="tablist" aria-label="Authentication modes" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex relative mb-4 sm:mb-5 border-b border-solid" style={{ borderColor: "var(--border-subtle)" }}>
                 {(["signin", "signup"] as const).map((val) => (
-                  <button key={val} type="button" role="tab" aria-selected={tab === val} onClick={() => { form.setValue("tab", val); if (val === "signup") form.setValue("authMethod", "email"); setAuthError(""); form.clearErrors(); }} className="flex-1 py-1.5 sm:py-2.5 text-[14px] sm:text-[15px] font-semibold transition-colors z-10 focus-visible:outline-none focus-visible:bg-accent-primary/5 rounded-t-md"
+                  <button key={val} type="button" role="tab" aria-selected={tab === val} onClick={() => { form.reset({ view: "auth", tab: val, authMethod: "email", name: "", email: "", phone: "", password: "", confirmPassword: "" }); setAuthError(""); form.clearErrors(); }} className="flex-1 py-1.5 sm:py-2.5 text-[14px] sm:text-[15px] font-semibold transition-colors z-10 focus-visible:outline-none focus-visible:bg-accent-primary/5 rounded-t-md"
                     style={{ color: tab === val ? "var(--accent-primary)" : "var(--ink-secondary)" }}>
                     {val === "signin" ? "Sign In" : "Create Account"}
                   </button>
@@ -234,6 +234,7 @@ function AuthContent() {
                             <input
                               id="auth-email"
                               type="email"
+                              autoComplete={tab === "signup" ? "new-password" : "email"}
                               aria-invalid={!!errors.email} aria-describedby="email-error"
                               {...emailProps}
                               ref={(e) => { emailRef(e); emailInputRef.current = e; }}
@@ -346,7 +347,7 @@ function AuthContent() {
                         {tab === "signup" && <label htmlFor="auth-password" className="sr-only">Password</label>}
                         <motion.div animate={isShaking && authError.toLowerCase().includes("password") && !authError.toLowerCase().includes("match") ? { x: [-5, 5, -5, 5, 0] } : {}} transition={{ duration: 0.4 }} className="relative group/input">
                           <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted transition-colors group-focus-within/input:text-accent-primary z-10 pointer-events-none" />
-                          <input id="auth-password" aria-invalid={!!errors.password} aria-describedby="password-error" type={showPassword ? "text" : "password"} {...passwordProps} ref={(e) => { passwordRef(e); passwordInputRef.current = e; }} placeholder={tab === "signin" ? "••••••••" : "Password"} className={cn(`${inputClassName} pl-11 pr-11 text-ellipsis`, (authError.toLowerCase().includes("password") && !authError.toLowerCase().includes("match") || errors.password) && "!border-accent-danger text-accent-danger")} />
+                          <input id="auth-password" autoComplete={tab === "signup" ? "new-password" : "current-password"} aria-invalid={!!errors.password} aria-describedby="password-error" type={showPassword ? "text" : "password"} {...passwordProps} ref={(e) => { passwordRef(e); passwordInputRef.current = e; }} placeholder={tab === "signin" ? "••••••••" : "Password"} className={cn(`${inputClassName} pl-11 pr-11 text-ellipsis`, (authError.toLowerCase().includes("password") && !authError.toLowerCase().includes("match") || errors.password) && "!border-accent-danger text-accent-danger")} />
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-ink-muted hover:text-ink-primary transition-colors focus:outline-none z-10" aria-label={showPassword ? "Hide password" : "Show password"}>
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>

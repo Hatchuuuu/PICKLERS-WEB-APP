@@ -122,11 +122,11 @@ BEGIN
   -- ---------------------------------------------------------------
   INSERT INTO public.matches (title, type, status, date, time, location, price, level, participants, max_participants, facility, court, players, created_by, is_demo, is_seed)
   VALUES
-    ('Morning Doubles at BGC',        'Doubles','open',(CURRENT_DATE+5)::text, '07:30 AM','BGC Smash Arena',         350,'3.5 – 4.0',2,4, 'BGC Smash Arena',        'Court 1',jsonb_build_array(jsonb_build_object('id',s_u3::text,'name','James Lim',  'level','4.0','avatar','')),s_u3,false,true),
-    ('All-Levels Social Play',         'Doubles','open',(CURRENT_DATE+7)::text, '10:00 AM','Open Air Courts Marikina',150,'All Levels',3,8, 'Open Air Courts Marikina','Court 2',jsonb_build_array(jsonb_build_object('id',s_u1::text,'name','Carlo Reyes','level','3.0','avatar','')),s_u1,false,true),
-    ('Competitive 4.0+ Practice',      'Singles','open',(CURRENT_DATE+9)::text, '05:30 PM','Central Pickleball Hub', 300,'4.0+',      1,6, 'Central Pickleball Hub', 'Court 1',jsonb_build_array(jsonb_build_object('id',s_u6::text,'name','Lisa Vega',  'level','4.5','avatar','')),s_u6,false,true),
-    ('Beginners Welcome Play',         'Doubles','open',(CURRENT_DATE+6)::text, '09:00 AM','Eastside Courts QC',      120,'2.0 – 2.5',2,8, 'Eastside Courts QC',    'Court 2',jsonb_build_array(jsonb_build_object('id',s_u7::text,'name','Ryan Co',    'level','2.0','avatar','')),s_u7,false,true),
-    ('Evening Dink & Drink',           'Doubles','open',(CURRENT_DATE+8)::text, '07:00 PM','South Metro Dinkers',    250,'3.0 – 3.5',3,12,'South Metro Dinkers',   'Court 1',jsonb_build_array(jsonb_build_object('id',s_u5::text,'name','Ben Tan',    'level','3.5','avatar','')),s_u5,false,true);
+    ('Morning Doubles at BGC',        'Doubles','open',(CURRENT_DATE+5)::text, '07:30 AM','BGC Smash Arena',         350,'Intermediate',2,4, 'BGC Smash Arena',        'Court 1',jsonb_build_array(jsonb_build_object('id',s_u3::text,'name','James Lim',  'level','Intermediate','avatar','')),s_u3,false,true),
+    ('All-Levels Social Play',         'Doubles','open',(CURRENT_DATE+7)::text, '10:00 AM','Open Air Courts Marikina',150,'All Levels',3,8, 'Open Air Courts Marikina','Court 2',jsonb_build_array(jsonb_build_object('id',s_u1::text,'name','Carlo Reyes','level','Intermediate','avatar','')),s_u1,false,true),
+    ('Competitive Practice',           'Singles','open',(CURRENT_DATE+9)::text, '05:30 PM','Central Pickleball Hub', 300,'Advanced',    1,6, 'Central Pickleball Hub', 'Court 1',jsonb_build_array(jsonb_build_object('id',s_u6::text,'name','Lisa Vega',  'level','Advanced','avatar','')),s_u6,false,true),
+    ('Beginners Welcome Play',         'Doubles','open',(CURRENT_DATE+6)::text, '09:00 AM','Eastside Courts QC',      120,'Beginner',    2,8, 'Eastside Courts QC',    'Court 2',jsonb_build_array(jsonb_build_object('id',s_u7::text,'name','Ryan Co',    'level','Beginner','avatar','')),s_u7,false,true),
+    ('Evening Dink & Drink',           'Doubles','open',(CURRENT_DATE+8)::text, '07:00 PM','South Metro Dinkers',    250,'Intermediate',3,12,'South Metro Dinkers',   'Court 1',jsonb_build_array(jsonb_build_object('id',s_u5::text,'name','Ben Tan',    'level','Intermediate','avatar','')),s_u5,false,true);
 
   -- ---------------------------------------------------------------
   -- 7. 2 SEED CLUBS

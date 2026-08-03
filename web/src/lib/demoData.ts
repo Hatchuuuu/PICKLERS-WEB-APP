@@ -44,9 +44,9 @@ export const DEMO_FACILITIES: Facility[] = [
     distance: "3.4 km",
     moto: "12 min",
     car: "20 min",
-    image: "https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1200&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1626245564883-99931ef106df?q=80&w=1200&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1200&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1626245564883-99931ef106df?q=80&w=1200&auto=format&fit=crop"
     ],
     amenities: ["Air Conditioned", "Locker Rooms", "Cafe", "Valet Parking"],
     rules: ["Proper sports attire required", "Check-in 10 minutes prior to booking"],
@@ -67,9 +67,9 @@ export const DEMO_FACILITIES: Facility[] = [
     distance: "5.1 km",
     moto: "18 min",
     car: "30 min",
-    image: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=1200&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1616259424687-b6766023f6eb?q=80&w=1200&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=1200&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1616259424687-b6766023f6eb?q=80&w=1200&auto=format&fit=crop"
     ],
     amenities: ["Floodlights", "Water Refill", "Bleachers"],
     rules: ["Court lights turn off promptly at 10 PM"],
@@ -192,7 +192,7 @@ export const DEMO_MATCHES: MatchData[] = [
     location: "Bonifacio Global City, Taguig",
     date: "Tonight",
     time: "7:00 PM - 9:00 PM",
-    level: "Intermediate (3.0 - 3.5)",
+    level: "Intermediate",
     current_players: 3,
     max_players: 4,
     price: 225,
@@ -205,7 +205,7 @@ export const DEMO_MATCHES: MatchData[] = [
     location: "Salcedo Village, Makati",
     date: "Tomorrow",
     time: "6:00 PM - 8:00 PM",
-    level: "Advanced (4.0+)",
+    level: "Advanced",
     current_players: 2,
     max_players: 4,
     price: 250,
@@ -218,7 +218,7 @@ export const DEMO_MATCHES: MatchData[] = [
     location: "Ortigas Center, Pasig",
     date: "Saturday",
     time: "8:00 AM - 11:00 AM",
-    level: "Beginner (2.0 - 2.5)",
+    level: "Beginner",
     current_players: 5,
     max_players: 8,
     price: 175,
@@ -260,7 +260,9 @@ export const DEMO_COMMUNITY_PLAYERS: CommunityPlayer[] = DEMO_PLAYERS.map((p, id
   bronze: p.bronze,
   online: p.online,
   like_count: 10 + idx * 4,
-  i_liked: idx % 2 === 0
+  i_liked: idx % 2 === 0,
+  follower_count: 124 + idx * 19,
+  following_count: 35 + idx * 6,
 }));
 
 export const DEMO_FEED_POSTS: FeedPost[] = [
@@ -270,7 +272,7 @@ export const DEMO_FEED_POSTS: FeedPost[] = [
     author_name: "Carlos Reyes",
     author_level: "4.5",
     content: "Amazing tournament finals at BGC Pickleball Hub today! Huge shoutout to everyone who competed. The level of pickleball in Metro Manila is growing so fast! 🏓🔥",
-    image_url: "https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1000&auto=format&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1626245564883-99931ef106df?q=80&w=1000&auto=format&fit=crop",
     like_count: 48,
     comment_count: 12,
     i_liked: true,
@@ -282,7 +284,9 @@ export const DEMO_FEED_POSTS: FeedPost[] = [
         author_id: "demo_p1",
         author_name: "Juan Dela Cruz",
         content: "What a match, Carlos! That ATP shot on match point was unbelievable!",
-        created_at: new Date(Date.now() - 3600000).toISOString()
+        created_at: new Date(Date.now() - 3600000).toISOString(),
+        like_count: 5,
+        i_liked: false,
       }
     ]
   },
@@ -304,7 +308,7 @@ export const DEMO_FEED_POSTS: FeedPost[] = [
     author_name: "Paolo Avelino",
     author_level: "4.0",
     content: "New carbon fiber paddle test run at Ortigas Community Courts. Love the control and spin on kitchen dinks!",
-    image_url: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=1000&auto=format&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1616259424687-b6766023f6eb?q=80&w=1000&auto=format&fit=crop",
     like_count: 34,
     comment_count: 8,
     i_liked: true,
@@ -432,3 +436,122 @@ export const DEMO_OWNER_COURTS: OwnerCourt[] = [
     blockedDates: []
   }
 ];
+
+export const DEMO_BOOKING_REQUESTS = [
+  {
+    id: "req_1",
+    player_name: "Miguel Santos",
+    paymentMethod: "GCash",
+    court_name: "Championship Court 1",
+    time: "Tomorrow at 6:00 PM (2 hrs)",
+    total: 900
+  },
+  {
+    id: "req_2",
+    player_name: "Sarah Lim",
+    paymentMethod: "Card",
+    court_name: "Indoor Court 3",
+    time: "Sunday at 8:00 AM (1 hr)",
+    total: 450
+  },
+  {
+    id: "req_3",
+    player_name: "Alex Reyes",
+    paymentMethod: "Cash",
+    court_name: "Outdoor Court 2",
+    time: "Friday at 7:00 PM (3 hrs)",
+    total: 1350
+  }
+];
+
+export const DEMO_LIVE_COURTS = [
+  {
+    id: 1,
+    name: "Championship Court 1",
+    status: "occupied",
+    player: "Juan Dela Cruz",
+    remaining: 45,
+    maxTime: 60
+  },
+  {
+    id: 2,
+    name: "Indoor Court 2",
+    status: "available",
+    player: null,
+    remaining: 0,
+    maxTime: 60
+  },
+  {
+    id: 3,
+    name: "Indoor Court 3",
+    status: "occupied",
+    player: "Carlos Reyes",
+    remaining: 12,
+    maxTime: 60
+  },
+  {
+    id: 4,
+    name: "Outdoor Court A",
+    status: "available",
+    player: null,
+    remaining: 0,
+    maxTime: 60
+  },
+  {
+    id: 5,
+    name: "Outdoor Court B",
+    status: "maintenance",
+    player: null,
+    remaining: 0,
+    maxTime: 60
+  }
+];
+
+export const DEMO_STAFF = [
+  { id: 1, name: "Bennie Ocampo", email: "bennie@bgchub.com", role: "manager", joined: "Jun 1, 2026" },
+  { id: 2, name: "Liza Reyes", email: "liza@bgchub.com", role: "desk", joined: "Jun 15, 2026" },
+  { id: 3, name: "Mark Delos Santos", email: "mark@bgchub.com", role: "desk", joined: "Jul 1, 2026" },
+];
+
+export const DEMO_TOURNAMENTS = [
+  {
+    id: "tourney_1",
+    name: "Summer Slam Open",
+    level: "All Levels",
+    participants: 48,
+    teams: 8,
+    maxTeams: 8,
+    format: "single",
+    play_type: "doubles",
+    prize: "₱50,000",
+    date: "Aug 15-16, 2026",
+    status: "upcoming"
+  },
+  {
+    id: "tourney_2",
+    name: "Pro Circuit Manila",
+    level: "Advanced (4.5+)",
+    participants: 32,
+    teams: 8,
+    maxTeams: 8,
+    format: "double",
+    play_type: "doubles",
+    prize: "₱100,000",
+    date: "Jul 30-31, 2026",
+    status: "ongoing"
+  },
+  {
+    id: "tourney_3",
+    name: "BGC Community Cup",
+    level: "Intermediate (3.0-4.0)",
+    participants: 64,
+    teams: 8,
+    maxTeams: 8,
+    format: "single",
+    play_type: "doubles",
+    prize: "₱25,000",
+    date: "Jun 10-12, 2026",
+    status: "completed"
+  }
+];
+

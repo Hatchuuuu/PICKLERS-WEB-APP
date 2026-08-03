@@ -16,6 +16,11 @@ export function TimePicker({
   label?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const MULTIPLIER = 15;
   const CENTER_OFFSET = Math.floor(MULTIPLIER / 2) * 24; // 7 * 24 = 168
@@ -104,7 +109,7 @@ export function TimePicker({
 
   const displayTime = parseToDisplay(value || "08:00");
 
-  const modal = typeof document !== "undefined" ? createPortal(
+  const modal = mounted ? createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">

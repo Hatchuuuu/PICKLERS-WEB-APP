@@ -29,15 +29,18 @@ export async function GET(req: NextRequest) {
   const idParam = req.nextUrl.searchParams.get("id");
   const myId = user.id;
 
-  let query = supabase.from("player_profiles").select("*").neq("id", myId);
+  let query = supabase.from("player_profiles").select("*");
 
   if (idParam) {
     query = query.eq("id", idParam);
-  } else if (q.trim()) {
-    query = query.ilike("name", `%${q.trim()}%`).order("name").limit(50);
   } else {
-    // If no search query, we fetch up to 100 profiles to score and return top 15
-    query = query.limit(100);
+    query = query.neq("id", myId);
+    if (q.trim()) {
+      query = query.ilike("name", `%${q.trim()}%`).order("name").limit(50);
+    } else {
+      // If no search query, we fetch up to 100 profiles to score and return top 15
+      query = query.limit(100);
+    }
   }
 
   const { data: profiles, error } = await query;

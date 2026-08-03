@@ -11,7 +11,12 @@ import { LiveCourt } from "@/types";
 export function CourtCard({ court, onEnd, onAlertChange }: { court: LiveCourt; onEnd?: () => void; onAlertChange?: (isAlert: boolean) => void }) {
   const [seconds, setSeconds] = useState(court.remaining);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const isAlert = seconds <= 0 && court.status === "occupied";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (court.status !== "occupied" || seconds <= 0) return;
@@ -80,7 +85,7 @@ export function CourtCard({ court, onEnd, onAlertChange }: { court: LiveCourt; o
         </div>
       )}
 
-      {typeof document !== 'undefined' && createPortal(
+      {mounted && createPortal(
         <AnimatePresence>
           {showEndConfirm && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

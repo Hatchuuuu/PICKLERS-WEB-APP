@@ -71,9 +71,7 @@ export function mapToBracketTree(matches: Match[], teams: Team[]): {
             if (round.length > 0) {
                 const formattedRound = round.map(m => {
                     const formatted = formatMatch(m, 'W-');
-                    if (m.bracket_type === '3RD_PLACE') {
-                        // Keep '3rd Place Playoff'
-                    } else if (r === maxWRound) {
+                    if (r === maxWRound) {
                         formatted.round = isSingleElim ? 'Championship' : 'W-Final';
                     } else if (r === maxWRound - 1 && maxWRound > 1) {
                         formatted.round = isSingleElim ? 'Semifinals' : 'W-Semifinal';

@@ -21,9 +21,13 @@ export const containerVariants: Variants = {
 };
 
 export const SettingsGroup = ({ title, children, className }: { title?: string, children: React.ReactNode, className?: string }) => (
-  <motion.div variants={itemVariants} className={cn("mb-10", className)}>
-    {title && <h3 className="text-[12.5px] font-black text-foreground/40 uppercase tracking-[0.15em] mb-3 px-4">{title}</h3>}
-    <div className="flex flex-col rounded-[28px] overflow-hidden bg-surface-base border border-border shadow-[0_8px_24px_rgba(0,0,0,0.12)] p-2">
+  <motion.div variants={itemVariants} className={cn("mb-6", className)}>
+    {title && (
+      <h3 className="text-[11.5px] font-black text-foreground/50 dark:text-white/50 uppercase tracking-[0.15em] mb-2 px-3" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
+        {title}
+      </h3>
+    )}
+    <div className="flex flex-col rounded-[26px] overflow-hidden bg-surface-interactive/30 dark:bg-white/[0.03] backdrop-blur-xl border border-border/50 dark:border-white/[0.1] shadow-md p-1.5 gap-0.5">
       {children}
     </div>
   </motion.div>
@@ -35,6 +39,7 @@ export const SettingsRow = ({
   iconColor, 
   label, 
   value, 
+  subtitle,
   onClick, 
   hasBorder = true, 
   rightContent 
@@ -44,6 +49,7 @@ export const SettingsRow = ({
   iconColor: string;
   label: string;
   value?: string | React.ReactNode;
+  subtitle?: string;
   onClick?: () => void;
   hasBorder?: boolean;
   rightContent?: React.ReactNode;
@@ -53,23 +59,32 @@ export const SettingsRow = ({
       onClick={onClick} 
       {...(onClick ? { role: "button", tabIndex: 0 } : {})}
       className={cn(
-        "w-full flex items-center justify-between py-3.5 px-1 bg-transparent transition-colors text-left",
-        onClick ? "hover:bg-surface-interactive/50 active:bg-surface-interactive cursor-pointer rounded-xl" : "cursor-default",
-        hasBorder && "border-b border-border"
+        "w-full flex items-center justify-between py-3 px-2.5 bg-transparent transition-all text-left gap-3 min-w-0",
+        onClick ? "hover:bg-surface-interactive/60 dark:hover:bg-white/[0.06] active:scale-[0.99] cursor-pointer rounded-2xl" : "cursor-default",
+        hasBorder && "border-b border-border/40 dark:border-white/[0.06]"
       )}
     >
-      <div className="flex items-center gap-4">
-        <div className={cn("w-10 h-10 rounded-[14px] flex items-center justify-center shadow-inner", iconBg, iconColor)}>
-          <Icon className="w-5 h-5 stroke-[2.5]" />
+      <div className="flex items-center gap-3.5 min-w-0 flex-1">
+        <div className={cn("w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 shadow-inner", iconBg, iconColor)}>
+          <Icon className="w-5 h-5 stroke-[2.25]" />
         </div>
-        <div className="flex flex-col items-start text-left">
-          <span className="text-[16px] font-bold text-foreground">{label}</span>
+        <div className="flex flex-col min-w-0 flex-1 text-left justify-center">
+          <span className="text-[15px] font-extrabold text-foreground leading-snug truncate" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
+            {label}
+          </span>
+          {subtitle && (
+            <span className="text-[11.5px] font-medium text-muted-foreground truncate leading-snug mt-0.5">
+              {subtitle}
+            </span>
+          )}
         </div>
       </div>
-      {rightContent ? rightContent : (
-        <div className="flex items-center gap-2">
-          <span className="text-[15px] font-semibold text-foreground/50 truncate max-w-[140px]">{value}</span>
-          {onClick && <ChevronRight className="w-5 h-5 text-foreground/20" />}
+      {rightContent ? (
+        <div className="shrink-0 flex items-center">{rightContent}</div>
+      ) : (
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {value && <span className="text-[13px] font-bold text-muted-foreground truncate max-w-[120px] text-right">{value}</span>}
+          {onClick && <ChevronRight className="w-4.5 h-4.5 text-foreground/30 shrink-0" />}
         </div>
       )}
     </div>

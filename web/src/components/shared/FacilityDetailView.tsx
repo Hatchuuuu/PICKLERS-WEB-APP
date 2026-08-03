@@ -8,6 +8,7 @@ import {
   MapPin, Star, Clock, ChevronRight, CalendarDays, Check, AlertTriangle
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import { useToast } from "@/contexts/ToastContext";
 import { CourtData, PaymentData } from "@/types";
 import { PaymentView } from "@/components/modals/PaymentView";
 import { QuickBookModal } from "@/components/modals/QuickBookModal";
@@ -52,7 +53,9 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
     enabled: !!facility
   });
 
+  const { showToast } = useToast();
   const [filter, setFilter] = useState<"All" | "Indoor" | "Outdoor">("All");
+  const [isFollowing, setIsFollowing] = useState(false);
   const [booked, setBooked] = useState<string | number | null>(null);
   const [bookSuccess, setBookSuccess] = useState<string | number | null>(null);
   const [quickBookOpen, setQuickBookOpen] = useState(false);
@@ -151,11 +154,29 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
           Discover
         </button>
 
-        {/* Rating Badge */}
-        <div className="absolute top-6 right-6 flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-          style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.18)" }}>
-          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span className="text-[14px] font-bold text-white">{facility.rating}</span>
+        {/* Rating & Follow Badge */}
+        <div className="absolute top-6 right-6 flex items-center gap-2">
+          <button
+            onClick={() => {
+              const nextState = !isFollowing;
+              setIsFollowing(nextState);
+              showToast(nextState ? `You are now following ${facility.name}!` : `Unfollowed ${facility.name}.`, "success");
+            }}
+            className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-[13px] font-bold text-white transition-all active:scale-95"
+            style={{
+              background: isFollowing ? "rgba(16, 185, 129, 0.3)" : "rgba(0,0,0,0.4)",
+              backdropFilter: "blur(24px)",
+              border: isFollowing ? "1px solid rgba(16, 185, 129, 0.5)" : "1px solid rgba(255,255,255,0.18)"
+            }}
+          >
+            {isFollowing ? "✓ Following" : "+ Follow Venue"}
+          </button>
+
+          <div className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+            style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.18)" }}>
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <span className="text-[14px] font-bold text-white">{facility.rating}</span>
+          </div>
         </div>
 
         {/* Facility name overlay */}
@@ -356,14 +377,19 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
                     <div className="text-[14px] font-medium mb-5 text-foreground/50">{court.surface}</div>
 
                     {isOccupied && court.occupiedUntil && (
-                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg mb-2 text-[12px] font-semibold border bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400 backdrop-blur-sm">
-                        <Clock className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">
-                          Free at {!isNaN(Date.parse(court.occupiedUntil)) ? new Date(court.occupiedUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedUntil}
-                        </span>
+                      <div className="mb-2 text-right">
+                        <div className="text-[13px] font-bold text-red-500 dark:text-red-400 leading-tight">
+                          {court.occupiedFrom
+                            ? (!isNaN(Date.parse(court.occupiedFrom)) ? new Date(court.occupiedFrom).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedFrom)
+                            : (!isNaN(Date.parse(court.occupiedUntil))
+                                ? new Date(new Date(court.occupiedUntil).getTime() - 2 * 60 * 60 * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+                                : "8:00 AM")}
+                          {" - "}
+                          {!isNaN(Date.parse(court.occupiedUntil)) ? new Date(court.occupiedUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedUntil}
+                        </div>
                         {court.occupiedBy && (
-                          <div className="ml-auto flex items-center pl-2 border-l border-red-500/20 dark:border-red-500/30">
-                            <span className="truncate max-w-[90px] opacity-80">{court.occupiedBy}</span>
+                          <div className="text-[12px] font-medium text-red-500/80 dark:text-red-400/80 leading-tight mt-0.5 truncate">
+                            {court.occupiedBy}
                           </div>
                         )}
                       </div>

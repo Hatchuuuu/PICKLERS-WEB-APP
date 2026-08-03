@@ -57,8 +57,9 @@ export const MatchNode = memo(function MatchNode({
     <motion.div
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
+      whileHover={isClickable ? { y: -2, scale: 1.02 } : undefined}
       transition={{ delay: animationDelay, duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-      className="flex flex-col w-[260px] relative group"
+      className="flex flex-col w-[265px] relative group"
     >
       {/* Round Label */}
       {isChampionshipMatch ? (
@@ -76,8 +77,16 @@ export const MatchNode = memo(function MatchNode({
           </div>
         </div>
       ) : showRoundLabel ? (
-        <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-600 mb-1.5 px-1 truncate">
-          {match.round}
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-foreground/50 mb-1.5 px-1 truncate flex items-center justify-between">
+          <span>{match.round}</span>
+          {isCompleted ? (
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-500/15 text-slate-300 border border-slate-500/20">Final</span>
+          ) : isClickable ? (
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Ready
+            </span>
+          ) : null}
         </div>
       ) : null}
 
@@ -85,13 +94,13 @@ export const MatchNode = memo(function MatchNode({
       <div
         onClick={isClickable ? () => onClick?.(match) : undefined}
         className={cn(
-          "rounded-xl border overflow-hidden transition-all duration-300 ease-out relative",
-          isBye ? "border-dashed border-border bg-surface-interactive/30" :
-            isCancelled ? "border-border/50 bg-surface-interactive/50 opacity-40" :
-              "bg-card",
+          "rounded-2xl border overflow-hidden transition-all duration-300 ease-out relative backdrop-blur-xl",
+          isBye ? "border-dashed border-white/10 bg-white/[0.02]" :
+            isCancelled ? "border-white/5 bg-white/[0.02] opacity-40" :
+              "bg-[#0B1524]/90 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
           isClickable && "cursor-pointer active:scale-[0.97]",
-          !isChampion && !isBye && !isCancelled && "border-border hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.08)]",
-          isChampion && "border-amber-400/80 shadow-[0_0_25px_rgba(251,191,36,0.25)] ring-1 ring-amber-400/50"
+          !isChampion && !isBye && !isCancelled && "group-hover:border-emerald-500/50 group-hover:shadow-[0_0_24px_rgba(0,217,139,0.2)]",
+          isChampion && "border-amber-400/80 shadow-[0_0_30px_rgba(251,191,36,0.3)] ring-1 ring-amber-400/50"
         )}
       >
         {/* Undo Button for Completed Matches */}
@@ -101,7 +110,7 @@ export const MatchNode = memo(function MatchNode({
               e.stopPropagation();
               onRevert(match.id);
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-surface-base/80 hover:bg-red-500/20 border border-border hover:border-red-500/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-muted-foreground hover:text-red-500 dark:hover:text-red-400 backdrop-blur-sm"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-slate-900/80 hover:bg-red-500/20 border border-white/10 hover:border-red-500/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-foreground/70 hover:text-red-400 backdrop-blur-sm"
             title="Revert Match Result"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -120,7 +129,7 @@ export const MatchNode = memo(function MatchNode({
 
         <div className={cn(
           "h-px mx-3",
-          isChampion ? "bg-amber-500/20" : "bg-border/60"
+          isChampion ? "bg-amber-500/20" : "bg-white/5"
         )} />
 
         {/* Player 2 Row */}
@@ -173,29 +182,29 @@ function TeamRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-2.5 px-3 py-2.5 transition-all relative",
-        isWinner && !isChampion && "bg-[#32D74B]/8",
-        isChampion && "bg-gradient-to-r from-amber-500/10 to-amber-500/5",
+        "flex items-center gap-3 px-3.5 py-3 transition-all relative",
+        isWinner && !isChampion && "bg-emerald-500/10",
+        isChampion && "bg-gradient-to-r from-amber-500/15 to-amber-500/5",
         isLoser && "opacity-35 grayscale"
       )}
     >
       {/* Winner indicator bar */}
       {isWinner && !isChampion && (
-        <div className="absolute left-0 top-1 bottom-1 w-[3px] rounded-r-full bg-[#32D74B] shadow-[0_0_8px_rgba(50,215,75,0.5)]" />
+        <div className="absolute left-0 top-1.5 bottom-1.5 w-[3.5px] rounded-r-full bg-emerald-400 shadow-[0_0_10px_rgba(0,217,139,0.8)]" />
       )}
       {isChampion && (
-        <div className="absolute left-0 top-1 bottom-1 w-[4px] rounded-r-full bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
+        <div className="absolute left-0 top-1.5 bottom-1.5 w-[4px] rounded-r-full bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.9)]" />
       )}
 
       <PlayerAvatar teamName={player?.name} teamType={teamType} size="sm" />
 
       <span className={cn(
-        "text-[13px] font-semibold truncate flex-1",
-        isBye ? "text-muted-foreground italic text-[11px] tracking-wide" :
-          !player ? "text-muted-foreground italic" :
-            isChampion ? "text-amber-500 dark:text-amber-400 drop-shadow-sm" :
-              isWinner ? "text-[#16A34A] dark:text-[#32D74B]" :
-                "text-foreground"
+        "text-[13px] font-bold truncate flex-1",
+        isBye ? "text-foreground/40 italic text-[11px] tracking-wide" :
+          !player ? "text-foreground/40 italic" :
+            isChampion ? "text-amber-400 drop-shadow-sm font-black" :
+              isWinner ? "text-emerald-400 font-extrabold" :
+                "text-foreground/90"
       )}>
         {isBye ? 'BYE' : (player ? player.name : 'TBD')}
       </span>

@@ -1,13 +1,12 @@
-import { useState, useRef } from "react";
+import { memo, useState, useRef } from "react";
 import { motion, useInView } from "motion/react";
 import {
-  MapPin, Star, Clock, Heart
+  MapPin, Star, Clock, Heart, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Facility } from "@/types";
 
-
-export function FacilityCard({ f, onFav, onViewCourts }: { f: Facility & { favorited?: boolean }; onFav: () => void; onViewCourts?: () => void }) {
+function FacilityCardInner({ f, onFav, onViewCourts }: { f: Facility & { favorited?: boolean }; onFav: () => void; onViewCourts?: () => void }) {
   const [pop, setPop] = useState(false);
   const ref = useRef(null);
   useInView(ref, { once: true, margin: "-50px" });
@@ -15,8 +14,8 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: Facility & { favor
   // Deterministic mock density
   // densityColor removed
 
-  const minPrice = f.price;
-  const maxPrice = f.price;
+  const minPrice = (f as any).min_price ?? f.price;
+  const maxPrice = (f as any).max_price ?? f.price;
 
   function handleFav(e: React.MouseEvent) {
     e.stopPropagation();
@@ -29,7 +28,7 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: Facility & { favor
     <motion.div ref={ref}
       whileHover={{ y: -6, boxShadow: "0 24px 48px -12px rgba(0,0,0,0.5)" }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="rounded-[28px] overflow-hidden flex flex-col group relative cursor-pointer h-full border backdrop-blur-[20px] bg-surface-base border-border shadow-md dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.01] dark:border-white/[0.08] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.06)]"
+      className="rounded-[28px] overflow-hidden flex flex-col group relative cursor-pointer h-full border backdrop-blur-[20px] transition-all duration-300 bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/[0.07] dark:to-white/[0.02] dark:border-white/[0.1] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
       onClick={onViewCourts}>
 
       {/* Flush Edge-to-Edge Image */}
@@ -50,48 +49,75 @@ export function FacilityCard({ f, onFav, onViewCourts }: { f: Facility & { favor
         </motion.button>
       </div>
 
-      {/* Classic iOS Content Area */}
-      <div className="flex flex-col flex-1 p-3.5 xl:p-4 bg-transparent">
-        <div className="flex items-start justify-between gap-1.5 mb-1.5">
-          <h2 className="font-bold tracking-tight text-[13.5px] xl:text-[14.5px] line-clamp-1" style={{ color: "var(--ink-primary)" }} title={f.name}>
+      {/* Classic Content Area */}
+      <div className="flex flex-col flex-1 p-4 bg-transparent font-sans">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h2 className="font-extrabold tracking-tight text-[15.5px] xl:text-[16.5px] text-foreground line-clamp-1" title={f.name}>
             {f.name}
           </h2>
-          <div className="flex items-center gap-0.5 shrink-0 mt-0.5">
-            <Star className="w-3 h-3 fill-[#ff9f0a] text-[#ff9f0a]" />
-            <span className="text-[11.5px] font-bold" style={{ color: "var(--ink-primary)" }}>{f.rating}</span>
+          <div className="flex items-center gap-1 shrink-0 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400">
+            <Star className="w-3.5 h-3.5 fill-amber-400" />
+            <span className="text-[11.5px] font-extrabold">{f.rating}</span>
           </div>
         </div>
 
-        <div className="space-y-1 mt-1 mb-3.5">
-          <div className="flex items-center gap-1.5 text-[10.5px] xl:text-[11.5px] font-medium truncate" style={{ color: "var(--ink-secondary)" }}>
-            <MapPin className="w-3 h-3 shrink-0" /><span className="truncate">{f.location}</span>
+        <div className="space-y-1.5 mt-0.5 mb-3.5">
+          <div className="flex items-center gap-2 text-[12px] xl:text-[12.5px] font-semibold text-slate-200 dark:text-slate-200 truncate">
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-cyan-400 stroke-[2.5]" />
+            <span className="truncate">{f.location}</span>
           </div>
-          <div className="flex items-center justify-between text-[10.5px] xl:text-[11.5px] font-medium gap-1.5" style={{ color: "var(--ink-secondary)" }}>
-            <div className="flex items-center gap-1.5 truncate">
-              <Clock className="w-3 h-3 shrink-0" /><span className="truncate">{f.hours}</span>
+          <div className="flex items-center justify-between text-[12px] xl:text-[12.5px] font-semibold gap-1.5 text-slate-200 dark:text-slate-200">
+            <div className="flex items-center gap-2 truncate">
+              <Clock className="w-3.5 h-3.5 shrink-0 text-amber-400 stroke-[2.5]" />
+              <span className="truncate">{f.hours}</span>
             </div>
-            <span className="text-[9.5px] shrink-0 whitespace-nowrap" style={{ color: "var(--ink-muted)" }}>🏍 {f.moto} · 🚗 {f.car}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-auto gap-2">
-          <div className="flex flex-col min-w-0">
-            <span className="text-[8.5px] font-medium tracking-tight mb-0.5 shrink-0" style={{ color: "var(--ink-muted)" }}>Court Price</span>
-            <span className="font-bold text-[13px] xl:text-[14px] tracking-tight leading-none flex items-baseline gap-0.5 truncate"
-              style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" }}>
-              <span className="truncate" style={{ color: "var(--ink-primary)" }}>
-                {minPrice === maxPrice ? `₱${minPrice}` : `₱${minPrice} - ₱${maxPrice}`}
-              </span>
-              <span className="font-medium text-[10px] shrink-0" style={{ color: "var(--ink-muted)" }}>/hr</span>
+            <span className="text-[10.5px] shrink-0 whitespace-nowrap px-2.5 py-0.5 rounded-full bg-slate-800/80 dark:bg-white/10 font-bold text-slate-200 border border-white/10 shadow-sm">
+              🏍 {f.moto} · 🚗 {f.car}
             </span>
           </div>
-          <div
-            className="text-[11px] px-3 py-1.5 rounded-[7px] font-bold whitespace-nowrap shrink-0 active:scale-[0.96] transition-all flex items-center justify-center"
-            style={{ background: "var(--accent-primary)", color: "#080f2e", boxShadow: "0 4px 12px rgba(0,212,255,0.2)" }}>
-            View Courts
+        </div>
+
+        <div className="flex items-center justify-between mt-auto gap-2 pt-3 border-t border-white/10 dark:border-white/10">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[9.5px] font-extrabold uppercase tracking-widest mb-0.5 shrink-0 text-emerald-400 dark:text-emerald-400">
+              COURT PRICE
+            </span>
+            <span className="font-extrabold text-[16px] xl:text-[17px] tracking-tight leading-none flex items-baseline gap-0.5 truncate text-foreground">
+              <span className="truncate">
+                {minPrice === maxPrice ? `₱${minPrice}` : `₱${minPrice} - ₱${maxPrice}`}
+              </span>
+              <span className="font-medium text-[11px] shrink-0 text-slate-400">/hr</span>
+            </span>
           </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewCourts?.();
+            }}
+            className="text-[12.5px] px-4 py-2 rounded-full font-extrabold tracking-wide whitespace-nowrap shrink-0 active:scale-95 transition-all flex items-center justify-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_4px_18px_rgba(16,185,129,0.4)] border border-emerald-400/40"
+          >
+            View Courts
+            <ChevronRight className="w-3.5 h-3.5 text-white stroke-[3]" />
+          </button>
         </div>
       </div>
     </motion.div>
   );
 }
+
+// Custom comparison function for React.memo that ignores function props
+function areEqual(prevProps: any, nextProps: any) {
+  // Compare the facility object (assuming it's stable or we want to re-render if it changes)
+  // For now, we'll do a shallow check on the facility id and other primitive properties
+  if (prevProps.f.id !== nextProps.f.id) return false;
+  if (prevProps.favorited !== nextProps.favorited) return false;
+
+  // We're not comparing the function props as they may be recreated
+  // In a real optimization, these should be wrapped in useCallback in the parent
+
+  return true;
+}
+
+export const FacilityCard = memo(FacilityCardInner, areEqual);
+export default FacilityCard;

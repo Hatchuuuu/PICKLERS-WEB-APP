@@ -37,7 +37,7 @@ export function Avatar({
     >
       <div
         className={`w-full h-full rounded-full bg-gradient-to-br ${color} flex items-center justify-center font-bold text-white overflow-hidden shadow-sm`}
-        style={{ fontSize: size * 0.38 }}
+        style={{ fontSize: Math.round(size * 0.44) }}
       >
         {avatarUrl ? (
           <img

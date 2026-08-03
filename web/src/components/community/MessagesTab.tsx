@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Search, MessageCircle, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Conversation } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -59,7 +60,7 @@ export default function MessagesTab({
   );
 
   return (
-    <div className="flex flex-col gap-5 pt-1 max-w-2xl mx-auto w-full">
+    <div className="flex flex-col gap-5 pt-1 w-full">
       {/* Search Input */}
       <div className="relative z-10">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--ink-muted)" }} />
@@ -84,34 +85,46 @@ export default function MessagesTab({
       ) : (
         <div className="flex flex-col gap-3">
           {filteredConversations.map((c, i) => (
-            <motion.div key={c.user_id}
+            <motion.div
+              key={c.user_id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="flex items-center gap-4 p-4 rounded-2xl text-left w-full group transition-all cursor-pointer hover:bg-surface-hover"
-              style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
-              
-              <button onClick={(e) => { e.stopPropagation(); onOpenProfile?.(c.user_id); }} className="shrink-0 transition-transform hover:scale-105 active:scale-95">
+              onClick={() => onOpenChat({ id: c.user_id, name: c.name, online: c.online, avatar_url: c.avatar_url })}
+              className="flex items-center gap-4 p-4 rounded-2xl text-left w-full group transition-all cursor-pointer hover:bg-surface-hover active:scale-[0.99]"
+              style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
+            >
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onOpenProfile?.(c.user_id); }}
+                className="shrink-0 transition-transform hover:scale-105 active:scale-95"
+              >
                 <Avatar name={c.name} size={48} online={c.online} avatarUrl={c.avatar_url} />
               </button>
               
-              <div className="flex-1 min-w-0" onClick={() => onOpenChat({ id: c.user_id, name: c.name, online: c.online, avatar_url: c.avatar_url })}>
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className={`text-[15px] font-bold text-foreground truncate ${c.unread_count > 0 ? "text-foreground" : ""}`}>{c.name}</span>
-                  <span className="text-[11px] shrink-0" style={{ color: c.unread_count > 0 ? "var(--accent-primary)" : "var(--ink-muted)", fontWeight: c.unread_count > 0 ? 600 : 400 }}>
+                  <span
+                    className="text-[15px] font-extrabold text-foreground truncate"
+                    style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
+                  >
+                    {c.name}
+                  </span>
+                  <span className="text-[11px] font-bold shrink-0 text-muted-foreground">
                     {new Date(c.last_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                   </span>
                 </div>
+                
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-[13px] truncate ${c.unread_count > 0 ? "font-semibold text-foreground" : ""}`} style={{ color: c.unread_count > 0 ? "var(--ink-primary)" : "var(--ink-secondary)" }}>
+                  <span className={cn("text-[13px] truncate", c.unread_count > 0 ? "font-bold text-foreground" : "text-muted-foreground font-medium")}>
                     {c.last_message}
                   </span>
                   {c.unread_count > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-[0_0_10px_rgba(0,217,139,0.3)]"
-                      style={{ background: "var(--accent-primary)" }}>
+                      className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-slate-950 bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                    >
                       {c.unread_count > 9 ? "9+" : c.unread_count}
                     </motion.span>
                   )}

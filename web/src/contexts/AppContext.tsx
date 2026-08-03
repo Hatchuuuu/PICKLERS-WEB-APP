@@ -72,7 +72,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [joinedMatches, setJoinedMatches] = useState<Set<number>>(new Set());
   const [chatMessages, setChatMessages] = useState<Record<string | number, ChatMessage[]>>({});
   const [likedPlayers, setLikedPlayers] = useState<Set<string | number>>(new Set());
-  const [playerLikes, setPlayerLikes] = useState<Record<string | number, number>>({ 1: 12, 2: 8, 3: 3, 4: 17, 5: 24 });
+  const [playerLikes, setPlayerLikes] = useState<Record<string | number, number>>({});
   const [favoritedFacilities, setFavoritedFacilities] = useState<Set<number>>(new Set());
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [players, setPlayers] = useState<PlayerProfile[]>([]);
@@ -225,7 +225,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return () => { 
       mounted = false;
-      bookingSub.unsubscribe(); 
+      supabase.removeChannel(bookingSub); 
     };
   }, [isDemo]);
 

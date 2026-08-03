@@ -10,3 +10,20 @@ export const TIME_SLOTS = [
 
 export function slotIndex(t: string) { return TIME_SLOTS.indexOf(t); }
 export function slotHours(start: string, end: string) { return slotIndex(end) - slotIndex(start); }
+
+export function formatFullDate(dateStr: string): string {
+  if (!dateStr) return "";
+  const trimmed = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [year, month, day] = trimmed.split("-").map(Number);
+    const d = new Date(year, month - 1, day);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+  }
+  return dateStr;
+}

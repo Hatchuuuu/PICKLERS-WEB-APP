@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import {
   ChevronRight, User, Phone, Bell, Smartphone, Users,
-  ShieldCheck, BadgeCheck, ShieldAlert, Sparkles,
+  ShieldCheck, BadgeCheck, ShieldAlert, Compass,
   LogOut, KeyRound
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,11 @@ import { EmailUpdateModal } from "@/components/shared/modals/EmailUpdateModal";
 import { PhoneSetupModal } from "@/components/shared/modals/PhoneSetupModal";
 import { DeleteAccountModal } from "@/components/shared/modals/DeleteAccountModal";
 import { LogoutConfirmModal } from "@/components/shared/modals/LogoutConfirmModal";
+import { ChangePasswordModal } from "@/components/shared/modals/ChangePasswordModal";
+import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModal";
+import { TermsOfServiceModal } from "@/components/shared/modals/TermsOfServiceModal";
+import { SupportContactModal } from "@/components/shared/modals/SupportContactModal";
+import { ShieldCheck as LegalShield, LifeBuoy, FileText, MessageSquare } from "lucide-react";
 
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (e: React.MouseEvent) => void, disabled?: boolean }) {
   return (
@@ -61,6 +66,7 @@ export default function PlayerSettingsTab() {
     booking: user?.notifications?.booking ?? true,
     matches: user?.notifications?.matches ?? false,
     community: user?.notifications?.community ?? true,
+    chat: user?.notifications?.chat ?? true,
   });
 
   const { theme, setTheme } = useTheme();
@@ -72,6 +78,10 @@ export default function PlayerSettingsTab() {
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isProcessingSocial, setIsProcessingSocial] = useState<{google: boolean, facebook: boolean}>({ google: false, facebook: false });
@@ -160,15 +170,20 @@ export default function PlayerSettingsTab() {
     setIsProcessing(true);
     
     // Update local state optimistically
+    const previousValue = profile[editingField.key as keyof typeof profile];
     const newProfile = { ...profile, [editingField.key]: newValue };
     setProfile(newProfile);
     
-    // Update Context/DB
-    await updateUser({ [editingField.key]: newValue });
-    
-    setIsProcessing(false);
-    setEditingField(null);
-    showToast(`${editingField.label} updated.`, "success");
+    try {
+      await updateUser({ [editingField.key]: newValue });
+      showToast(`${editingField.label} updated.`, "success");
+    } catch (err: any) {
+      setProfile({ ...profile, [editingField.key]: previousValue });
+      showToast(err?.message || `Failed to update ${editingField.label}`, "error");
+    } finally {
+      setIsProcessing(false);
+      setEditingField(null);
+    }
   };
 
   const handleUpdateEmail = async (email: string) => {
@@ -190,22 +205,17 @@ export default function PlayerSettingsTab() {
 
   const handleConnectPhone = async (phone: string) => {
     setIsProcessing(true);
+    const oldPhone = profile.phone;
     setProfile({ ...profile, phone });
-    await updateUser({ phone });
-    setIsProcessing(false);
-    setShowPhoneModal(false);
-    showToast("Phone connected successfully.", "success");
-  };
-
-  const handleResetPassword = async () => {
-    if (!user?.email) return;
-    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: window.location.origin + "/app/settings",
-    });
-    if (error) {
-      showToast(error.message, "error");
-    } else {
-      showToast("Password reset link sent to your email.", "success");
+    try {
+      await updateUser({ phone });
+      setShowPhoneModal(false);
+      showToast("Phone connected successfully.", "success");
+    } catch (err: any) {
+      setProfile({ ...profile, phone: oldPhone });
+      showToast(err?.message || "Failed to connect phone number.", "error");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -223,12 +233,17 @@ export default function PlayerSettingsTab() {
 
   const handleToggleNotification = async (key: keyof typeof notifications) => {
     const newValue = !notifications[key];
+    const previousNotifications = { ...notifications };
     const newNotifications = { ...notifications, [key]: newValue };
     
     // Optimistic update
     setNotifications(newNotifications);
-    // Persist to backend/context
-    await updateUser({ notifications: newNotifications });
+    try {
+      await updateUser({ notifications: newNotifications });
+    } catch (err: any) {
+      setNotifications(previousNotifications);
+      showToast("Failed to update notification settings.", "error");
+    }
   };
 
   return (
@@ -259,15 +274,16 @@ export default function PlayerSettingsTab() {
       {(user?.isDemo || user?.role === "demo") ? (
         <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
           <WalletPill />
-          <div className="rounded-[16px] p-4 relative overflow-hidden bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
+          <div onClick={() => router.push("/app/owner")} className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20 active:scale-[0.98] transition-transform">
             <div className="flex items-center gap-4 relative z-10">
               <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
-                <Sparkles className="w-6 h-6" />
+                <Compass className="w-6 h-6" />
               </div>
               <div className="flex-1">
                 <div className="text-[16px] font-bold text-foreground mb-0.5">Demo Mode Active</div>
-                <div className="text-[14px] text-foreground/60 font-medium">Exploration account with access across Player & Owner portals</div>
+                <div className="text-[14px] text-foreground/60 font-medium">Tap to switch to Court Owner Dashboard</div>
               </div>
+              <ChevronRight className="w-5 h-5 text-foreground/30" />
             </div>
           </div>
           <div onClick={() => router.push("/app/owner-application")}
@@ -366,8 +382,8 @@ export default function PlayerSettingsTab() {
 
       <motion.div variants={containerVariants} initial="hidden" animate="show">
         
-        {/* Profile Section */}
-        <SettingsGroup className="mb-0">
+        {/* Account & Profile Section */}
+        <SettingsGroup title="ACCOUNT & IDENTITY">
           <SettingsRow
             icon={User} iconBg="bg-blue-500/10" iconColor="text-blue-500"
             label="Name" value={profile.name}
@@ -389,50 +405,53 @@ export default function PlayerSettingsTab() {
 
           <SettingsRow
             icon={Phone} iconBg="bg-emerald-500/10" iconColor="text-emerald-500"
-            label="Phone Number" value={profile.phone || "Not connected"}
+            label="Phone Number" value={profile.phone ? "Connected" : "Not connected"}
             onClick={() => setShowPhoneModal(true)}
-            rightContent={
-              profile.phone ? (
-                <div className="text-[13px] font-bold text-emerald-500 mr-2">Connected</div>
-              ) : (
-                <button className="px-3.5 py-1.5 rounded-full text-[12px] font-bold bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors mr-1">Connect</button>
-              )
-            }
           />
+
           <SettingsRow
             icon={() => <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>}
             iconBg="bg-zinc-500/10" iconColor="text-[#4285F4]"
-            label="Google" value={googleDisplay}
+            label="Google"
+            subtitle={hasGoogle ? (googleDisplay || "Connected via Google") : "Link your Google account"}
+            onClick={() => hasGoogle ? handleDisconnect('google') : handleConnect('google')}
             rightContent={
-                isProcessingSocial['google'] ? (
-                  <div className="mr-3"><div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" /></div>
-                ) : hasGoogle ? (
-                  <button onClick={(e) => { e.stopPropagation(); handleDisconnect('google'); }} className="text-[13px] font-bold text-emerald-500 mr-2 hover:text-red-500 transition-colors">Connected</button>
-                ) : (
-                  <button onClick={(e) => { e.stopPropagation(); handleConnect('google'); }} className="px-3.5 py-1.5 rounded-full text-[12px] font-bold bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors mr-1">Connect</button>
-                )
-              }
+              isProcessingSocial['google'] ? (
+                <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+              ) : hasGoogle ? (
+                <span className="text-[12px] font-bold text-emerald-400">Connected</span>
+              ) : (
+                <span className="text-[12px] font-bold text-muted-foreground">Connect</span>
+              )
+            }
           />
+          
           <SettingsRow
             icon={() => <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>}
             iconBg="bg-[#1877F2]/10" iconColor="text-[#1877F2]"
-            label="Facebook" value={facebookDisplay}
+            label="Facebook"
+            subtitle={hasFacebook ? (facebookDisplay || "Connected via Facebook") : "Link your Facebook account"}
+            onClick={() => hasFacebook ? handleDisconnect('facebook') : handleConnect('facebook')}
             rightContent={
-                isProcessingSocial['facebook'] ? (
-                  <div className="mr-3"><div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" /></div>
-                ) : hasFacebook ? (
-                  <button onClick={(e) => { e.stopPropagation(); handleDisconnect('facebook'); }} className="text-[13px] font-bold text-emerald-500 mr-2 hover:text-red-500 transition-colors">Connected</button>
-                ) : (
-                  <button onClick={(e) => { e.stopPropagation(); handleConnect('facebook'); }} className="px-3.5 py-1.5 rounded-full text-[12px] font-bold bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors mr-1">Connect</button>
-                )
-              }
+              isProcessingSocial['facebook'] ? (
+                <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+              ) : hasFacebook ? (
+                <span className="text-[12px] font-bold text-emerald-400">Connected</span>
+              ) : (
+                <span className="text-[12px] font-bold text-muted-foreground">Connect</span>
+              )
+            }
           />
         
           <SettingsRow
             icon={KeyRound} iconBg="bg-zinc-500/10" iconColor="text-zinc-500 dark:text-zinc-400"
-            label="Change Password"
-            onClick={handleResetPassword}
+            label="Change Password" hasBorder={false}
+            onClick={() => setShowPasswordModal(true)}
           />
+        </SettingsGroup>
+
+        {/* Preferences Section */}
+        <SettingsGroup title="PREFERENCES & NOTIFICATIONS">
           <SettingsRow
             icon={() => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>}
             iconBg="bg-zinc-500/10" iconColor="text-zinc-500 dark:text-zinc-400"
@@ -452,10 +471,37 @@ export default function PlayerSettingsTab() {
           />
           <SettingsRow
             icon={Users} iconBg="bg-indigo-500/10" iconColor="text-indigo-500"
-            label="Community Updates" hasBorder={false}
+            label="Community Updates"
             rightContent={<Toggle checked={notifications.community} onChange={() => handleToggleNotification('community')} />}
           />
-        
+          <SettingsRow
+            icon={MessageSquare} iconBg="bg-teal-500/10" iconColor="text-teal-500"
+            label="Chat & Direct Messages" hasBorder={false}
+            rightContent={<Toggle checked={notifications.chat} onChange={() => handleToggleNotification('chat')} />}
+          />
+        </SettingsGroup>
+
+        {/* Legal & Support Section */}
+        <SettingsGroup title="LEGAL & SUPPORT">
+          <SettingsRow
+            icon={LifeBuoy} iconBg="bg-indigo-500/10" iconColor="text-indigo-500"
+            label="Help & Support"
+            subtitle="Contact customer service & report bugs"
+            onClick={() => setShowSupportModal(true)}
+          />
+          <SettingsRow
+            icon={LegalShield} iconBg="bg-emerald-500/10" iconColor="text-emerald-500"
+            label="Privacy Policy"
+            subtitle="App Store & Play Store privacy rules"
+            onClick={() => setShowPrivacyModal(true)}
+          />
+          <SettingsRow
+            icon={FileText} iconBg="bg-cyan-500/10" iconColor="text-cyan-500"
+            label="Terms of Service (EULA)"
+            subtitle="User agreement & court booking policies"
+            hasBorder={false}
+            onClick={() => setShowTermsModal(true)}
+          />
         </SettingsGroup>
 
         <motion.div variants={itemVariants} className="mb-4">
@@ -467,7 +513,7 @@ export default function PlayerSettingsTab() {
           </button>
         </motion.div>
         
-        <motion.div variants={itemVariants} className="mt-8 mb-12">
+        <motion.div variants={itemVariants} className="mt-8 mb-8">
           <h3 className="text-sm font-bold tracking-tight mb-2 px-4 text-[#FF453A]">Danger Zone</h3>
           <div className="bg-surface-base dark:bg-white/[0.03] border border-[#FF453A]/20 rounded-[28px] p-4 flex flex-col gap-3 shadow-[0_8px_24px_rgba(255,69,58,0.08)]">
             <div className="flex items-start gap-3">
@@ -485,6 +531,16 @@ export default function PlayerSettingsTab() {
               Delete My Account
             </button>
           </div>
+        </motion.div>
+
+        {/* App Version & Build Footer */}
+        <motion.div variants={itemVariants} className="mt-6 mb-12 flex flex-col items-center justify-center text-center gap-1 opacity-70">
+          <p className="text-xs font-black tracking-wider text-muted-foreground uppercase" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
+            PICKLERS v1.0.0
+          </p>
+          <p className="text-[11px] font-medium text-muted-foreground">
+            © 2026 PICKLERS Inc. All Rights Reserved.
+          </p>
         </motion.div>
 
         {/* Developer Zone (Only visible when pending) */}
@@ -524,7 +580,10 @@ export default function PlayerSettingsTab() {
         isOpen={showPhoneModal}
         onClose={() => setShowPhoneModal(false)}
         onConnect={handleConnectPhone}
+        currentPhone={profile.phone}
         isProcessing={isProcessing}
+        isDemo={user?.isDemo || user?.role === "demo"}
+        showToast={showToast}
       />
 
       <DeleteAccountModal 
@@ -538,6 +597,29 @@ export default function PlayerSettingsTab() {
         isOpen={showLogoutConfirm}
         onClose={() => setShowLogoutConfirm(false)}
         onConfirm={logout}
+      />
+
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        userEmail={user?.email}
+        identities={identities}
+        showToast={showToast}
+      />
+
+      <PrivacyPolicyModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+      />
+
+      <TermsOfServiceModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+      />
+
+      <SupportContactModal
+        isOpen={showSupportModal}
+        onClose={() => setShowSupportModal(false)}
       />
       
       {showSetup && <FacilitySetupWizard onClose={() => setShowSetup(false)} />}

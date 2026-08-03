@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion, HTMLMotionProps } from 'motion/react';
 
 interface AnimatedContentProps extends Omit<HTMLMotionProps<"div">, "children"> {
   children: ReactNode;
@@ -10,7 +10,7 @@ interface AnimatedContentProps extends Omit<HTMLMotionProps<"div">, "children"> 
   direction?: 'vertical' | 'horizontal';
   reverse?: boolean;
   duration?: number;
-  ease?: any;
+  ease?: number[] | string;
   initialOpacity?: number;
   animateOpacity?: boolean;
   scale?: number;
@@ -65,7 +65,7 @@ const AnimatedContent = ({
       transition={{ 
         duration, 
         delay,
-        ease: Array.isArray(ease) ? ease : [0.23, 1, 0.32, 1]
+        ease: ease as any
       }}
       onAnimationComplete={() => {
         if (onComplete) onComplete();

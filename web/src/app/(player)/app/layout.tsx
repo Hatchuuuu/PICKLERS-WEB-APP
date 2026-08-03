@@ -180,16 +180,16 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
       <main ref={mainScrollRef} className="flex-1 overflow-y-auto pb-[calc(68px+env(safe-area-inset-bottom,16px))] md:pb-0 relative bg-background flex flex-col">
         {/* Mobile Premium Header */}
         <motion.div
-          animate={{ y: isHeaderVisible ? 0 : "-100%", z: 100 }}
+          animate={{ y: isHeaderVisible ? 0 : "-100%" }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="md:hidden sticky top-0 z-[100] isolate flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/90 backdrop-blur-3xl saturate-200">
+          className="md:hidden sticky top-0 z-[100] flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-base/90 backdrop-blur-3xl saturate-200">
           <div className="flex items-center gap-1">
             <PicklersLogo size={36} />
             <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-2 relative">
             <div className="relative" ref={notifRef}>
-              <button data-notif-toggle="true" onClick={() => setShowNotifs(!showNotifs)} className="relative active:scale-95 transition-transform flex items-center justify-center p-2 rounded-full hover:bg-surface-raised min-w-[44px] min-h-[44px]">
+              <button data-notif-toggle="true" onClick={() => setShowNotifs(!showNotifs)} aria-label="Notifications" className="relative active:scale-95 transition-transform flex items-center justify-center p-2 rounded-full hover:bg-surface-raised min-w-[44px] min-h-[44px]">
                 <Bell className="w-5 h-5 pointer-events-none" style={{ color: "var(--ink-secondary)" }} />
                 {notifications.some(n => !n.read) && (
                   <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-[1.5px]" style={{ borderColor: "var(--surface-base)", background: "var(--accent-primary)" }} />
@@ -197,18 +197,18 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
               </button>
 
               <AnimatePresence>
-                {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} className="top-[calc(100%+8px)] right-0 origin-top-right w-[calc(100vw-32px)] sm:w-[360px] max-w-[380px]" />}
+                {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} className="!fixed !top-[60px] !left-[15px] !right-[15px] !w-auto !max-w-none origin-top" />}
               </AnimatePresence>
             </div>
 
-            <button onClick={() => setShowLogoutConfirm(true)} className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px]">
+            <button onClick={() => setShowLogoutConfirm(true)} aria-label="Profile and sign out" className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px]">
               <motion.div
                 className="absolute inset-0 rounded-full"
                 style={{ background: "conic-gradient(from 180deg at 50% 50%, var(--accent-primary) 0deg, var(--accent-secondary) 180deg, var(--accent-primary) 360deg)" }}
                 animate={{ rotate: 360 }}
                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
               />
-              <div className="w-full h-full rounded-full flex items-center justify-center text-[11px] font-bold uppercase pointer-events-none bg-background text-accent-primary relative z-10 overflow-hidden">
+              <div className="w-full h-full rounded-full flex items-center justify-center text-[15px] font-extrabold uppercase pointer-events-none bg-background text-accent-primary relative z-10 overflow-hidden">
                 {user?.avatarUrl ? (
                   <motion.img
                     initial={{ opacity: 0 }}
@@ -229,14 +229,14 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
 
         <div className="flex-1 flex flex-col pt-2 md:pt-4">
           <AnimatePresence mode="wait">
-            <motion.div key={pathname} className="flex-1 relative z-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ ease: "easeInOut", duration: 0.25 }}>
+            <motion.div key={pathname} className="flex-1 relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ ease: "easeInOut", duration: 0.25 }}>
               {children}
             </motion.div>
           </AnimatePresence>
         </div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-black/5 dark:border-white/[0.08] z-40 bg-white/80 dark:bg-[#0c0d10]/85 backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.06)]" style={{ paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/10 z-[30] bg-[#0A1628] dark:bg-[#0A1628] backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.5)]" style={{ background: "#0A1628", paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
         {PLAYER_TABS.map(tab => {
           const active = view === tab.id;
           const Icon = tab.icon;

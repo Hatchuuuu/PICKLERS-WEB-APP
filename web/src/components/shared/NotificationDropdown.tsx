@@ -23,7 +23,7 @@ export function NotificationDropdown({ onClose: _onClose, className }: { onClose
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={cn("absolute w-[340px] rounded-2xl shadow-lg dark:shadow-2xl overflow-hidden z-[9999] border bg-background/95 dark:bg-[#0B132B]/98 backdrop-blur-[60px] saturate-[1.2] border-border dark:border-white/[0.12] ring-1 ring-black/5 dark:ring-white/5", className)}>
+      className={cn("absolute w-[340px] max-w-[calc(100vw-30px)] rounded-2xl shadow-[0_16px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.8)] overflow-hidden z-[9999] border bg-white/95 dark:bg-[#0B132B]/98 backdrop-blur-[60px] saturate-[1.2] border-border dark:border-white/[0.12] ring-1 ring-black/5 dark:ring-white/5", className)}>
 
       <div className="px-5 py-4 flex items-center justify-between border-b border-border dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.02]">
         <h3 className="text-[17px] font-black text-foreground dark:text-white tracking-wide" >Notifications</h3>

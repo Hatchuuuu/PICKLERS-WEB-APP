@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, Check, CreditCard, Banknote, Coins } from "lucide-react";
@@ -13,6 +14,8 @@ import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+
+import confetti from "canvas-confetti";
 
 export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBack: () => void; onDone: () => void }) {
   const router = useRouter();
@@ -69,7 +72,7 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
         setBookings(prev => [{
             id: String(insertedBooking.id),
             facility_id: Number(insertedBooking.facility_id),
-            facility: String((insertedBooking.facilities as any)?.name || data.facility.name),
+            facility: String((insertedBooking.facilities as { name?: string })?.name || data.facility.name),
             court: String(insertedBooking.court_name),
             court_name: String(insertedBooking.court_name),
             date: String(insertedBooking.date),
@@ -92,6 +95,18 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
       queryClient.setQueryData(['bookingRequests'], (old: unknown) => [newRequest, ...((old as Record<string, unknown>[]) || [])]);
 
       setStage("success");
+      
+      // Celebration Confetti Burst
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00D98B', '#00D4FF', '#FFD700', '#FF453A']
+        });
+      } catch (cErr) {
+        console.warn("Confetti trigger warning:", cErr);
+      }
     } catch (err: unknown) {
       console.error(err);
       setStage("failed");
@@ -246,50 +261,68 @@ export function PaymentView({ data, onBack, onDone }: { data: PaymentData; onBac
 
         {/* Payment method */}
         <div className="mb-8">
-          <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-4">Payment</h3>
-          <div className="flex flex-col rounded-[16px] overflow-hidden bg-surface-base/60 backdrop-blur-3xl border border-border shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+          <h3 className="text-[12px] font-black text-muted-foreground uppercase tracking-wider mb-3 px-1" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>Payment Method</h3>
+          <div className="flex flex-col gap-2.5">
             {([
               { id: "gcash", label: "GCash", sub: "Instant online payment", icon: <img src="/gcash.svg" alt="GCash" className="w-[115%] h-[115%] object-contain" />, iconBg: "#fff", recommended: true },
-              { id: "maya", label: "Maya", sub: "Pay via Maya wallet", icon: <span className="font-black text-[15px] tracking-tighter" style={{ color: "#42d6a4", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>maya</span>, iconBg: "#fff", recommended: false },
-              { id: "cash", label: "Cash on Site", sub: "Pay at the front desk", icon: <Banknote className="w-5 h-5 text-foreground" strokeWidth={2.5} />, iconBg: "#8E8E93", recommended: false },
-              { id: "credits", label: "Pickle Credits", sub: `Balance: ₱1,200`, icon: <Coins className="w-5 h-5 text-foreground" strokeWidth={2.5} />, iconBg: "#34C759", recommended: false },
-            ] as const).map((opt, i) => {
+              { id: "maya", label: "Maya", sub: "Pay via Maya wallet", icon: <span className="font-black text-[14px] tracking-tighter" style={{ color: "#000", fontFamily: "system-ui, sans-serif" }}>maya</span>, iconBg: "#42d6a4", recommended: false },
+              { id: "cash", label: "Cash on Site", sub: "Pay at the front desk", icon: <Banknote className="w-5 h-5 text-foreground" strokeWidth={2.5} />, iconBg: "rgba(255,255,255,0.08)", recommended: false },
+              { id: "credits", label: "Pickle Credits", sub: `Balance: ₱1,200`, icon: <Coins className="w-5 h-5 text-emerald-400" strokeWidth={2.5} />, iconBg: "rgba(16,185,129,0.15)", recommended: false },
+            ] as const).map((opt) => {
+              const isSelected = method === opt.id;
               const optionNode = (
-                <button onClick={() => setMethod(opt.id)}
-                  className="flex items-center pl-4 text-left w-full transition-colors hover:bg-surface-interactive border border-border active:bg-surface-raised border border-border/[0.12]">
-
-                  {/* iOS Style Icon */}
-                  <div className="w-[30px] h-[30px] rounded-[7px] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden shadow-sm border border-black/10"
-                    style={{ background: opt.iconBg }}>
+                <button
+                  type="button"
+                  onClick={() => setMethod(opt.id)}
+                  className={cn(
+                    "flex items-center gap-3.5 p-3.5 rounded-2xl w-full text-left transition-all active:scale-[0.98] border cursor-pointer",
+                    isSelected
+                      ? "bg-emerald-500/10 dark:bg-emerald-500/[0.12] border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                      : "bg-surface-interactive/30 dark:bg-white/[0.03] border-white/10 dark:border-white/[0.08] hover:border-white/20 hover:bg-white/[0.05]"
+                  )}
+                >
+                  {/* Icon Badge */}
+                  <div
+                    className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm border border-black/10 transition-transform",
+                      isSelected ? "scale-105" : ""
+                    )}
+                    style={{ background: opt.iconBg }}
+                  >
                     {opt.icon}
                   </div>
 
-                  {/* Text Container with iOS inset divider */}
-                  <div className="flex-1 min-w-0 py-3 ml-3.5 pr-4 flex items-center border-b border-border"
-                    style={{ borderBottomWidth: i === 3 ? 0 : 1 }}>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[17px] text-foreground tracking-[-0.3px] leading-tight" style={{ fontFamily: "system-ui, -apple-system, sans-serif", fontWeight: 500 }}>{opt.label}</span>
-                        {opt.recommended && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold tracking-tight border border-[var(--accent-primary)]/20"
-                            style={{ background: "rgba(0, 212, 255, 0.1)", color: "var(--accent-primary)" }}>Recommended</span>
-                        )}
-                      </div>
-                      <div className="text-[14px] text-[#8e8e93] mt-0.5 tracking-[-0.1px] leading-tight" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>{opt.sub}</div>
-                    </div>
-
-                    {/* iOS Blue Checkmark */}
-                    <div className="shrink-0 flex items-center justify-center w-6 h-6">
-                      {method === opt.id && (
-                        <motion.div
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        >
-                          <Check className="w-5 h-5 text-[#0A84FF]" strokeWidth={3} />
-                        </motion.div>
+                  {/* Label and Subtitle */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-base font-extrabold tracking-tight", isSelected ? "text-emerald-400" : "text-foreground")} style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
+                        {opt.label}
+                      </span>
+                      {opt.recommended && (
+                        <span className="text-[10px] px-2.5 py-0.5 rounded-full font-black tracking-wider uppercase bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-sm">
+                          Recommended
+                        </span>
                       )}
                     </div>
+                    <div className="text-xs text-muted-foreground font-medium mt-0.5 truncate">
+                      {opt.sub}
+                    </div>
+                  </div>
+
+                  {/* Selection Radio / Checkmark Badge */}
+                  <div className="shrink-0 flex items-center justify-center">
+                    {isSelected ? (
+                      <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        className="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.5)]"
+                      >
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </motion.div>
+                    ) : (
+                      <div className="w-5 h-5 rounded-full border-2 border-white/20 dark:border-white/20" />
+                    )}
                   </div>
                 </button>
               );

@@ -34,42 +34,59 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  
-  const user = session?.user
+  try {
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+      setTimeout(() => resolve({ data: { session: null } }), 1200)
+    );
 
-  const { pathname } = request.nextUrl
+    const {
+      data: { session },
+    } = await Promise.race([sessionPromise, timeoutPromise]);
+    
+    const user = session?.user;
+    const { pathname } = request.nextUrl;
 
-  // Protect /app and /app/owner routes
-  if (pathname.startsWith('/app')) {
-    if (!user) {
-      // no user, redirect to auth
-      const url = request.nextUrl.clone()
-      url.pathname = '/auth'
-      return NextResponse.redirect(url)
-    }
+    // Protect /app and /app/owner routes
+    if (pathname.startsWith('/app')) {
+      if (!user) {
+        // If unauthenticated on protected routes, redirect to /auth
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth';
+        return NextResponse.redirect(url);
+      }
 
-    // Role-based protection for /owner
-    // Allowed: 'owner' (primary), 'demo' (Player↔Owner bridge)
-    if (pathname.startsWith('/app/owner') || pathname.startsWith('/app/create-tournament')) {
-      const { data: roleData } = await supabase
-        .from('player_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+      // Role-based protection for /owner
+      if (pathname.startsWith('/app/owner') || pathname.startsWith('/app/create-tournament')) {
+        try {
+          const rolePromise = supabase
+            .from('player_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
 
-      const ownerAccessRoles = ['owner', 'demo'];
-      if (!roleData || !ownerAccessRoles.includes(roleData.role)) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/app'
-        return NextResponse.redirect(url)
+          const roleTimeout = new Promise<any>((resolve) =>
+            setTimeout(() => resolve({ data: null }), 1200)
+          );
+
+          const { data: roleData } = await Promise.race([rolePromise, roleTimeout]);
+
+          const ownerAccessRoles = ['owner', 'demo'];
+          if (roleData && !ownerAccessRoles.includes(roleData.role)) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/app';
+            return NextResponse.redirect(url);
+          }
+        } catch (e) {
+          // Ignore role check timeout
+        }
       }
     }
+  } catch (err) {
+    // Fallback on network delay
   }
 
-  return supabaseResponse
+  return supabaseResponse;
 }
 
 export const config = {

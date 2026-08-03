@@ -31,7 +31,7 @@ export default function PlayTab() {
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const { showToast } = useToast();
   const isLoading = !isDataLoaded;
-  
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterType, setFilterType] = useState<"All" | "Indoor" | "Outdoor">("All");
   const [filterSort, setFilterSort] = useState<"Recommended" | "Price (Low to High)" | "Rating (High to Low)">("Recommended");
@@ -48,15 +48,17 @@ export default function PlayTab() {
         try {
           const { latitude, longitude } = position.coords;
           const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-          if (!mapboxToken) throw new Error("Mapbox token missing");
-          
+          if (!mapboxToken || !mapboxToken.trim().startsWith("pk.")) {
+            throw new Error("Valid Mapbox token starting with pk. is missing");
+          }
+
           const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&types=neighborhood,locality,place`);
           const data = await res.json();
-          
+
           if (data.features && data.features.length > 0) {
             const feature = data.features[0];
             let fullName = feature.text;
-            
+
             if (!feature.place_type.includes('place') && feature.context) {
               const placeContext = feature.context.find((c: { id: string, text: string }) => c.id.startsWith('place.'));
               if (placeContext) {
@@ -114,10 +116,10 @@ export default function PlayTab() {
           <div className="relative h-[68px] mb-4 -mt-[1px] flex items-center justify-between">
             <AnimatePresence>
               {!isSearching ? (
-                <motion.div 
-                  key="title" 
-                  initial={{ opacity: 0, x: -20, filter: "blur(8px)" }} 
-                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} 
+                <motion.div
+                  key="title"
+                  initial={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute left-0 top-0"
@@ -128,25 +130,25 @@ export default function PlayTab() {
                   <p className="text-sm text-muted-foreground">Find and book the best facilities near you</p>
                 </motion.div>
               ) : (
-                <motion.div 
-                  key="search" 
-                  initial={{ opacity: 0, x: 20, filter: "blur(8px)" }} 
-                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} 
+                <motion.div
+                  key="search"
+                  initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, x: 20, filter: "blur(8px)" }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute left-0 right-[64px] top-0"
                 >
-                  <input 
+                  <input
                     autoFocus
-                    type="text" 
-                    placeholder="Search courts, locations..." 
+                    type="text"
+                    placeholder="Search courts, locations..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="w-full h-[52px] pl-5 pr-12 rounded-[18px] outline-none font-medium text-[16px] transition-all shadow-sm focus:shadow-[0_0_20px_rgba(0,212,255,0.15)] focus:border-cyan-500/50"
-                    style={{ 
-                      background: "var(--surface-raised)", 
-                      color: "var(--ink-primary)", 
-                      border: "1px solid var(--border-subtle)" 
+                    style={{
+                      background: "var(--surface-raised)",
+                      color: "var(--ink-primary)",
+                      border: "1px solid var(--border-subtle)"
                     }}
                   />
                   <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -157,10 +159,10 @@ export default function PlayTab() {
             <div className="absolute -right-2 top-0 flex items-start gap-3">
               <AnimatePresence>
                 {!isSearching && (
-                  <motion.button 
+                  <motion.button
                     onClick={handleGetLocation}
                     disabled={isLocating}
-                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} 
+                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.95 }}
@@ -179,10 +181,10 @@ export default function PlayTab() {
                       )}
                     </AnimatePresence>
                     <AnimatePresence mode="popLayout">
-                      <motion.span 
+                      <motion.span
                         key={isLocating ? "locating" : locationName}
-                        initial={{ opacity: 0, y: 10 }} 
-                        animate={{ opacity: isLocating ? 0.6 : 1, y: 0 }} 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: isLocating ? 0.6 : 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                       >
@@ -193,15 +195,15 @@ export default function PlayTab() {
                 )}
               </AnimatePresence>
               <div className="flex flex-col items-center gap-1 z-10">
-                <motion.button 
+                <motion.button
                   initial={{ opacity: 0, y: -10 }}
-animate={{ opacity: 1, y: 0 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   onClick={() => {
                     setIsSearching(!isSearching);
                     if (isSearching) setSearch("");
                   }}
-                  className="w-[52px] h-[52px] flex items-center justify-center rounded-[18px] hover:bg-surface-raised transition-colors group relative" 
+                  className="w-[52px] h-[52px] flex items-center justify-center rounded-[18px] hover:bg-surface-raised transition-colors group relative"
                   aria-label="Search"
                 >
                   <AnimatePresence mode="popLayout">
@@ -216,7 +218,7 @@ animate={{ opacity: 1, y: 0 }}
                     )}
                   </AnimatePresence>
                 </motion.button>
-                
+
                 <AnimatePresence>
                   {!isSearching && (
                     <motion.button
@@ -268,8 +270,8 @@ animate={{ opacity: 1, y: 0 }}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
               {filtered.map((f, i) => (
                 <motion.div key={f.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
-                  <FacilityCard 
-                    f={{ ...f, favorited: favoritedFacilities.has(f.id) }} 
+                  <FacilityCard
+                    f={{ ...f, favorited: favoritedFacilities.has(f.id) }}
                     onFav={() => {
                       setFavoritedFacilities(prev => {
                         const next = new Set(prev);
@@ -281,8 +283,8 @@ animate={{ opacity: 1, y: 0 }}
                         }
                         return next;
                       });
-                    }} 
-                    onViewCourts={() => setSelectedFacility(f)} 
+                    }}
+                    onViewCourts={() => setSelectedFacility(f)}
                   />
                 </motion.div>
               ))}
@@ -290,12 +292,12 @@ animate={{ opacity: 1, y: 0 }}
           )}
         </motion.div>
       )}
-      
+
       {/* Filter Bottom Sheet */}
       <AnimatePresence>
         {isFilterOpen && (
           <div className="fixed inset-0 z-50 flex flex-col justify-end">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsFilterOpen(false)}
               className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
@@ -307,11 +309,11 @@ animate={{ opacity: 1, y: 0 }}
             >
               <div className="p-6">
                 <div className="w-12 h-1.5 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 mx-auto mb-6" />
-                
+
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-[22px] font-black text-foreground tracking-tight" >Filter & Sort</h2>
                   {(filterType !== "All" || filterSort !== "Recommended") && (
-                    <motion.button 
+                    <motion.button
                       onClick={() => { setFilterType("All"); setFilterSort("Recommended"); }}
                       whileTap={{ scale: 0.9 }}
                       className="text-sm font-bold text-accent-primary transition-colors hover:text-foreground"
@@ -320,7 +322,7 @@ animate={{ opacity: 1, y: 0 }}
                     </motion.button>
                   )}
                 </div>
-                
+
                 {/* Court Type */}
                 <div className="mb-8">
                   <h3 className="text-[14px] font-bold text-foreground/60 mb-3 uppercase tracking-wider">Court Type</h3>
@@ -334,9 +336,9 @@ animate={{ opacity: 1, y: 0 }}
                         className={`relative flex-1 py-3 rounded-[14px] text-[15px] font-bold transition-colors ${filterType === type ? "text-foreground" : "text-foreground hover:text-foreground/80"}`}
                       >
                         {filterType === type && (
-                          <motion.div 
-                            layoutId="courtTypePill" 
-                            className="absolute inset-0 bg-accent-primary rounded-[14px] shadow-[0_4px_12px_rgba(0,217,139,0.3)]" 
+                          <motion.div
+                            layoutId="courtTypePill"
+                            className="absolute inset-0 bg-accent-primary rounded-[14px] shadow-[0_4px_12px_rgba(0,217,139,0.3)]"
                             style={{ zIndex: 0 }}
                           />
                         )}
@@ -359,9 +361,9 @@ animate={{ opacity: 1, y: 0 }}
                         className={`relative flex items-center justify-between p-4 rounded-[16px] text-[15px] font-bold transition-all border border-solid ${filterSort === sort ? "border-transparent text-accent-primary" : "bg-transparent border-border text-foreground hover:bg-surface-interactive/80"}`}
                       >
                         {filterSort === sort && (
-                          <motion.div 
-                            layoutId="sortPill" 
-                            className="absolute inset-0 bg-accent-primary/10 border border-accent-primary rounded-[16px]" 
+                          <motion.div
+                            layoutId="sortPill"
+                            className="absolute inset-0 bg-accent-primary/10 border border-accent-primary rounded-[16px]"
                             style={{ zIndex: 0 }}
                           />
                         )}

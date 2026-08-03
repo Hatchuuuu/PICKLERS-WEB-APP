@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
-import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Trophy } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Maximize, Trophy, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { mapToBracketTree } from '@/lib/tournament/bracket-mapper';
@@ -17,13 +17,15 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useApp } from '@/contexts/AppContext';
 import { useTournamentStore } from '@/store/useTournamentStore';
 import { TournamentAPI } from '@/lib/tournament/tournament-api';
+import { ManageTeamsModal } from '@/components/owner/ManageTeamsModal';
+import { seedDemoBracketData } from '@/lib/tournament/demo-bracket-seeder';
 
 type Format = 'SINGLE' | 'DOUBLE' | 'ROUND_ROBIN';
 
 export default function OwnerBracket() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  
+
   const getTournament = useTournamentStore(state => state.tournaments.find(t => t.id === id));
   const storeTeams = useTournamentStore(state => state.teams);
   const storeMatches = useTournamentStore(state => state.matches);
@@ -33,6 +35,7 @@ export default function OwnerBracket() {
   const [teamCount, setTeamCount] = useState<number>(8);
   const [tournamentName, setTournamentName] = useState<string>("Loading...");
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isManageTeamsOpen, setIsManageTeamsOpen] = useState(false);
 
   // Read directly from store
   const teams = useMemo(() => storeTeams.filter(t => t.tournament_id === id), [storeTeams, id]);
@@ -48,13 +51,13 @@ export default function OwnerBracket() {
     if (id && getTournament) {
       setTournamentName(getTournament.name);
       setTeamCount(getTournament.teams || getTournament.maxTeams || 8);
-      
-      const formatStr = getTournament.format.toLowerCase();
+
+      const formatStr = (getTournament?.format || "").toLowerCase();
       if (formatStr.includes('round_robin')) setFormat('ROUND_ROBIN');
       else if (formatStr.includes('double')) setFormat('DOUBLE');
       else setFormat('SINGLE');
 
-      setTeamType(getTournament.play_type === 'singles' ? 'SINGLES' : 'DOUBLES');
+      setTeamType(getTournament?.play_type === 'singles' ? 'SINGLES' : 'DOUBLES');
     }
   }, [id, getTournament]);
 
@@ -63,11 +66,11 @@ export default function OwnerBracket() {
     if (id) {
       const t = useTournamentStore.getState().teams.filter(team => team.tournament_id === id);
       const m = useTournamentStore.getState().matches.filter(match => match.tournament_id === id);
-      
+
       if (t.length === 0 || m.length === 0) {
-        // Fallback: If page was refreshed, store is empty. Fetch from DB.
+        // Fallback: If page was refreshed or demo tournament, seed/fetch data
         TournamentAPI.getTournamentData(id).then(data => {
-            if (isMounted && data) {
+            if (isMounted && data && (data.teams.length > 0 || data.matches.length > 0)) {
                 useTournamentStore.setState(state => ({
                     teams: [...state.teams.filter(st => st.tournament_id !== id), ...(data.teams || [])],
                     matches: [...state.matches.filter(sm => sm.tournament_id !== id), ...(data.matches || [])]
@@ -75,14 +78,52 @@ export default function OwnerBracket() {
                 if (!useTournamentStore.getState().tournaments.find(t => t.id === id) && data.tournament) {
                     setTournamentName(data.tournament.name);
                     setTeamCount(data.tournament.teams_count || data.tournament.maxTeams || 8);
-                    const formatStr = data.tournament.format.toLowerCase();
+                    const formatStr = (data.tournament.format || "").toLowerCase();
                     if (formatStr.includes('round_robin')) setFormat('ROUND_ROBIN');
                     else if (formatStr.includes('double')) setFormat('DOUBLE');
                     else setFormat('SINGLE');
                     setTeamType(data.tournament.play_type === 'singles' ? 'SINGLES' : 'DOUBLES');
                 }
+            } else if (isMounted) {
+                // Seed mock bracket for demo tournaments (tourney_1, tourney_2, tourney_3 etc.)
+                const tourneyObj = useTournamentStore.getState().tournaments.find(t => t.id === id);
+                const formatVal = tourneyObj?.format || (id === 'tourney_2' ? 'double' : 'single');
+                const countVal = tourneyObj?.teams || tourneyObj?.maxTeams || 8;
+                const mock = seedDemoBracketData(id, formatVal, countVal);
+
+                useTournamentStore.setState(state => ({
+                    teams: [...state.teams.filter(st => st.tournament_id !== id), ...mock.teams],
+                    matches: [...state.matches.filter(sm => sm.tournament_id !== id), ...mock.matches]
+                }));
+
+                if (tourneyObj) {
+                    setTournamentName(tourneyObj.name);
+                    setTeamCount(countVal);
+                    const formatStr = formatVal.toLowerCase();
+                    if (formatStr.includes('round_robin')) setFormat('ROUND_ROBIN');
+                    else if (formatStr.includes('double')) setFormat('DOUBLE');
+                    else setFormat('SINGLE');
+                }
             }
-        }).catch(err => console.error("Failed to load tournament data:", err));
+        }).catch(err => {
+            console.error("Failed to load tournament data, seeding mock bracket:", err);
+            if (isMounted) {
+                const tourneyObj = useTournamentStore.getState().tournaments.find(t => t.id === id);
+                const formatVal = tourneyObj?.format || (id === 'tourney_2' ? 'double' : 'single');
+                const countVal = tourneyObj?.teams || tourneyObj?.maxTeams || 8;
+                const mock = seedDemoBracketData(id, formatVal, countVal);
+
+                useTournamentStore.setState(state => ({
+                    teams: [...state.teams.filter(st => st.tournament_id !== id), ...mock.teams],
+                    matches: [...state.matches.filter(sm => sm.tournament_id !== id), ...mock.matches]
+                }));
+
+                if (tourneyObj) {
+                    setTournamentName(tourneyObj.name);
+                    setTeamCount(countVal);
+                }
+            }
+        });
       }
     }
     return () => { isMounted = false; };
@@ -102,7 +143,7 @@ export default function OwnerBracket() {
     if (format === 'SINGLE') {
       const finalMatch = matches.find(m => m.bracket_type === 'FINAL');
       const bronzeMatch = matches.find(m => m.bracket_type === '3RD_PLACE');
-      
+
       if (finalMatch?.status === 'COMPLETED' && finalMatch.winner_id) {
         goldId = finalMatch.winner_id;
         silverId = finalMatch.winner_id === finalMatch.team1_id ? finalMatch.team2_id : finalMatch.team1_id;
@@ -125,7 +166,7 @@ export default function OwnerBracket() {
         bronzeId = losersFinal.winner_id === losersFinal.team1_id ? losersFinal.team2_id : losersFinal.team1_id;
       }
     }
-    
+
     const getTeamName = (id: string | null) => teams.find(t => t.id === id)?.name || null;
     return {
       gold: getTeamName(goldId),
@@ -149,7 +190,7 @@ export default function OwnerBracket() {
     if (champion && !hasCelebrated) {
       setShowCelebration(true);
       setHasCelebrated(true);
-      
+
       // Award medals to global player profiles
       if (tournamentMedalists.gold && tournamentMedalists.silver && tournamentMedalists.bronze) {
         awardMedals(tournamentMedalists.gold, tournamentMedalists.silver, tournamentMedalists.bronze);
@@ -172,34 +213,45 @@ export default function OwnerBracket() {
       <div className="flex flex-col h-[100dvh] sm:h-screen overflow-hidden bg-background text-foreground font-sans">
 
         {/* Header */}
-        <header className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-border shrink-0">
+        <header className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 border-b border-white/10 shrink-0 bg-[#0B1524]/80 backdrop-blur-md z-30">
           {/* Left: Back + Title */}
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => router.push('/app/owner/tournaments')}
-              className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-white transition-colors shrink-0"
+              className="flex items-center gap-1.5 text-xs font-bold text-foreground/60 hover:text-foreground transition-colors shrink-0 px-2.5 py-1.5 rounded-lg hover:bg-white/5"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
-            <div className="h-4 w-px bg-border shrink-0" />
-            <h1 className="text-base sm:text-lg font-bold tracking-tight truncate">{tournamentName}</h1>
-            <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full shrink-0">
+            <div className="h-4 w-px bg-white/10 shrink-0" />
+            <h1 className="text-base sm:text-lg font-black tracking-tight truncate text-foreground" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
+              {tournamentName}
+            </h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black tracking-wider uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full shrink-0 shadow-[0_0_12px_rgba(0,217,139,0.15)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Active
             </span>
+            {/* Manage Teams Button */}
+            <button
+              onClick={() => setIsManageTeamsOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-foreground bg-white/5 hover:bg-white/10 border border-white/10 transition-all shrink-0 active:scale-95 shadow-sm"
+            >
+              <Users className="w-3.5 h-3.5 text-emerald-400" />
+              Manage Teams
+            </button>
           </div>
 
           {/* Right: Read-only format info */}
-          <div className="flex items-center gap-3 shrink-0 hidden sm:flex">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-interactive/50 border border-border text-xs font-semibold text-muted-foreground">
+          <div className="flex items-center gap-2.5 shrink-0 hidden sm:flex">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
               <Trophy className="w-3.5 h-3.5 text-emerald-400" />
               <span>Winners Bracket</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-interactive/50 border border-border text-xs font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-bold text-red-400">
               <Trophy className="w-3.5 h-3.5 text-red-400" />
               <span>Losers Bracket</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-interactive/50 border border-border text-xs font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-foreground/80">
               {teamCount} Teams
             </div>
           </div>
@@ -284,6 +336,14 @@ export default function OwnerBracket() {
             />
           )}
         </AnimatePresence>
+
+        {/* Manage Teams Modal */}
+        <ManageTeamsModal
+          isOpen={isManageTeamsOpen}
+          onClose={() => setIsManageTeamsOpen(false)}
+          tournamentId={id}
+        />
+
       </div>
     </ErrorBoundary>
   );

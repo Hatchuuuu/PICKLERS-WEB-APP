@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Check, Eye, EyeOff } from "lucide-react";
+import { X, Check, Eye, EyeOff, Camera, TrendingUp, Clock, Users, UserCheck, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 import { CourtCard } from "@/components/owner/CourtCard";
 import { useAppUIStore } from "@/store/useUIStore";
@@ -10,33 +10,72 @@ import { useLiveCourts, useUpdateCourt, useBookingRequests, useResolveRequest } 
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
+import { useAuth } from "@/contexts/AuthContext";
+import { DEMO_BOOKING_REQUESTS, DEMO_LIVE_COURTS } from "@/lib/demoData";
+import { CourtPassScannerModal } from "@/components/modals/CourtPassScannerModal";
+
+function Sparkline({ isPositive = true, color = "emerald" }: { isPositive?: boolean; color?: string }) {
+  const strokeColor = !isPositive
+    ? "#ef4444"
+    : color === "cyan"
+      ? "#06b6d4"
+      : color === "amber"
+        ? "#f59e0b"
+        : color === "purple"
+          ? "#c084fc"
+          : "#10b981";
+
+  const pathUp = "M 4 22 Q 20 18 35 24 T 65 10 T 96 4";
+  const pathDown = "M 4 4 Q 20 10 35 6 T 65 20 T 96 24";
+
+  return (
+    <div className="w-full h-8 mt-2 -mb-1">
+      <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path d={isPositive ? pathUp : pathDown} stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </svg>
+    </div>
+  );
+}
+
+function PesoIcon({ className }: { className?: string }) {
+  return <span className={cn("font-black text-sm sm:text-base leading-none select-none flex items-center justify-center", className)}>₱</span>;
+}
+
 export default function OwnerDashboard() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isDemo = user?.isDemo || user?.role === "demo";
+
   const { activeOwnerTab: activeTab, setActiveOwnerTab: setActiveTab, showMetrics, setShowMetrics } = useAppUIStore();
-  
-  const { data: courts = [], isLoading: courtsLoading } = useLiveCourts();
+
+  const { data: fetchedCourts = [], isLoading: courtsLoading } = useLiveCourts();
+  const courts = isDemo && fetchedCourts.length === 0 ? DEMO_LIVE_COURTS : fetchedCourts;
+
   const { mutate: updateCourt } = useUpdateCourt();
-  
-  const { data: requests = [] } = useBookingRequests();
+
+  const { data: fetchedRequests = [] } = useBookingRequests();
+  const requests = isDemo && fetchedRequests.length === 0 ? DEMO_BOOKING_REQUESTS : fetchedRequests;
+
   const { mutate: resolveRequest } = useResolveRequest();
 
-  const [requestSuccess, setRequestSuccess] = useState<{msg: string, type: "success" | "danger"} | null>(null);
+  const [requestSuccess, setRequestSuccess] = useState<{ msg: string, type: "success" | "danger" } | null>(null);
   const [declineModalId, setDeclineModalId] = useState<string | null>(null);
   const [acceptModalId, setAcceptModalId] = useState<string | null>(null);
-  const [resolvedRequests, setResolvedRequests] = useState<{id: string, player: string, court: string, total: number, action: "accepted" | "declined"}[]>([]);
+  const [resolvedRequests, setResolvedRequests] = useState<{ id: string, player: string, court: string, total: number, action: "accepted" | "declined" }[]>([]);
   const [timedUpCourts, setTimedUpCourts] = useState<number[]>([]);
-  
-  
+  const [showScannerModal, setShowScannerModal] = useState(false);
+
+
 
 
 
   function handleEndSession(id: number) {
     updateCourt({ id, status: "available", player: undefined, remaining: 0 });
     setTimedUpCourts(prev => prev.filter(cId => cId !== id));
-    
-    setRequestSuccess({ 
-      msg: "Session ended successfully", 
-      type: "success" 
+
+    setRequestSuccess({
+      msg: "Session ended successfully",
+      type: "success"
     });
     setTimeout(() => setRequestSuccess(null), 3000);
   }
@@ -49,9 +88,9 @@ export default function OwnerDashboard() {
       setResolvedRequests(prev => [{ ...req, action }, ...prev]);
     }
     resolveRequest(id);
-    setRequestSuccess({ 
-      msg: `Booking request ${action}`, 
-      type: action === "accepted" ? "success" : "danger" 
+    setRequestSuccess({
+      msg: `Booking request ${action}`,
+      type: action === "accepted" ? "success" : "danger"
     });
     setTimeout(() => setRequestSuccess(null), 3000);
   }
@@ -69,9 +108,9 @@ export default function OwnerDashboard() {
     if (aOrder !== bOrder) return aOrder - bOrder;
 
     if (a.status === "occupied" && b.status === "occupied") {
-       return (a.remaining || 0) - (b.remaining || 0);
+      return (a.remaining || 0) - (b.remaining || 0);
     }
-    
+
     return 0;
   });
 
@@ -82,30 +121,42 @@ export default function OwnerDashboard() {
     <div className="p-4 max-w-6xl mx-auto w-full relative">
 
       <div className="relative h-[68px] mb-4 -mt-[1px] flex items-center justify-between">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          >
-            <h1 className="text-[26px] min-[390px]:text-[28px] md:text-[32px] font-extrabold tracking-tight leading-none mb-1.5 whitespace-nowrap" style={{ color: "var(--ink-primary)" }}>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        >
+          <div className="flex items-center gap-2.5 mb-1.5">
+            <h1 className="text-[26px] min-[390px]:text-[28px] md:text-[32px] font-extrabold tracking-tight leading-none whitespace-nowrap" style={{ color: "var(--ink-primary)" }}>
               Facility Dashboard
             </h1>
-            <p className="text-[13px] font-medium leading-relaxed" style={{ color: "var(--ink-muted)" }}>
-              Manage your courts and track performance
-            </p>
-          </motion.div>
+            <button onClick={() => setShowMetrics(!showMetrics)}
+              className="p-1.5 rounded-full transition-colors active:scale-95 shrink-0 ml-1"
+              style={{
+                color: showMetrics ? "var(--accent-primary)" : "var(--ink-muted)",
+                background: showMetrics ? "rgba(0, 217, 139, 0.1)" : "transparent"
+              }}
+              aria-label={showMetrics ? "Hide metrics" : "Show metrics"}>
+              {showMetrics ? <Eye className="w-7 h-7 transition-colors" /> : <EyeOff className="w-7 h-7 transition-colors" />}
+            </button>
+          </div>
+          <p className="text-[13px] font-medium leading-relaxed" style={{ color: "var(--ink-muted)" }}>
+            Manage your courts and track performance
+          </p>
+        </motion.div>
 
-        {/* Removed Notification Pill per user request */}
-
-        <button onClick={() => setShowMetrics(!showMetrics)} 
-          className="p-2 -mt-6 rounded-full transition-colors active:scale-95 shrink-0 z-10 relative"
-          style={{ 
-            color: showMetrics ? "var(--accent-primary)" : "var(--ink-muted)",
-            background: showMetrics ? "rgba(0, 217, 139, 0.1)" : "transparent"
-          }}
-          aria-label={showMetrics ? "Hide metrics" : "Show metrics"}>
-          {showMetrics ? <Eye className="w-8 h-8 transition-colors" /> : <EyeOff className="w-8 h-8 transition-colors" />}
-        </button>
+        {/* Right Header Actions */}
+        <div className="flex items-center gap-2 -mt-6 shrink-0 z-10 relative">
+          {/* Camera Scanner Button */}
+          <button
+            onClick={() => setShowScannerModal(true)}
+            className="p-2.5 rounded-full transition-all active:scale-95 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 flex items-center justify-center gap-1 shadow-md"
+            title="Scan Court Pass QR"
+            aria-label="Scan Court Pass QR"
+          >
+            <Camera className="w-7 h-7" />
+          </button>
+        </div>
       </div>
 
 
@@ -116,29 +167,68 @@ export default function OwnerDashboard() {
             animate={{ height: "auto", opacity: 1, scale: 1, filter: "blur(0px)" }}
             exit={{ height: 0, opacity: 0, scale: 0.98, filter: "blur(4px)" }}
             transition={{ duration: 0.4, type: "spring", bounce: 0.15 }}
-            className="overflow-hidden"
+            className="overflow-hidden mb-6"
           >
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               {[
-                { label: "Monthly Revenue", value: "₱48,200", change: "+12%" },
-                { label: "Today's Revenue", value: "₱3,200", change: "+5%" },
-                { label: "Active Bookings", value: "12", change: "now" },
-                { label: "New Players", value: "8", change: "today" },
-                { label: "Repeaters", value: "45%", change: "+3%" },
-              ].map((m, index) => (
-                <motion.div 
-                  key={index} 
-                  initial={{ opacity: 0, y: 10 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  transition={{ delay: index * 0.05 }} 
-                  className={`rounded-[24px] p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group ${index === 4 ? 'col-span-2 lg:col-span-1' : ''}`}
-                  style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
-                >
-                  <div className="text-xs text-muted-foreground mb-1">{m.label}</div>
-                  <div className="text-xl font-bold font-mono text-foreground">{m.value}</div>
-                  <div className="text-xs mt-0.5 text-emerald-400">{m.change}</div>
-                </motion.div>
-              ))}
+                { label: "Monthly Revenue", value: "₱48,200", change: "+12%", icon: PesoIcon, color: "emerald", isPositive: true },
+                { label: "Repeaters", value: "45%", change: "-2%", icon: UserCheck, color: "emerald", isPositive: false },
+                { label: "Today's Revenue", value: "₱3,200", change: "+5%", icon: TrendingUp, color: "cyan", isPositive: true },
+                { label: "Active Bookings", value: "12", change: "Live", icon: Clock, color: "amber", isPositive: true },
+                { label: "New Players", value: "8", change: "Today", icon: Users, color: "purple", isPositive: true },
+              ].map((m, index) => {
+                const Icon = m.icon;
+                const isGoingUp = m.isPositive;
+                return (
+                  <motion.div
+                    key={m.label}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={cn(
+                      "p-4 sm:p-5 rounded-[24px] bg-[#0C172E] border border-white/15 shadow-xl hover:border-emerald-500/40 transition-all flex flex-col justify-between group relative overflow-hidden",
+                      index === 0 ? "col-span-2 lg:col-span-5" : ""
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className={cn(
+                        "w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 bg-white/[0.04]",
+                        m.color === "emerald" && "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+                        m.color === "cyan" && "text-cyan-400 border-cyan-500/30 bg-cyan-500/10",
+                        m.color === "amber" && "text-amber-400 border-amber-500/30 bg-amber-500/10",
+                        m.color === "purple" && "text-purple-400 border-purple-500/30 bg-purple-500/10"
+                      )}>
+                        <Icon className={cn(
+                          "w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]",
+                          m.color === "emerald" && "drop-shadow-[0_0_8px_rgba(16,185,129,0.9)]",
+                          m.color === "cyan" && "drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]",
+                          m.color === "amber" && "drop-shadow-[0_0_8px_rgba(245,158,11,0.9)]",
+                          m.color === "purple" && "drop-shadow-[0_0_8px_rgba(168,85,247,0.9)]"
+                        )} />
+                      </div>
+                      <span className={cn(
+                        "inline-flex items-center gap-1 text-[11px] font-extrabold",
+                        isGoingUp ? "text-emerald-400" : "text-red-400"
+                      )}>
+                        {isGoingUp ? <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" /> : <ArrowDownRight className="w-3.5 h-3.5 stroke-[2.5]" />}
+                        <span>{m.change}</span>
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                        {m.label}
+                      </div>
+                      <div className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
+                        {m.value}
+                      </div>
+
+                      {/* Integrated Sparkline Curve */}
+                      <Sparkline isPositive={isGoingUp} color={m.color} />
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -150,10 +240,9 @@ export default function OwnerDashboard() {
         <motion.button
           onClick={() => setActiveTab("courts")}
           className={cn(
-            "flex-1 relative py-2.5 text-[14px] transition-colors z-10 rounded-full",
+            "flex-1 relative py-2.5 text-[14px] transition-colors z-10 rounded-full border border-transparent",
             activeTab === "courts" ? "text-[#1a1a1a] font-bold" : "text-foreground/50 hover:text-foreground/80 font-medium"
           )}
-          style={{ border: "1px solid transparent" }}
         >
           {isCourtsUrgent && (
             <motion.div className="absolute inset-0 rounded-full border border-[#ff4b4b] shadow-[0_0_12px_rgba(255,75,75,0.6)] -z-10"
@@ -175,7 +264,7 @@ export default function OwnerDashboard() {
             <span>Live Courts</span>
             <AnimatePresence>
               {timedUpCourts.length > 0 && (
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0, opacity: 0 }}
@@ -216,7 +305,7 @@ export default function OwnerDashboard() {
             <span>Requests</span>
             <AnimatePresence>
               {requests.length > 0 && (
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0, opacity: 0 }}
@@ -244,7 +333,7 @@ export default function OwnerDashboard() {
               <h2 className="text-[14px] font-semibold text-foreground/80">Live Courts</h2>
               <AnimatePresence>
                 {timedUpCourts.length > 0 && (
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
@@ -282,17 +371,17 @@ export default function OwnerDashboard() {
               ) : (
                 <>
                   {sortedCourts.map((c) => (
-                    <motion.div 
-                      key={c.id} 
+                    <motion.div
+                      key={c.id}
                       layout
                       layoutId={`court-card-${c.id}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                     >
-                      <CourtCard 
-                        court={c} 
-                        onEnd={() => handleEndSession(c.id)} 
+                      <CourtCard
+                        court={c}
+                        onEnd={() => handleEndSession(c.id)}
                         onAlertChange={(isAlert) => {
                           setTimedUpCourts(prev => {
                             if (isAlert && !prev.includes(c.id)) return [...prev, c.id];
@@ -320,7 +409,7 @@ export default function OwnerDashboard() {
               <h2 className="text-[14px] font-semibold text-foreground/80">Requests</h2>
               <AnimatePresence>
                 {requests.length > 0 && (
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
@@ -337,7 +426,7 @@ export default function OwnerDashboard() {
             {requests.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm flex flex-col items-center gap-4">
                 <p>No pending requests</p>
-                <motion.button 
+                <motion.button
                   onClick={() => queryClient.invalidateQueries({ queryKey: ['bookingRequests'] })}
                   className="px-4 py-2 rounded-full text-[13px] font-bold transition-all bg-surface-raised border border-border text-foreground"
                   whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
@@ -383,7 +472,7 @@ export default function OwnerDashboard() {
                       <div className="text-[14px] font-bold text-foreground mb-0.5">{r.player}</div>
                       <div className="text-[12px] text-muted-foreground">{r.court}</div>
                     </div>
-                    <div className={cn("text-[11px] px-2.5 py-1 rounded-full font-bold", 
+                    <div className={cn("text-[11px] px-2.5 py-1 rounded-full font-bold",
                       r.action === "accepted" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400")}>
                       {r.action.toUpperCase()}
                     </div>
@@ -406,25 +495,25 @@ export default function OwnerDashboard() {
               <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#0BCE83]/20 via-transparent to-transparent opacity-50"></div>
                 <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
-                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#0BCE83]/20 blur-[50px] rounded-full pointer-events-none"></div>
-                   <div className="relative mb-5 mt-2">
-                     <div className="absolute inset-0 bg-[#0BCE83] blur-xl opacity-30 rounded-full animate-pulse"></div>
-                     <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#0BCE83]/20 to-[#0BCE83]/5 flex items-center justify-center border border-[#0BCE83]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
-                       <Check className="w-6 h-6 text-[#0BCE83]" strokeWidth={3} />
-                     </div>
-                   </div>
-                   <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Accept Request?</h3>
-                   <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
-                     This will lock in the court schedule and notify the player that their booking is confirmed.
-                   </p>
-                   <div className="flex gap-3 w-full mt-7">
-                     <button onClick={() => setAcceptModalId(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
-                       Cancel
-                     </button>
-                     <button onClick={() => { handleRequestAction(acceptModalId, "accepted"); setAcceptModalId(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-[#060D1F] bg-gradient-to-b from-[#10e294] to-[#0BCE83] shadow-[0_8px_20px_rgba(11,206,131,0.3),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_10px_25px_rgba(11,206,131,0.4)] transition-all active:scale-[0.98]">
-                       Accept
-                     </button>
-                   </div>
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#0BCE83]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                  <div className="relative mb-5 mt-2">
+                    <div className="absolute inset-0 bg-[#0BCE83] blur-xl opacity-30 rounded-full animate-pulse"></div>
+                    <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#0BCE83]/20 to-[#0BCE83]/5 flex items-center justify-center border border-[#0BCE83]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+                      <Check className="w-6 h-6 text-[#0BCE83]" strokeWidth={3} />
+                    </div>
+                  </div>
+                  <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Accept Request?</h3>
+                  <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
+                    This will lock in the court schedule and notify the player that their booking is confirmed.
+                  </p>
+                  <div className="flex gap-3 w-full mt-7">
+                    <button onClick={() => setAcceptModalId(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
+                      Cancel
+                    </button>
+                    <button onClick={() => { handleRequestAction(acceptModalId, "accepted"); setAcceptModalId(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-[#060D1F] bg-gradient-to-b from-[#10e294] to-[#0BCE83] shadow-[0_8px_20px_rgba(11,206,131,0.3),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_10px_25px_rgba(11,206,131,0.4)] transition-all active:scale-[0.98]">
+                      Accept
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -443,25 +532,25 @@ export default function OwnerDashboard() {
               <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FF453A]/20 via-transparent to-transparent opacity-50"></div>
                 <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
-                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
-                   <div className="relative mb-5 mt-2">
-                     <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
-                     <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
-                       <X className="w-6 h-6 text-[#FF453A]" strokeWidth={3} />
-                     </div>
-                   </div>
-                   <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Decline Request?</h3>
-                   <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
-                     This will reject the reservation request and notify the player. This action cannot be undone.
-                   </p>
-                   <div className="flex gap-3 w-full mt-7">
-                     <button onClick={() => setDeclineModalId(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
-                       Cancel
-                     </button>
-                     <button onClick={() => { handleRequestAction(declineModalId, "declined"); setDeclineModalId(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
-                       Decline
-                     </button>
-                   </div>
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
+                  <div className="relative mb-5 mt-2">
+                    <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
+                    <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+                      <X className="w-6 h-6 text-[#FF453A]" strokeWidth={3} />
+                    </div>
+                  </div>
+                  <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Decline Request?</h3>
+                  <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
+                    This will reject the reservation request and notify the player. This action cannot be undone.
+                  </p>
+                  <div className="flex gap-3 w-full mt-7">
+                    <button onClick={() => setDeclineModalId(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
+                      Cancel
+                    </button>
+                    <button onClick={() => { handleRequestAction(declineModalId, "declined"); setDeclineModalId(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
+                      Decline
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -477,7 +566,7 @@ export default function OwnerDashboard() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="fixed bottom-[110px] left-1/2 -translate-x-1/2 z-[200] pointer-events-auto"
+            className="fixed bottom-[calc(110px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-[200] pointer-events-auto"
           >
             <div className={cn(
               "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-2xl relative",
@@ -493,8 +582,8 @@ export default function OwnerDashboard() {
               <span className="text-[13px] font-semibold tracking-wide whitespace-nowrap pr-1">
                 {requestSuccess.msg}
               </span>
-              
-              <button 
+
+              <button
                 onClick={() => setRequestSuccess(null)}
                 className="w-5 h-5 rounded-md flex items-center justify-center opacity-60 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 transition-all ml-1.5"
               >
@@ -504,6 +593,12 @@ export default function OwnerDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* QR Court Pass Scanner Modal */}
+      <CourtPassScannerModal
+        isOpen={showScannerModal}
+        onClose={() => setShowScannerModal(false)}
+      />
 
     </div>
   );

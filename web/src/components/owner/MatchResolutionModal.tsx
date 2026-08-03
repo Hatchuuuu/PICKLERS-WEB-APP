@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTournamentStore } from '@/store/useTournamentStore';
 import { X, RotateCcw, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -15,6 +16,11 @@ export function MatchResolutionModal({
     isOpen: boolean; 
     onClose: () => void; 
 }) {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const match = useTournamentStore(state => state.getMatch(matchId || ''));
     const tournaments = useTournamentStore(state => state.tournaments);
     const tournament = tournaments.find(t => t.id === match?.tournament_id);
@@ -40,7 +46,7 @@ export function MatchResolutionModal({
         }
     }, [isOpen, numGames]);
 
-    if (!isOpen || !match) return null;
+    if (!isOpen || !match || !mounted) return null;
 
     const team1 = getTeam(match.team1_id);
     const team2 = getTeam(match.team2_id);
@@ -104,14 +110,22 @@ export function MatchResolutionModal({
 
     const isLocked = !team1 || !team2;
 
-    return (
+    return createPortal(
         <AnimatePresence>
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    onClick={handleClose}
+                />
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="bg-background rounded-xl shadow-2xl border border-border w-full max-w-lg overflow-hidden flex flex-col"
+                    className="relative bg-background rounded-xl shadow-2xl border border-border w-full max-w-lg overflow-hidden flex flex-col z-10"
                 >
                     <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-muted/30">
                         <h2 className="text-lg font-bold tracking-tight">Match Scorecard</h2>
@@ -198,6 +212,7 @@ export function MatchResolutionModal({
                     </div>
                 </motion.div>
             </div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

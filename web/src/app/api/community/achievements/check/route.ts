@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    // Verify user owns the tournament or is an admin (skip for now, assume valid)
+    // Verify user owns the tournament
     const { data: tournament, error: tourneyError } = await supabase
       .from("tournaments")
       .select("name, owner_id")
@@ -49,8 +49,7 @@ export async function POST(request: Request) {
     }
 
     if (tournament.owner_id !== user.id) {
-      // In a real app we might enforce this, but let's allow it for testing if needed
-      // For now, let's just proceed or maybe restrict to owner
+      return NextResponse.json({ error: 'Unauthorized: only the tournament owner can award medals' }, { status: 403 });
     }
 
     const awarded = [];

@@ -6,6 +6,23 @@ import { supabase } from "@/lib/supabase";
 import { PicklersLogo } from "@/components/ui/PicklersLogo";
 import { motion } from "motion/react";
 
+function sanitizeRedirect(targetUrl: string | null): string {
+  if (!targetUrl) return "/app";
+  try {
+    if (targetUrl.startsWith("//") || targetUrl.startsWith("/\\") || targetUrl.includes("\\")) {
+      return "/app";
+    }
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    const parsed = new URL(targetUrl, origin);
+    if (parsed.origin === origin && parsed.pathname.startsWith("/")) {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
+  } catch (e) {
+    console.warn("Invalid redirect URL target:", targetUrl, e);
+  }
+  return "/app";
+}
+
 function AuthCallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,12 +53,7 @@ function AuthCallbackInner() {
 
       if (session) {
         const intent = searchParams.get("intent");
-        let next = searchParams.get("next") || "/app";
-        
-        // Prevent open redirects
-        if (!next.startsWith("/") || next.startsWith("//")) {
-          next = "/app";
-        }
+        const next = sanitizeRedirect(searchParams.get("next"));
 
         if (intent === "signup") {
           const role = next.includes("/owner") ? "owner" : "player";
@@ -55,8 +67,7 @@ function AuthCallbackInner() {
           if (event === 'SIGNED_IN' && newSession) {
             subscription.unsubscribe();
             const intent = searchParams.get("intent");
-            let next = searchParams.get("next") || "/app";
-            if (!next.startsWith("/") || next.startsWith("//")) next = "/app";
+            const next = sanitizeRedirect(searchParams.get("next"));
             
             if (intent === "signup") {
               const role = next.includes("/owner") ? "owner" : "player";

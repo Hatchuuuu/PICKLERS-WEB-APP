@@ -66,11 +66,24 @@ export async function POST(request: NextRequest) {
 
     // 3. Call Paymongo API securely from the Server
     // Convert amount to centavos (e.g., ₱500.00 -> 50000)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!siteUrl) {
+      console.error("NEXT_PUBLIC_SITE_URL is missing.");
+      return NextResponse.json({ error: "Server misconfigured." }, { status: 500 });
+    }
+
     const amountInCentavos = Math.round(amount * 100);
-    const secretKey = process.env.PAYMONGO_SECRET_KEY_TEST;
+    const secretKey =
+      process.env.NODE_ENV === "production"
+        ? process.env.PAYMONGO_LIVE_SECRET_KEY
+        : process.env.PAYMONGO_TEST_SECRET_KEY;
 
     if (!secretKey) {
-      console.error("Missing PAYMONGO_SECRET_KEY_TEST");
+      const expectedVar =
+        process.env.NODE_ENV === "production"
+          ? "PAYMONGO_LIVE_SECRET_KEY"
+          : "PAYMONGO_TEST_SECRET_KEY";
+      console.error(`Missing ${expectedVar}`);
       return NextResponse.json({ error: "Payment gateway misconfigured." }, { status: 500 });
     }
 
@@ -101,8 +114,8 @@ export async function POST(request: NextRequest) {
             metadata: {
               user_id: userId
             },
-            success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/app/wallet?payment=success`,
-            cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/app/wallet?payment=cancelled`
+            success_url: `${siteUrl}/app/wallet?payment=success`,
+            cancel_url: `${siteUrl}/app/wallet?payment=cancelled`
           }
         }
       })

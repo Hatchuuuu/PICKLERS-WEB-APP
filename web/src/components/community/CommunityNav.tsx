@@ -26,21 +26,21 @@ export default function CommunityNav({ active, onChange, unreadCount }: {
             key={t.id}
             onClick={() => onChange(t.id)}
             whileTap={{ scale: 0.97 }}
-            className="relative flex items-center gap-3 px-3 py-2.5 md:py-3 rounded-2xl transition-all shrink-0"
-            style={{
-              background: isActive ? "var(--surface-raised)" : "transparent",
-              color: isActive ? "var(--ink-primary)" : "var(--ink-secondary)",
-              border: isActive ? "1px solid var(--border-subtle)" : "1px solid transparent",
-              boxShadow: isActive ? "0 8px 30px rgba(0,0,0,0.06)" : "none"
-            }}
+            className={`relative flex items-center gap-3 px-3.5 py-3 rounded-2xl transition-all duration-300 shrink-0 ${
+              isActive 
+                ? "bg-gradient-to-r from-emerald-500/15 via-emerald-400/20 to-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-[0_8px_30px_rgba(0,217,139,0.15)]" 
+                : "bg-surface-raised/50 hover:bg-surface-raised border border-border-subtle text-ink-secondary"
+            }`}
           >
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-colors"
-                 style={{ background: isActive ? "var(--accent-primary-muted)" : "var(--surface-interactive)" }}>
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+              style={{ background: isActive ? "rgba(0,217,139,0.2)" : "var(--surface-interactive)" }}
+            >
               <Icon className="w-5 h-5" style={{ color: isActive ? "var(--accent-primary)" : "var(--ink-muted)" }} />
             </div>
-            <span className="font-extrabold text-[15px]">{t.label}</span>
+            <span className="font-extrabold text-[15px] tracking-tight" style={{ fontFamily: "var(--font-outfit), sans-serif" }}>{t.label}</span>
             {t.id === "messages" && unreadCount > 0 && (
-              <span className="ml-auto w-5 h-5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center shadow-[0_4px_12px_rgba(239,68,68,0.3)]">
+              <span className="ml-auto w-5 h-5 rounded-full bg-emerald-500 text-black text-[11px] font-black flex items-center justify-center shadow-[0_0_12px_rgba(0,217,139,0.5)]">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}

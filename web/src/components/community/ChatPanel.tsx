@@ -30,28 +30,22 @@ function getDateLabel(dateStr: string): string {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
 }
 
-// Typing indicator component
 function TypingIndicator() {
   return (
     <div className="flex items-center gap-1 px-4 py-2">
-      <div className="flex gap-1 px-3 py-2 rounded-2xl" style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
+      <div className="flex gap-1 px-3 py-2 rounded-2xl bg-[#132238] border border-white/5">
         {[0, 1, 2].map(i => (
           <motion.div
             key={i}
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
-            className="w-2 h-2 rounded-full"
-            style={{ background: "var(--ink-muted)" }}
+            className="w-2 h-2 rounded-full bg-slate-400"
           />
         ))}
       </div>
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CHAT PANEL
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function ChatPanel({ partner, onBack, onOpenProfile }: {
   partner: { id: string; name: string; online: boolean; avatar_url?: string | null };
@@ -72,7 +66,6 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
 
   const myId = user?.id ?? "";
 
-  // ── Fetch Messages (paginated) ──
   const fetchMessages = useCallback(async (before?: string) => {
     const url = before
       ? `/api/community/messages?with=${partner.id}&before=${encodeURIComponent(before)}&limit=50`
@@ -94,7 +87,6 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
     })();
   }, [fetchMessages]);
 
-  // ── Load older messages on scroll ──
   async function loadOlder() {
     if (loadingOlder || !hasOlder || messages.length === 0) return;
     setLoadingOlder(true);
@@ -113,7 +105,6 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
     }
   }
 
-  // ── Supabase Realtime: New messages ──
   useEffect(() => {
     if (!myId) return;
     const channel = supabase
@@ -128,7 +119,6 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
           setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
         }
       )
-      // Listen for read status updates on messages I sent
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "direct_messages", filter: `sender_id=eq.${myId}` },
@@ -143,33 +133,26 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
     return () => { supabase.removeChannel(channel); };
   }, [myId, partner.id]);
 
-  // ── Supabase Broadcast: Typing indicators ──
   useEffect(() => {
     if (!myId) return;
     const channelName = [myId, partner.id].sort().join("-");
-    const channel = supabase
-      .channel(`typing-${channelName}`)
-      .on("broadcast", { event: "typing" }, (payload) => {
-        if (payload.payload?.userId === partner.id) {
-          setIsPartnerTyping(true);
-          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = setTimeout(() => setIsPartnerTyping(false), 3000);
-        }
-      })
-      .subscribe();
+    const channel = supabase.channel(`typing-${channelName}`);
+    channel.on("broadcast", { event: "typing" }, (payload) => {
+      if (payload.payload?.userId === partner.id) {
+        setIsPartnerTyping(true);
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setIsPartnerTyping(false), 3000);
+      }
+    }).subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [myId, partner.id]);
 
-  // Broadcast that I'm typing (debounced)
   function broadcastTyping() {
+    if (!myId) return;
     const now = Date.now();
-    if (now - lastTypingBroadcast.current < 500) return;
+    if (now - lastTypingBroadcast.current < 2000) return;
     lastTypingBroadcast.current = now;
-
     const channelName = [myId, partner.id].sort().join("-");
     supabase.channel(`typing-${channelName}`).send({
       type: "broadcast",
@@ -178,81 +161,102 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
     });
   }
 
-  // ── Send Message ──
   async function sendMessage() {
-    if (!draft.trim() || sending) return;
-    const content = draft.trim();
-    setDraft("");
+    const text = draft.trim();
+    if (!text || sending) return;
     setSending(true);
+    setDraft("");
 
     const optimistic: DirectMessage = {
-      id: "opt-" + Date.now(),
+      id: `temp-${Date.now()}`,
       sender_id: myId,
       receiver_id: partner.id,
-      content,
+      content: text,
       read: false,
       created_at: new Date().toISOString(),
     };
     setMessages(prev => [...prev, optimistic]);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
 
-    const res = await fetch("/api/community/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receiver_id: partner.id, content }),
-    });
-    if (res.ok) {
-      const real = await res.json();
-      setMessages(prev => prev.map(m => m.id === optimistic.id ? real : m));
-    } else {
-      setMessages(prev => prev.filter(m => m.id !== optimistic.id));
+    try {
+      const res = await fetch("/api/community/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiver_id: partner.id, content: text }),
+      });
+      if (res.ok) {
+        const saved: DirectMessage = await res.json();
+        setMessages(prev => prev.map(m => m.id === optimistic.id ? saved : m));
+      }
+    } catch {
+      // optimistic message remains
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   }
 
-  // ── Render ──
-  // Group messages by date for date separators
   let lastDate = "";
 
   return (
-    <div className="flex flex-col h-full w-full bg-transparent z-20">
-      {/* Header */}
-      <div className="px-4 pt-6 pb-3 md:pt-4 shrink-0 flex items-center gap-3 sticky top-0 z-10 bg-surface-base/70 border-b border-border backdrop-blur-2xl">
-        <button onClick={onBack}
-          className="w-8 h-8 rounded-full flex items-center justify-center active:scale-95 transition-all bg-surface-interactive border border-border-subtle">
-          <ChevronLeft className="w-5 h-5 pr-0.5 text-accent-primary" />
-        </button>
-        <button onClick={() => onOpenProfile?.(partner.id)} className="flex items-center gap-3 text-left transition-transform hover:scale-[1.02] active:scale-95">
-          <Avatar name={partner.name} size={36} online={partner.online} avatarUrl={partner.avatar_url} />
-          <div>
-            <div className="text-sm font-bold text-foreground">{partner.name}</div>
-            <div className="text-[11px] font-medium" style={{ color: partner.online ? "var(--accent-primary)" : "var(--ink-muted)" }}>
-              {isPartnerTyping ? "typing..." : partner.online ? "Online" : "Offline"}
+    <div className="w-full flex-1 flex flex-col h-full bg-[#070F1E]">
+      {/* Header — Dark Navy Header matching Reference */}
+      <div className="px-4 py-3.5 flex items-center justify-between shrink-0 bg-[#0B1528] border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition-all bg-[#132238] border border-white/10 shrink-0 cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5 text-emerald-400" />
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => onOpenProfile?.(partner.id)}
+            className="flex items-center gap-3 text-left group cursor-pointer"
+          >
+            <div className="relative">
+              <Avatar name={partner.name} size={40} avatarUrl={partner.avatar_url} />
+              {partner.online && (
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#00D98B] border-2 border-[#0B1528]" />
+              )}
             </div>
-          </div>
-        </button>
+            <div>
+              <p className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors leading-tight">
+                {partner.name}
+              </p>
+              <p className="text-xs font-semibold text-[#00D98B]">
+                {partner.online ? "Online" : "Offline"}
+              </p>
+            </div>
+          </button>
+        </div>
+
+        {/* Right Initial Badge */}
+        <div className="w-8 h-8 rounded-full bg-[#111C2E] border border-white/10 flex items-center justify-center font-bold text-xs text-white shadow-inner">
+          N
+        </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages Thread */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1"
+        className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 hide-scrollbar bg-[#070F1E]"
       >
-        {/* Load older spinner */}
         {loadingOlder && (
-          <div className="flex justify-center py-3">
-            <div className="w-5 h-5 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
+          <div className="flex justify-center py-2">
+            <div className="w-5 h-5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
           </div>
         )}
 
         {messages.length === 0 && (
           <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-surface-raised border border-border-subtle mb-4">
-              <MessageCircle className="w-7 h-7 text-ink-muted" />
+            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-[#132238] border border-white/10 mb-4">
+              <MessageCircle className="w-7 h-7 text-slate-400" />
             </div>
-            <p className="text-sm font-semibold text-foreground mb-1">Say hi to {partner.name.split(" ")[0]}</p>
-            <p className="text-xs text-ink-muted">Conversations are saved automatically once you send a message.</p>
+            <p className="text-sm font-semibold text-white mb-1">Say hi to {partner.name.split(" ")[0]}</p>
+            <p className="text-xs text-slate-400">Conversations are saved automatically once you send a message.</p>
           </div>
         )}
 
@@ -266,16 +270,15 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
           }
 
           return (
-            <div key={msg.id}>
+            <div key={msg.id} className="space-y-3">
               {/* Date separator */}
               {showDateSep && (
                 <motion.div
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.6 }}
-                  className="flex items-center justify-center py-3"
+                  animate={{ opacity: 1 }}
+                  className="flex items-center justify-center py-2"
                 >
-                  <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
-                    style={{ background: "var(--surface-raised)", color: "var(--ink-muted)" }}>
+                  <span className="text-[11px] font-semibold px-3.5 py-1 rounded-full bg-[#111C2E] border border-white/5 text-[#64748B]">
                     {getDateLabel(msg.created_at)}
                   </span>
                 </motion.div>
@@ -285,26 +288,27 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className={`flex ${isMe ? "justify-end" : "justify-start"} mb-1`}
+                className={`flex ${isMe ? "justify-end" : "justify-start"}`}
               >
-                <div className="max-w-[78%]">
-                  <div className="px-4 py-2.5 rounded-[20px] text-[15px] leading-relaxed"
-                    style={isMe
-                      ? { background: "linear-gradient(135deg, var(--accent-primary) 0%, #00C67F 100%)", color: "var(--surface-base)", borderBottomRightRadius: 4, boxShadow: "0 2px 10px rgba(0,217,139,0.25)" }
-                      : { background: "var(--surface-raised)", color: "var(--ink-primary)", borderBottomLeftRadius: 4, border: "1px solid var(--border-subtle)" }}>
+                <div className="max-w-[85%] sm:max-w-[75%]">
+                  <div
+                    className={`px-4 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm ${
+                      isMe
+                        ? "bg-[#00D98B] text-[#091522] font-semibold rounded-tr-xs shadow-[0_2px_12px_rgba(0,217,139,0.25)]"
+                        : "bg-[#132238] border border-white/5 text-slate-100 font-normal rounded-tl-xs"
+                    }`}
+                  >
                     {msg.content}
                   </div>
                   {/* Timestamp + read receipt */}
-                  <div className={`flex items-center gap-1 mt-0.5 px-1 ${isMe ? "justify-end" : "justify-start"}`}>
-                    <span className="text-[10px]" style={{ color: "var(--ink-muted)" }}>
-                      {formatTime(msg.created_at)}
-                    </span>
+                  <div className={`flex items-center gap-1 mt-1 text-[11px] text-[#586c8a] px-1 ${isMe ? "justify-end" : "justify-start"}`}>
+                    <span>{formatTime(msg.created_at)}</span>
                     {isMe && (
-                      <span className="flex items-center">
+                      <span className="flex items-center ml-0.5">
                         {msg.read ? (
                           <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
                         ) : (
-                          <Check className="w-3.5 h-3.5" style={{ color: "var(--ink-muted)" }} />
+                          <Check className="w-3.5 h-3.5 text-[#586c8a]" />
                         )}
                       </span>
                     )}
@@ -321,8 +325,8 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="px-4 pt-3 pb-2 shrink-0 flex gap-2 items-end border-t border-border bg-surface-base/80 backdrop-blur-xl">
+      {/* Input Toolbar — Exact Reference Image Match */}
+      <div className="p-3.5 px-4 border-t border-white/10 bg-[#0A1424] flex items-center gap-3 shrink-0 pb-[max(14px,env(safe-area-inset-bottom,14px))]">
         <input
           value={draft}
           onChange={e => {
@@ -331,12 +335,16 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
           }}
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-2.5 rounded-full text-[15px] outline-none transition-shadow bg-surface-interactive border border-border-subtle text-ink-primary focus:border-accent-primary"
+          className="flex-1 px-4 py-3 rounded-full text-sm bg-[#111D30] border border-white/10 text-white outline-none focus:border-emerald-500/50 transition-all placeholder:text-[#586C8A]"
         />
-        <motion.button onClick={sendMessage} whileTap={{ scale: 0.9 }} disabled={!draft.trim() || sending}
-          className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-all duration-200"
-          style={{ background: draft.trim() ? "linear-gradient(135deg, var(--accent-primary) 0%, #00C67F 100%)" : "var(--surface-interactive)", boxShadow: draft.trim() ? "0 2px 12px rgba(0,217,139,0.4)" : "none" }}>
-          <Send className="w-5 h-5 ml-0.5" style={{ color: draft.trim() ? "var(--surface-base)" : "var(--ink-muted)" }} />
+        <motion.button
+          onClick={sendMessage}
+          whileTap={{ scale: 0.95 }}
+          disabled={!draft.trim() || sending}
+          className="w-11 h-11 rounded-full bg-[#1C3254] hover:bg-[#233f69] text-[#3B82F6] flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
+          title="Send Message"
+        >
+          <Send className="w-5 h-5 ml-0.5 stroke-[2]" />
         </motion.button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useInView, useMotionValue, useSpring } from 'motion/react';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface CountUpProps {
   to: number;
@@ -68,10 +68,10 @@ export default function CountUp({
     [maxDecimals, separator]
   );
 
+  const [displayValue, setDisplayValue] = useState(() => formatValue(direction === 'down' ? to : from));
+
   useEffect(() => {
-    if (ref.current) {
-      ref.current.textContent = formatValue(direction === 'down' ? to : from);
-    }
+    setDisplayValue(formatValue(direction === 'down' ? to : from));
   }, [from, to, direction, formatValue]);
 
   useEffect(() => {
@@ -98,13 +98,12 @@ export default function CountUp({
 
   useEffect(() => {
     const unsubscribe = springValue.on('change', (latest: number) => {
-      if (ref.current) {
-        ref.current.textContent = formatValue(latest);
-      }
+      setDisplayValue(formatValue(latest));
     });
 
     return () => unsubscribe();
   }, [springValue, formatValue]);
 
-  return <span className={className} ref={ref} />;
+  return <span className={className} ref={ref}>{displayValue}</span>;
 }
+

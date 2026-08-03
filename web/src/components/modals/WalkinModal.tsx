@@ -96,14 +96,14 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
   };
 
   return (
-    <>
-      <motion.div key="walkin-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose} className="fixed inset-0 z-40 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-md" />
+    <motion.div key="walkin-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose} className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/40 dark:bg-[#0B132B]/90 backdrop-blur-sm">
       <motion.div key="walkin-modal"
         initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="fixed inset-0 z-50 flex items-center justify-center px-4">
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md rounded-2xl p-6 shadow-[0_0_80px_rgba(11,206,131,0.15)] border border-white/[0.08] bg-background dark:bg-[#0B132B]/95 backdrop-blur-2xl relative z-50">
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-md rounded-2xl p-6 shadow-[0_0_80px_rgba(11,206,131,0.15)] border border-white/[0.08] bg-background dark:bg-[#0B132B]/95 backdrop-blur-2xl relative z-50">
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-black text-white tracking-wide">LOG WALK-IN</h2>
@@ -191,6 +191,6 @@ export function WalkInModal({ onClose, onConfirm }: { onClose: () => void; onCon
           </button>
         </form>
       </motion.div>
-    </>
+    </motion.div>
   );
 }

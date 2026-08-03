@@ -30,6 +30,18 @@ export async function GET(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const postId = params.id;
+
+  // Check if post exists
+  const { data: post, error: postError } = await supabase
+    .from("feed_posts")
+    .select("id")
+    .eq("id", postId)
+    .single();
+
+  if (postError || !post) {
+    return NextResponse.json({ error: "Post not found" }, { status: 404 });
+  }
+
   const page = parseInt(req.nextUrl.searchParams.get("page") ?? "0");
   const limit = 20;
   const offset = page * limit;
@@ -62,6 +74,8 @@ export async function GET(
     author_avatar_url: profileMap[c.author_id]?.avatar_url ?? null,
     content: c.content,
     created_at: c.created_at,
+    like_count: 0,
+    i_liked: false,
   }));
 
   return NextResponse.json(enriched);
@@ -77,6 +91,18 @@ export async function POST(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const postId = params.id;
+
+  // Check if post exists
+  const { data: post, error: postError } = await supabase
+    .from("feed_posts")
+    .select("id")
+    .eq("id", postId)
+    .single();
+
+  if (postError || !post) {
+    return NextResponse.json({ error: "Post not found" }, { status: 404 });
+  }
+
   const { content } = await req.json();
 
   if (!content?.trim()) {
@@ -106,5 +132,7 @@ export async function POST(
     ...comment,
     author_name: profile?.name ?? "Unknown",
     author_avatar_url: profile?.avatar_url ?? null,
+    like_count: 0,
+    i_liked: false,
   }, { status: 201 });
 }

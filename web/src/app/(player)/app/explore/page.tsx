@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
+import { Trophy } from "lucide-react";
 import { MatchCard } from "@/components/shared/MatchCard";
 import { useToast } from "@/contexts/ToastContext";
 import { LockedFeatureWrapper } from "@/components/ui/LockedFeatureWrapper";
@@ -11,20 +12,36 @@ import { useApp } from "@/contexts/AppContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { MatchData, Booking } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { DEMO_MATCHES } from "@/lib/demoData";
 
 export default function ExploreTab() {
   const [filter, setFilter] = useState("All");
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const { joinedMatches: joined, setJoinedMatches: setJoined, setBookings } = useApp();
+  const { joinedMatches: joined, setJoinedMatches: setJoined, setBookings, setNotifications } = useApp();
   const { showToast } = useToast();
   const prevJoinedSize = useRef(joined.size);
+  const { user } = useAuth();
 
   const { data: openMatches = [], isLoading } = useQuery({
-    queryKey: ['matches'],
+    queryKey: ['matches', user?.id, filter],
     queryFn: async () => {
-      const { data, error } = await supabase.from('matches').select('*');
+      let query = supabase.from('matches').select('*');
+
+      // Apply filter at the database level when filter is not "All"
+      if (filter !== "All") {
+        query = query.eq('level', filter);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
+
+      const isDemo = user?.isDemo || user?.role === "demo";
+      if (isDemo && (!data || data.length === 0)) {
+        return DEMO_MATCHES as any[];
+      }
+
       return data || [];
     }
   });
@@ -37,7 +54,7 @@ export default function ExploreTab() {
   }, [joined.size, showToast]);
 
   const levels = ["All", "Beginner", "Intermediate", "Advanced"];
-  const filtered = filter === "All" ? openMatches : openMatches.filter(m => m.level === filter);
+  const filtered = openMatches;
 
   return (
     <div className="p-4 max-w-6xl mx-auto w-full">
@@ -82,8 +99,8 @@ export default function ExploreTab() {
           ))
         ) : filtered.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full py-16 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-surface-interactive border border-border">
-              <span className="text-2xl opacity-50">🏸</span>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-accent-primary/10 border border-accent-primary/20 shadow-[0_0_24px_rgba(0,217,139,0.15)]">
+              <Trophy className="w-7 h-7 text-accent-primary" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-1">No matches found</h3>
             <p className="text-sm text-foreground/50">There are no {filter !== "All" ? filter.toLowerCase() : "open"} matches available right now.</p>
@@ -103,6 +120,7 @@ export default function ExploreTab() {
                 slots: rawMatch.participants || m.current_players || 0,
                 max: rawMatch.max_participants || m.max_players || 0,
                 facility: rawMatch.facility || m.facility_name,
+                location: m.location || rawMatch.location || "BGC, Taguig",
                 date: m.date,
                 time: m.time,
                 host: m.host || "Picklers Organizer",
@@ -113,9 +131,20 @@ export default function ExploreTab() {
                 transition={{ delay: i * 0.04, ease: "easeOut" }}>
                 <LockedFeatureWrapper featureLabel="join open play sessions" showLockIcon={true}>
                   <MatchCard m={cardData} joined={joined.has(m.id)} onJoin={() => {
+                    if (joined.has(m.id)) return;
                     setJoined(prev => new Set(prev).add(m.id));
+                    setNotifications(prev => [
+                      {
+                        id: `notif-op-${Date.now()}`,
+                        title: "Joined Open Play!",
+                        body: `You joined '${m.type || "Doubles Open Play"}' at ${m.facility_name || "BGC Pickleball Hub"} on ${m.date}.`,
+                        time: "Just now",
+                        read: false,
+                        type: "booking"
+                      },
+                      ...prev
+                    ]);
                     setBookings(prev => {
-                      if (joined.has(m.id)) return prev;
                       const newBooking: Booking = {
                         id: `PKL-OP-${m.id}${Date.now().toString().slice(-3)}`,
                         facility_id: 0, // placeholder

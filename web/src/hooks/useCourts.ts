@@ -32,7 +32,7 @@ export function useLiveCourts() {
             remaining = Math.max(0, Math.floor((end - Date.now()) / 60000));
           }
           if (remaining === 0 && d.status === "occupied") {
-            // If time is up but still occupied, we might want to flag it or just show 0
+            // Legacy occupancy may have expired — surface as available on next refresh
           }
           return {
             id: Number(d.id),

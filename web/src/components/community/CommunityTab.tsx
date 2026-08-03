@@ -125,7 +125,7 @@ export default function CommunityTab({
           {/* PLAYERS SECTION */}
           {players.length > 0 && (
             <div className="flex flex-col gap-3">
-              <h2 className="text-[12px] font-bold uppercase tracking-wider px-1" style={{ color: "var(--ink-muted)" }}>
+              <h2 className="text-[12px] font-extrabold uppercase tracking-wider px-1" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif", color: "var(--ink-muted)" }}>
                 {search ? "Players" : "Discover Players"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -139,7 +139,7 @@ export default function CommunityTab({
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <button onClick={() => onOpenProfile?.(p.id)} className="text-[15px] font-bold text-foreground leading-tight truncate hover:underline text-left">
+                        <button onClick={() => onOpenProfile?.(p.id)} className="text-[15px] font-extrabold text-foreground leading-tight truncate hover:underline text-left" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
                           {p.name}
                         </button>
                         <LevelBadge level={p.level} />
@@ -185,7 +185,7 @@ export default function CommunityTab({
           {/* CLUBS SECTION */}
           {clubs.length > 0 && (
             <div className="flex flex-col gap-3">
-              <h2 className="text-[12px] font-bold uppercase tracking-wider px-1 mt-2" style={{ color: "var(--ink-muted)" }}>
+              <h2 className="text-[12px] font-extrabold uppercase tracking-wider px-1 mt-2" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif", color: "var(--ink-muted)" }}>
                 {search ? "Clubs" : "Discover Clubs"}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -198,7 +198,7 @@ export default function CommunityTab({
                       <Shield className="w-6 h-6 text-accent-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[15px] font-bold text-foreground leading-tight block mb-0.5">{club.name}</span>
+                      <span className="text-[15px] font-extrabold text-foreground leading-tight block mb-0.5" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>{club.name}</span>
                       <p className="text-[11px] text-ink-muted">
                         {club.member_count} member{club.member_count !== 1 ? "s" : ""}
                       </p>
