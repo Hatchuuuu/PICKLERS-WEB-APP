@@ -1213,6 +1213,12 @@
       "skillPath": ".claude/skills/design-system/SKILL.md",
       "computedHash": "5a3dbae4a3c2ad9f96323d9bfae926b3c21bb1e3b066aa067906f577a2ff2545"
     },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "899b84384f74f540ea5284d9b2e9234e050998b42eacc805410b518d4226c0b3"
+    },
     "designing-adversary-engagement-with-mitre-engage": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
       "sourceType": "github",

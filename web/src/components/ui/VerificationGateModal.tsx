@@ -57,9 +57,9 @@ export function VerificationGateModal({ isOpen, onClose, featureLabel }: Verific
                 <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
                   <ShieldAlert className="w-8 h-8 text-white" />
                 </div>
-                
+
                 {/* Close Button */}
-                <button 
+                <button
                   onClick={onClose}
                   className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 text-ink-primary transition-colors"
                 >

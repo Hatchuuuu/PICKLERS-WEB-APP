@@ -34,15 +34,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Rate Limiting via Upstash Redis using User ID
-    const rateLimitKey = `ratelimit:checkout:${user.id}`;
-    const requestCount = await redis.incr(rateLimitKey);
-    
-    if (requestCount === 1) {
-      await redis.expire(rateLimitKey, 60); // 60 second window
+    // 1. Rate Limiting via Upstash Redis using User ID (safeguarded)
+    let requestCount = 1;
+    try {
+      if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+        const rateLimitKey = `ratelimit:checkout:${user.id}`;
+        requestCount = await redis.incr(rateLimitKey);
+        if (requestCount === 1) {
+          await redis.expire(rateLimitKey, 60); // 60 second window
+        }
+      }
+    } catch (redisError) {
+      console.warn("[Checkout API] Redis rate limiter unavailable, proceeding safely:", redisError);
     }
-    
-    // Max 3 checkout attempts per minute per IP to prevent spamming the Paymongo API
+
+    // Max 3 checkout attempts per minute per user to prevent spamming Paymongo
     if (requestCount > 3) {
       return NextResponse.json(
         { error: 'Too many checkout attempts. Please wait a moment.' },

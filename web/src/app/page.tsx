@@ -285,7 +285,7 @@ export default function LandingPage() {
 
           <h1 className="text-6xl sm:text-7xl md:text-[100px] lg:text-[120px] leading-[0.95] tracking-[-0.03em] mb-[14px] flex justify-center text-[#4abd96]"
             style={{ fontFamily: "var(--font-montserrat), sans-serif", fontWeight: 900, textShadow: "var(--shadow-glow)" }}>
-              PICKLERS
+            PICKLERS
           </h1>
           <div className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-[0.15em] md:tracking-[0.2em] mb-8 flex items-center justify-center gap-2 sm:gap-4 md:gap-5 leading-none"
             style={{ color: "var(--ink-primary)" }}>
@@ -361,7 +361,7 @@ export default function LandingPage() {
           direction="vertical"
           reverse={false}
           duration={1.2}
-          ease="power3.out"
+          ease={[0.215, 0.61, 0.355, 1]}
           initialOpacity={0}
           animateOpacity
           scale={0.98}
@@ -510,7 +510,7 @@ export default function LandingPage() {
           direction="vertical"
           reverse={false}
           duration={0.8}
-          ease="power3.out"
+          ease={[0.215, 0.61, 0.355, 1]}
           initialOpacity={0}
           animateOpacity
           scale={1}
@@ -574,10 +574,10 @@ export default function LandingPage() {
                     viewport={{ once: true, margin: "-40px" }}
                     transition={{ delay: Math.min(i, 4) * 0.1, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}>
                     <FacilityCard f={f} onFav={() => { }} onViewCourts={() => {
-      // In a real app, this would navigate to a facility detail page
-      // For now, we'll go to explore tab to show this is where court booking would happen
-      router.push("/app/explore");
-    }} />
+                      // In a real app, this would navigate to a facility detail page
+                      // For now, we'll go to explore tab to show this is where court booking would happen
+                      router.push("/app/explore");
+                    }} />
                   </motion.div>
                 ))}
               </div>
@@ -600,14 +600,14 @@ export default function LandingPage() {
                     price: m.price
                   };
                   return (
-                  <motion.div key={m.id}
-                    className="h-full"
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-40px" }}
-                    transition={{ delay: Math.min(i, 4) * 0.1, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}>
-                    <MatchCard m={cardData} publicMode={true} onJoin={() => router.push("/auth")} />
-                  </motion.div>
+                    <motion.div key={m.id}
+                      className="h-full"
+                      initial={{ opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-40px" }}
+                      transition={{ delay: Math.min(i, 4) * 0.1, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}>
+                      <MatchCard m={cardData} publicMode={true} onJoin={() => router.push("/auth")} />
+                    </motion.div>
                   );
                 })}
               </div>
@@ -618,7 +618,7 @@ export default function LandingPage() {
 
       {/* Bento Box Features */}
       <section className="px-6 py-24 max-w-6xl mx-auto border-t border-solid relative z-10 border-border" >
-        <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
+        <AnimatedContent distance={40} direction="vertical" duration={0.8} ease={[0.215, 0.61, 0.355, 1]} initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
               Built for the modern player.
@@ -678,7 +678,7 @@ export default function LandingPage() {
       <section className="px-6 py-24 border-t border-solid relative overflow-hidden z-10 border-border" >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[400px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-6xl mx-auto relative z-10">
-          <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
+          <AnimatedContent distance={40} direction="vertical" duration={0.8} ease={[0.215, 0.61, 0.355, 1]} initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
                 Loved by the community.
@@ -721,7 +721,7 @@ export default function LandingPage() {
       {/* How It Works Section */}
       <section className="px-6 py-24 border-t border-solid relative border-border bg-background">
         <div className="max-w-5xl mx-auto">
-          <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
+          <AnimatedContent distance={40} direction="vertical" duration={0.8} ease={[0.215, 0.61, 0.355, 1]} initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
                 How It Works
@@ -766,7 +766,7 @@ export default function LandingPage() {
       {/* FAQ Section */}
       <section className="px-6 py-24 border-t border-solid border-border" >
         <div className="max-w-3xl mx-auto">
-          <AnimatedContent distance={40} direction="vertical" duration={0.8} ease="power3.out" initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
+          <AnimatedContent distance={40} direction="vertical" duration={0.8} ease={[0.215, 0.61, 0.355, 1]} initialOpacity={0} animateOpacity scale={1} threshold={0.2}>
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
                 Frequently Asked Questions

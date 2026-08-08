@@ -24,6 +24,22 @@ interface AnimatedContentProps extends Omit<HTMLMotionProps<"div">, "children"> 
   className?: string;
 }
 
+const parseEase = (e?: number[] | string) => {
+  if (Array.isArray(e)) return e;
+  if (typeof e === 'string') {
+    const validPresets = [
+      "linear", "easeIn", "easeOut", "easeInOut", 
+      "circIn", "circOut", "circInOut", 
+      "backIn", "backOut", "backInOut", "anticipate"
+    ];
+    if (validPresets.includes(e)) return e;
+    if (e.startsWith("power") || e.startsWith("quad") || e.startsWith("cubic") || e.startsWith("quart") || e.startsWith("quint") || e.startsWith("expo")) {
+      return [0.215, 0.61, 0.355, 1];
+    }
+  }
+  return [0.23, 1, 0.32, 1];
+};
+
 const AnimatedContent = ({
   children,
   container,
@@ -47,6 +63,7 @@ const AnimatedContent = ({
 }: AnimatedContentProps) => {
   const axis = direction === 'horizontal' ? 'x' : 'y';
   const offset = reverse ? -distance : distance;
+  const resolvedEase = parseEase(ease);
 
   return (
     <motion.div
@@ -65,7 +82,7 @@ const AnimatedContent = ({
       transition={{ 
         duration, 
         delay,
-        ease: ease as any
+        ease: resolvedEase as any
       }}
       onAnimationComplete={() => {
         if (onComplete) onComplete();

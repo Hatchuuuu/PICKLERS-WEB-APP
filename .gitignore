@@ -13,3 +13,7 @@ Thumbs.db
 .next/
 out/
 build/
+
+# Analysis and Build Artifacts
+graphify-out/
+*.tsbuildinfo

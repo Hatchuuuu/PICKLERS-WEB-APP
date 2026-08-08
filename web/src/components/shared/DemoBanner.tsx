@@ -28,7 +28,7 @@ export function DemoBanner() {
             className="fixed bottom-20 md:bottom-24 left-0 right-0 z-[110] flex justify-center pointer-events-none px-4"
           >
             <div className="pointer-events-auto flex items-center p-1.5 rounded-full bg-black/90 dark:bg-[#0A0A0A]/90 backdrop-blur-2xl border border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.6)]">
-              
+
               {/* Clickable Info Area */}
               <button
                 onClick={() => setShowInfoModal(true)}

@@ -1,1 +1,0 @@
-{"nodes": [{"id": "c_users_nitro_desktop_picklers_web_app_agents_skills_detecting_ntlm_relay_with_event_correlation_scripts_audit_smb_signing_ps1", "label": "audit_smb_signing.ps1", "file_type": "code", "source_file": ".agents/skills/detecting-ntlm-relay-with-event-correlation/scripts/audit_smb_signing.ps1", "source_location": "L1"}], "edges": [], "raw_calls": []}

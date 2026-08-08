@@ -33,7 +33,7 @@ export default function BookingsTab() {
 
   useEffect(() => {
     async function fetchTransactions() {
-      if (!user?.id) return;
+      if (!user?.id || !supabase?.from) return;
       try {
         const { data, error } = await supabase
           .from("wallet_transactions")
@@ -91,8 +91,8 @@ export default function BookingsTab() {
       // Update local transactions state optimistically
       setTransactions(prev => [{ id: String(Date.now()), label, amount: `+₱${refundAmount.toLocaleString()}`, date: todayLabel }, ...prev]);
 
-      // Save to Supabase if logged in
-      if (user?.id) {
+      // Save to Supabase if logged in and client exists
+      if (user?.id && supabase?.from) {
         try {
           await supabase.from("wallet_transactions").insert({
             user_id: user.id,
