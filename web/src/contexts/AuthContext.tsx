@@ -78,11 +78,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           let assignedRole: UserRole = "player";
           let dbVerificationStatus: VerificationStatus = "unverified";
-          const { data: profile } = await supabase
+          let profile: any = null;
+          const { data: mainProfile, error: profileErr } = await supabase
             .from('player_profiles')
             .select('role, verification_status, avatar_url, is_demo, facility_setup_complete, is_admin, admin_role')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
+
+          if (profileErr) {
+            const { data: fallbackProfile } = await supabase
+              .from('player_profiles')
+              .select('role, verification_status, avatar_url, is_demo, facility_setup_complete')
+              .eq('id', session.user.id)
+              .maybeSingle();
+            profile = fallbackProfile;
+          } else {
+            profile = mainProfile;
+          }
 
           const isDemoUser = Boolean(profile?.is_demo) || profile?.role === 'demo' || (email ? email.includes('demo') : false);
           const isAdminUser = Boolean(profile?.is_admin);

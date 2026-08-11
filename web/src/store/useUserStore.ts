@@ -43,28 +43,35 @@ export const useUserStore = create<UserState>((set) => ({
         return;
       }
 
-      const { data: profile, error } = await supabase
+      let profile: any = null;
+      const { data, error } = await supabase
         .from("player_profiles")
         .select("role, verification_status, is_demo, is_admin, admin_role, admin_permissions")
         .eq("id", session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          set({
-            role: null,
-            verificationStatus: null,
-            isAdmin: false,
-            adminRole: null,
-            adminPermissions: [],
-            isLoading: false
-          });
-          await supabase.auth.signOut();
-          return;
-        }
+        // Fallback: If new admin columns don't exist in DB yet, query standard profile columns
+        const { data: fallbackData } = await supabase
+          .from("player_profiles")
+          .select("role, verification_status, is_demo")
+          .eq("id", session.user.id)
+          .maybeSingle();
         
-        console.error("Error fetching user status:", error);
-        set({ isLoading: false });
+        profile = fallbackData;
+      } else {
+        profile = data;
+      }
+
+      if (!profile) {
+        set({
+          role: null,
+          verificationStatus: null,
+          isAdmin: false,
+          adminRole: null,
+          adminPermissions: [],
+          isLoading: false
+        });
         return;
       }
 
