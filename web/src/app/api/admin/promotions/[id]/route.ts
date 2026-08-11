@@ -5,7 +5,7 @@ import { requireAdmin } from '../../_lib/requireAdmin';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -28,7 +28,8 @@ export async function PATCH(
     if (authCheck instanceof NextResponse) return authCheck;
     const { adminId } = authCheck;
 
-    const promoId = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const promoId = resolvedParams.id;
     const body = await request.json();
 
     const { data: currentPromo, error: fetchErr } = await supabase

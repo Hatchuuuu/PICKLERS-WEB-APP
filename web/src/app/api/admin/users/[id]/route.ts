@@ -5,7 +5,7 @@ import { requireAdmin } from '../../_lib/requireAdmin';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -28,7 +28,8 @@ export async function PATCH(
     if (authCheck instanceof NextResponse) return authCheck;
     const { adminId } = authCheck;
 
-    const targetUserId = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const targetUserId = resolvedParams.id;
     const body = await request.json();
     const { action, reason, admin_role } = body;
 

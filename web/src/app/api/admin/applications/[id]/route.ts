@@ -6,7 +6,7 @@ import { sendAdminEmail } from '../../_lib/sendAdminEmail';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -28,7 +28,8 @@ export async function GET(
     const authCheck = await requireAdmin(supabase);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    const applicationId = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const applicationId = resolvedParams.id;
 
     const { data, error } = await supabase
       .from('owner_applications')
@@ -56,7 +57,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -79,7 +80,8 @@ export async function PATCH(
     if (authCheck instanceof NextResponse) return authCheck;
     const { adminId } = authCheck;
 
-    const applicationId = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const applicationId = resolvedParams.id;
     const body = await request.json();
     const { action, rejection_reason, revision_request_note } = body;
 
