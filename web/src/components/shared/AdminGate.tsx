@@ -8,14 +8,16 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  const isAdmin = Boolean(user?.isAdmin || user?.role === 'admin' || user?.role === 'dev');
+
   useEffect(() => {
-    if (!isLoading && user && !user.isAdmin) {
+    if (!isLoading && user && !isAdmin) {
       router.replace('/app');
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, user, isAdmin, router]);
 
   if (isLoading || !user) return null;
-  if (!user.isAdmin) return null;
+  if (!isAdmin) return null;
 
   return <>{children}</>;
 }

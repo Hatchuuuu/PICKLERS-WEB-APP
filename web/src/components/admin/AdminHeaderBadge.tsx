@@ -19,9 +19,12 @@ export function AdminHeaderBadge({ variant = "compact" }: AdminHeaderBadgeProps)
 
   if (!isAdmin) return null;
 
-  const handleSwitch = () => {
+  const handleSwitch = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const nextPath = adminMode ? "/app" : "/app/admin";
     toggleAdminMode();
-    router.push(adminMode ? "/app" : "/app/admin");
+    router.push(nextPath);
   };
 
   if (variant === "sidebar") {

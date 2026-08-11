@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
           try {
             const adminCheckPromise = supabase
               .from('player_profiles')
-              .select('is_admin')
+              .select('is_admin, role')
               .eq('id', user.id)
               .single();
 
@@ -70,8 +70,9 @@ export async function middleware(request: NextRequest) {
             );
 
             const { data: adminData } = await Promise.race([adminCheckPromise, adminTimeout]);
+            const isAdminOrDev = Boolean(adminData?.is_admin) || adminData?.role === 'admin' || adminData?.role === 'dev';
 
-            if (adminData && !adminData.is_admin) {
+            if (adminData && !isAdminOrDev) {
               const url = request.nextUrl.clone();
               url.pathname = '/app';
               return NextResponse.redirect(url);
