@@ -16,6 +16,7 @@ import { NotificationDropdown } from "@/components/shared/NotificationDropdown";
 import { TopUpModal } from "@/components/modals/TopUpModal";
 import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
 import { DemoBanner } from "@/components/shared/DemoBanner";
+import { AdminHeaderBadge } from "@/components/admin/AdminHeaderBadge";
 
 type PlayerTabId = "player-play" | "player-explore" | "player-bookings" | "player-community" | "player-settings";
 
@@ -87,24 +88,27 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
             <PicklersLogo size={36} />
             <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
-          {/* Notifications Dropdown */}
-          <div className="relative" ref={notifRef}>
-            <button
-              data-notif-toggle="true"
-              onClick={() => setShowNotifs(!showNotifs)}
-              aria-label="Notifications"
-              className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors hover:bg-surface-raised"
-              style={{ color: showNotifs ? "var(--ink-primary)" : "var(--ink-secondary)" }}>
-              <Bell className="w-4 h-4" pointerEvents="none" />
-              {notifications.some(n => !n.read) && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full border border-solid"
-                  style={{ background: "var(--accent-primary)", borderColor: "var(--surface-base)" }} />
-              )}
-            </button>
+          <div className="flex items-center gap-2">
+            <AdminHeaderBadge />
+            {/* Notifications Dropdown */}
+            <div className="relative" ref={notifRef}>
+              <button
+                data-notif-toggle="true"
+                onClick={() => setShowNotifs(!showNotifs)}
+                aria-label="Notifications"
+                className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors hover:bg-surface-raised"
+                style={{ color: showNotifs ? "var(--ink-primary)" : "var(--ink-secondary)" }}>
+                <Bell className="w-4 h-4" pointerEvents="none" />
+                {notifications.some(n => !n.read) && (
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full border border-solid"
+                    style={{ background: "var(--accent-primary)", borderColor: "var(--surface-base)" }} />
+                )}
+              </button>
 
-            <AnimatePresence>
-              {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} className="top-[calc(100%+12px)] left-0 origin-top-left" />}
-            </AnimatePresence>
+              <AnimatePresence>
+                {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} className="top-[calc(100%+12px)] left-0 origin-top-left" />}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
         <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto relative">
@@ -188,6 +192,7 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
             <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="flex items-center gap-2 relative">
+            <AdminHeaderBadge />
             <div className="relative" ref={notifRef}>
               <button data-notif-toggle="true" onClick={() => setShowNotifs(!showNotifs)} aria-label="Notifications" className="relative active:scale-95 transition-transform flex items-center justify-center p-2 rounded-full hover:bg-surface-raised min-w-[44px] min-h-[44px]">
                 <Bell className="w-5 h-5 pointer-events-none" style={{ color: "var(--ink-secondary)" }} />

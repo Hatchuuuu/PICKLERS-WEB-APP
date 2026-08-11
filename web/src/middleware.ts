@@ -47,41 +47,67 @@ export async function middleware(request: NextRequest) {
     const user = session?.user;
     const { pathname } = request.nextUrl;
 
-    // Protect /app and /app/owner routes
-    if (pathname.startsWith('/app')) {
-      if (!user) {
-        // If unauthenticated on protected routes, redirect to /auth
-        const url = request.nextUrl.clone();
-        url.pathname = '/auth';
-        return NextResponse.redirect(url);
-      }
+      // Protect /app, /app/owner, and /app/admin routes
+      if (pathname.startsWith('/app')) {
+        if (!user) {
+          // If unauthenticated on protected routes, redirect to /auth
+          const url = request.nextUrl.clone();
+          url.pathname = '/auth';
+          return NextResponse.redirect(url);
+        }
 
-      // Role-based protection for /owner
-      if (pathname.startsWith('/app/owner') || pathname.startsWith('/app/create-tournament')) {
-        try {
-          const rolePromise = supabase
-            .from('player_profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+        // Admin route protection
+        if (pathname.startsWith('/app/admin')) {
+          try {
+            const adminCheckPromise = supabase
+              .from('player_profiles')
+              .select('is_admin')
+              .eq('id', user.id)
+              .single();
 
-          const roleTimeout = new Promise<any>((resolve) =>
-            setTimeout(() => resolve({ data: null }), 1200)
-          );
+            const adminTimeout = new Promise<any>((resolve) =>
+              setTimeout(() => resolve({ data: null }), 1200)
+            );
 
-          const { data: roleData } = await Promise.race([rolePromise, roleTimeout]);
+            const { data: adminData } = await Promise.race([adminCheckPromise, adminTimeout]);
 
-          const ownerAccessRoles = ['owner', 'demo'];
-          if (roleData && !ownerAccessRoles.includes(roleData.role)) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/app';
-            return NextResponse.redirect(url);
+            if (adminData && !adminData.is_admin) {
+              const url = request.nextUrl.clone();
+              url.pathname = '/app';
+              return NextResponse.redirect(url);
+            }
+          } catch (e) {
+            // Ignore check timeout
           }
-        } catch (e) {
-          // Ignore role check timeout
+        }
+
+        // Role-based protection for /owner
+        if (pathname.startsWith('/app/owner') || pathname.startsWith('/app/create-tournament')) {
+          try {
+            const rolePromise = supabase
+              .from('player_profiles')
+              .select('role')
+              .eq('id', user.id)
+              .single();
+
+            const roleTimeout = new Promise<any>((resolve) =>
+              setTimeout(() => resolve({ data: null }), 1200)
+            );
+
+            const { data: roleData } = await Promise.race([rolePromise, roleTimeout]);
+
+            const ownerAccessRoles = ['owner', 'demo', 'admin'];
+            if (roleData && !ownerAccessRoles.includes(roleData.role)) {
+              const url = request.nextUrl.clone();
+              url.pathname = '/app';
+              return NextResponse.redirect(url);
+            }
+          } catch (e) {
+            // Ignore role check timeout
+          }
         }
       }
-    }
+
   } catch (err) {
     // Fallback on network delay
   }

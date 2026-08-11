@@ -1,41 +1,64 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 
-export type UserRole = "player" | "owner" | "demo";
+export type UserRole = "player" | "owner" | "demo" | "admin";
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
 interface UserState {
   role: UserRole | null;
   verificationStatus: VerificationStatus | null;
+  isAdmin: boolean;
+  adminRole: string | null;
+  adminPermissions: string[];
+  adminMode: boolean;
   isLoading: boolean;
   fetchUserStatus: () => Promise<void>;
+  toggleAdminMode: () => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
   role: null,
   verificationStatus: null,
+  isAdmin: false,
+  adminRole: null,
+  adminPermissions: [],
+  adminMode: false,
   isLoading: true,
+
+  toggleAdminMode: () => set((state) => ({ adminMode: !state.adminMode })),
 
   fetchUserStatus: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        set({ role: null, verificationStatus: null, isLoading: false });
+        set({
+          role: null,
+          verificationStatus: null,
+          isAdmin: false,
+          adminRole: null,
+          adminPermissions: [],
+          isLoading: false
+        });
         return;
       }
 
       const { data: profile, error } = await supabase
         .from("player_profiles")
-        .select("role, verification_status, is_demo")
+        .select("role, verification_status, is_demo, is_admin, admin_role, admin_permissions")
         .eq("id", session.user.id)
         .single();
 
       if (error) {
-        // If the profile is not found (e.g. database was wiped but local JWT is still valid)
         if (error.code === 'PGRST116') {
-          set({ role: null, verificationStatus: null, isLoading: false });
-          // Optionally sign out if the profile is fundamentally missing
+          set({
+            role: null,
+            verificationStatus: null,
+            isAdmin: false,
+            adminRole: null,
+            adminPermissions: [],
+            isLoading: false
+          });
           await supabase.auth.signOut();
           return;
         }
@@ -47,14 +70,18 @@ export const useUserStore = create<UserState>((set) => ({
 
       const email = session.user.email ?? "";
       const isDemoUser = Boolean(profile.is_demo) || profile.role === "demo" || email.includes("demo");
+      const isAdminUser = Boolean(profile.is_admin);
       const isOwner = profile.role === "owner";
 
-      const assignedRole: UserRole = isOwner ? "owner" : isDemoUser ? "demo" : (profile.role as UserRole || "player");
-      const assignedStatus: VerificationStatus = (isOwner || isDemoUser) ? "verified" : (profile.verification_status as VerificationStatus || "unverified");
+      const assignedRole: UserRole = isAdminUser ? "admin" : isOwner ? "owner" : isDemoUser ? "demo" : (profile.role as UserRole || "player");
+      const assignedStatus: VerificationStatus = (isAdminUser || isOwner || isDemoUser) ? "verified" : (profile.verification_status as VerificationStatus || "unverified");
 
       set({
         role: assignedRole,
         verificationStatus: assignedStatus,
+        isAdmin: isAdminUser,
+        adminRole: profile.admin_role ?? null,
+        adminPermissions: profile.admin_permissions ?? [],
         isLoading: false,
       });
     } catch (err) {

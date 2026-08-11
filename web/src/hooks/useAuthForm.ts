@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserStore } from "@/store/useUserStore";
 
 export const authSchema = z.object({
   view: z.enum(["auth", "forgot-password", "verify-code", "verify-phone", "reset-password"]),
@@ -54,7 +55,8 @@ export function useAuthForm() {
 
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated && !isSignupTab) {
-      router.replace(redirect || (intent === "owner" ? "/app/owner" : "/app"));
+      const adminState = useUserStore.getState().isAdmin;
+      router.replace(redirect || (adminState ? "/app/admin" : intent === "owner" ? "/app/owner" : "/app"));
     }
   }, [isAuthenticated, isAuthLoading, router, redirect, intent, isSignupTab]);
 
@@ -144,14 +146,17 @@ export function useAuthForm() {
 
   const handleSuccessRedirect = () => {
     setTimeout(async () => {
+      const adminState = useUserStore.getState().isAdmin;
       const isInternalRedirect = redirect && redirect.startsWith('/') && !redirect.startsWith('//');
       if (isInternalRedirect) router.push(redirect);
+      else if (adminState) router.push("/app/admin");
       else if (intent === "owner") router.push("/app/owner");
       else if (intent === "book") router.push("/app");
       else if (intent === "open-play") router.push("/app/explore");
       else router.push("/app");
     }, 800);
   };
+
 
   const shakeError = (msg: unknown) => {
     let finalMsg = typeof msg === "string" ? msg : "An unexpected error occurred.";

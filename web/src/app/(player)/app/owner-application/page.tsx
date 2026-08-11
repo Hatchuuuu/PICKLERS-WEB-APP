@@ -234,19 +234,18 @@ export default function OwnerApplication() {
       const permitUrl = await uploadFileToStorage(permitFile, 'permits');
       const idUrl = await uploadFileToStorage(idFile, 'identities');
 
-      // 2. Insert into Supabase facility_applications
-      const { error } = await supabase.from('facility_applications').insert({
+      // 2. Insert into Supabase owner_applications
+      const { error } = await supabase.from('owner_applications').insert({
         user_id: user?.id || null,
         facility_name: data.facilityName,
-        address: data.address,
-        courts_count: data.courtsCount,
+        facility_address: data.address,
+        court_count: data.courtsCount,
         surface_type: data.surfaceType,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        business_permit_url: permitUrl,
-        proof_of_identity_url: idUrl,
+        business_name: `${data.firstName} ${data.lastName}`.trim() || data.facilityName,
+        contact_email: data.email,
+        contact_phone: data.phone,
+        government_id_url: idUrl,
+        business_license_url: permitUrl,
         status: 'pending'
       });
 

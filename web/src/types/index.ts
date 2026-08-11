@@ -177,3 +177,5 @@ export type FeedComment = {
   like_count?: number;
   i_liked?: boolean;
 };
+
+export * from './admin';

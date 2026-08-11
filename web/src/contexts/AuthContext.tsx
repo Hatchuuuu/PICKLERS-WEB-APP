@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "./ToastContext";
 
-export type UserRole = "player" | "owner" | "demo";
+export type UserRole = "player" | "owner" | "demo" | "admin";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
@@ -16,6 +16,8 @@ export interface User {
   phone?: string;
   avatarUrl?: string;
   role: UserRole;
+  isAdmin?: boolean;
+  adminRole?: string;
   isDemo?: boolean;
   verificationStatus: VerificationStatus;
   facilitySetupComplete?: boolean;
@@ -78,13 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           let dbVerificationStatus: VerificationStatus = "unverified";
           const { data: profile } = await supabase
             .from('player_profiles')
-            .select('role, verification_status, avatar_url, is_demo, facility_setup_complete')
+            .select('role, verification_status, avatar_url, is_demo, facility_setup_complete, is_admin, admin_role')
             .eq('id', session.user.id)
             .single();
 
           const isDemoUser = Boolean(profile?.is_demo) || profile?.role === 'demo' || (email ? email.includes('demo') : false);
+          const isAdminUser = Boolean(profile?.is_admin);
 
-          if (profile?.role === 'owner')      assignedRole = "owner";
+          if (isAdminUser)                    assignedRole = "admin";
+          else if (profile?.role === 'owner') assignedRole = "owner";
           else if (isDemoUser)                assignedRole = "demo";
 
           if (profile?.verification_status) {
@@ -98,9 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             phone: session.user.phone,
             avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
             role: assignedRole,
+            isAdmin: isAdminUser,
+            adminRole: profile?.admin_role ?? undefined,
             isDemo: isDemoUser,
             facilitySetupComplete: profile?.facility_setup_complete ?? false,
-            verificationStatus: ((assignedRole === "owner" || assignedRole === "demo" || isDemoUser)
+            verificationStatus: ((assignedRole === "owner" || assignedRole === "admin" || assignedRole === "demo" || isDemoUser)
               ? "verified"
               : dbVerificationStatus) as VerificationStatus
           };
@@ -109,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsLoading(false);
           return;
         }
+
       } catch (err) {
         console.warn("Supabase auth session check offline fallback:", err);
       }
