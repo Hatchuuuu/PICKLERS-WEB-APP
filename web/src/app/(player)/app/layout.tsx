@@ -89,7 +89,6 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
             <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
           </div>
           <div className="flex items-center gap-2">
-            <AdminHeaderBadge />
             {/* Notifications Dropdown */}
             <div className="relative" ref={notifRef}>
               <button
@@ -131,7 +130,8 @@ function AppShellInner({ children }: { children?: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-solid flex flex-col gap-1" style={{ borderColor: "var(--border-subtle)" }}>
+        <div className="p-4 border-t border-solid flex flex-col gap-1.5" style={{ borderColor: "var(--border-subtle)" }}>
+          <AdminHeaderBadge variant="sidebar" />
           {(user?.role === "owner" || user?.role === "demo") && (
             <button onClick={() => {
                 router.push("/app/owner");
