@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Tag, X, Power } from "lucide-react";
+import { Plus, Tag, X, Power, Trash2, AlertTriangle } from "lucide-react";
 import { PromoForm } from "@/components/admin/PromoForm";
 import type { Promotion } from "@/types/admin";
 import { useToast } from "@/contexts/ToastContext";
+import { SkeletonTableRows } from "@/components/admin/AdminSkeleton";
 import { cn } from "@/lib/utils";
 
 export default function PromotionsPage() {
@@ -12,6 +13,8 @@ export default function PromotionsPage() {
   const [promos, setPromos] = useState<Promotion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [promoToDelete, setPromoToDelete] = useState<Promotion | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchPromos = async () => {
     setIsLoading(true);
@@ -47,8 +50,31 @@ export default function PromotionsPage() {
         );
         fetchPromos();
       }
-    } catch (e: any) {
-      showToast(e.message || "Failed to update promo status", "error");
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Failed to update promo status", "error");
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!promoToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/promotions/${promoToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        showToast(`Promo code "${promoToDelete.code}" deleted.`, "success");
+        fetchPromos();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to delete promotion", "error");
+      }
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Deletion failed", "error");
+    } finally {
+      setIsDeleting(false);
+      setPromoToDelete(null);
     }
   };
 
@@ -76,8 +102,22 @@ export default function PromotionsPage() {
       {/* Table */}
       <div className="rounded-2xl border border-border bg-surface-base/80 backdrop-blur-2xl shadow-xl overflow-hidden">
         {isLoading ? (
-          <div className="py-20 text-center text-sm font-medium text-muted-foreground animate-pulse">
-            Loading promotions...
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-border bg-surface-raised/60 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="p-4">Code</th>
+                  <th className="p-4">Discount</th>
+                  <th className="p-4">Uses</th>
+                  <th className="p-4">Expires</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                <SkeletonTableRows rows={5} cols={6} />
+              </tbody>
+            </table>
           </div>
         ) : promos.length === 0 ? (
           <div className="py-20 text-center flex flex-col items-center gap-3">
@@ -95,7 +135,7 @@ export default function PromotionsPage() {
                   <th className="p-4">Uses</th>
                   <th className="p-4">Expires</th>
                   <th className="p-4">Status</th>
-                  <th className="p-4 text-right">Action</th>
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50 font-medium">
@@ -132,18 +172,28 @@ export default function PromotionsPage() {
                     </td>
 
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => handleToggleActive(p.id, p.is_active)}
-                        className={cn(
-                          "px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 ml-auto transition-colors",
-                          p.is_active
-                            ? "bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20"
-                            : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
-                        )}
-                      >
-                        <Power className="w-3.5 h-3.5" />
-                        <span>{p.is_active ? "Deactivate" : "Activate"}</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleToggleActive(p.id, p.is_active)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-colors",
+                            p.is_active
+                              ? "bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20"
+                              : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+                          )}
+                        >
+                          <Power className="w-3.5 h-3.5" />
+                          <span>{p.is_active ? "Deactivate" : "Activate"}</span>
+                        </button>
+
+                        <button
+                          onClick={() => setPromoToDelete(p)}
+                          className="p-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors"
+                          title="Delete Promo Code"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -170,6 +220,46 @@ export default function PromotionsPage() {
               }}
               onCancel={() => setIsFormModalOpen(false)}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {promoToDelete && (
+        <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-surface-base border border-border rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Delete Promo Code</h3>
+                <p className="text-xs text-muted-foreground">
+                  Are you sure you want to permanently delete{" "}
+                  <span className="font-bold text-emerald-400">{promoToDelete.code}</span>?
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground bg-surface-raised p-3 rounded-xl border border-border">
+              This action cannot be undone. Users will no longer be able to redeem this promo code.
+            </p>
+
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setPromoToDelete(null)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-surface-raised hover:bg-surface-interactive transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="flex-1 py-3 rounded-xl text-sm font-bold bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20 transition-colors disabled:opacity-60"
+              >
+                {isDeleting ? "Deleting…" : "Confirm Delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}

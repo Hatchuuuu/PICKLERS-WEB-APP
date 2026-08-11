@@ -52,14 +52,41 @@ export async function GET(_request: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true);
 
+    // 6. Bookings metrics (safely query bookings/court_bookings)
+    let totalRevenue = 0;
+    let bookingsToday = 0;
+    let bookingsThisMonth = 0;
+
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+
+      // Attempt to query bookings
+      const { data: bookingsData } = await supabase
+        .from('bookings')
+        .select('total_price, created_at');
+
+      if (bookingsData && Array.isArray(bookingsData)) {
+        totalRevenue = bookingsData.reduce((acc, b) => acc + (Number(b.total_price) || 0), 0);
+        bookingsToday = bookingsData.filter(b => new Date(b.created_at) >= todayStart).length;
+        bookingsThisMonth = bookingsData.filter(b => new Date(b.created_at) >= monthStart).length;
+      }
+    } catch {
+      // Table might not exist yet, default to 0
+    }
+
     const stats = {
       total_users: totalUsers || 0,
       total_owners: totalOwners || 0,
       active_facilities: activeFacilities || 0,
       pending_applications: pendingApps || 0,
-      total_revenue: 128500, // Estimated platform GMV revenue
-      bookings_today: 42,
-      bookings_this_month: 850,
+      total_revenue: totalRevenue,
+      bookings_today: bookingsToday,
+      bookings_this_month: bookingsThisMonth,
       active_promos: activePromos || 0
     };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import {
@@ -33,6 +33,22 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
 export function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const [pendingCount, setPendingCount] = useState<number>(0);
+
+  useEffect(() => {
+    async function fetchPendingCount() {
+      try {
+        const res = await fetch("/api/admin/applications?status=pending");
+        if (res.ok) {
+          const json = await res.json();
+          setPendingCount((json.data || []).length);
+        }
+      } catch {
+        // Silently fail — badge is non-critical
+      }
+    }
+    fetchPendingCount();
+  }, [pathname]); // Re-fetch when navigating between admin pages
 
   return (
     <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto relative">
@@ -42,6 +58,7 @@ export function AdminSidebar() {
             ? pathname === "/app/admin"
             : pathname.startsWith(item.href);
         const Icon = item.icon;
+        const showBadge = item.id === "applications" && pendingCount > 0;
 
         return (
           <button
@@ -67,6 +84,17 @@ export function AdminSidebar() {
               )}
             />
             <span className="relative z-10 flex-1">{item.label}</span>
+
+            {/* Pending count badge */}
+            {showBadge && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="relative z-10 min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[10px] font-black flex items-center justify-center shadow-md shadow-amber-500/30"
+              >
+                {pendingCount > 99 ? "99+" : pendingCount}
+              </motion.span>
+            )}
           </button>
         );
       })}

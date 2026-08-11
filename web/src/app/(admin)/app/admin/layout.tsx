@@ -8,6 +8,7 @@ import {
   User,
   Bell,
   ShieldCheck,
+  Command,
 } from "lucide-react";
 import { PicklersLogo } from "@/components/ui/PicklersLogo";
 import ShinyText from "@/components/ui/ShinyText";
@@ -50,6 +51,12 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
   const handleSwitchToPlayer = () => {
     toggleAdminMode();
     router.push("/app");
+  };
+
+  const getRoleLabel = () => {
+    if (user?.role === "dev") return "● Lead Developer";
+    if (user?.role === "admin" || user?.isAdmin) return "● Super Admin";
+    return "● Admin Account";
   };
 
   return (
@@ -139,41 +146,52 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
 
             {/* Admin Profile Footer */}
             <div
-              className="p-5 border-t border-solid flex items-center gap-3"
+              className="p-4 border-t border-solid flex flex-col gap-2"
               style={{ borderColor: "var(--border-subtle)", background: "rgba(0,0,0,0.15)" }}
             >
-              <div className="relative w-10 h-10 rounded-full flex items-center justify-center p-[2px] overflow-hidden">
-                <div
-                  className="absolute inset-0 w-full h-full"
-                  style={{
-                    background:
-                      "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #3B82F6 180deg, #10b981 360deg)",
-                  }}
-                />
-                <div
-                  className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase overflow-hidden"
-                  style={{ background: "var(--surface-base)", color: "#10b981" }}
-                >
-                  {user?.avatarUrl ? (
-                    <motion.img
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      src={user.avatarUrl}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    user?.name?.[0] || "A"
-                  )}
+              <div className="flex items-center gap-3">
+                <div className="relative w-10 h-10 rounded-full flex items-center justify-center p-[2px] overflow-hidden shrink-0">
+                  <div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      background:
+                        "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #3B82F6 180deg, #10b981 360deg)",
+                    }}
+                  />
+                  <div
+                    className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase overflow-hidden"
+                    style={{ background: "var(--surface-base)", color: "#10b981" }}
+                  >
+                    {user?.avatarUrl ? (
+                      <motion.img
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        src={user.avatarUrl}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      user?.name?.[0] || "A"
+                    )}
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-bold truncate text-foreground">
+                    {user?.name || "System Admin"}
+                  </div>
+                  <div className="text-[11px] font-semibold text-emerald-400 truncate">
+                    {getRoleLabel()}
+                  </div>
                 </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-[14px] font-bold truncate text-foreground">
-                  {user?.name || "System Admin"}
-                </div>
-                <div className="text-[12px] font-medium text-emerald-400 truncate">
-                  ● Admin Account
-                </div>
+
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium pt-1 border-t border-border/40">
+                <span className="flex items-center gap-1">
+                  <Command className="w-3 h-3 text-emerald-400" /> Quick Search
+                </span>
+                <kbd className="px-1.5 py-0.5 rounded bg-surface-raised border border-border text-[10px] font-mono text-foreground">
+                  ⌘K / Ctrl+K
+                </kbd>
               </div>
             </div>
           </aside>

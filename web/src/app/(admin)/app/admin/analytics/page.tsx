@@ -9,36 +9,49 @@ import {
   Trophy,
 } from "lucide-react";
 import { StatCard } from "@/components/admin/StatCard";
+import { SkeletonStatCard, SkeletonTableRows } from "@/components/admin/AdminSkeleton";
 import type { AdminStats } from "@/types/admin";
+
+interface FacilityLeaderboardItem {
+  rank: number;
+  id: string;
+  name: string;
+  owner: string;
+  bookings: number;
+  gmv: string;
+  rating: number;
+}
 
 export default function AnalyticsBIPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [topFacilities, setTopFacilities] = useState<FacilityLeaderboardItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadStats() {
+    async function loadData() {
       try {
-        const res = await fetch("/api/admin/analytics");
-        if (res.ok) {
-          const json = await res.json();
+        const [statsRes, facilitiesRes] = await Promise.all([
+          fetch("/api/admin/analytics"),
+          fetch("/api/admin/analytics/top-facilities"),
+        ]);
+
+        if (statsRes.ok) {
+          const json = await statsRes.json();
           setStats(json.data);
         }
+
+        if (facilitiesRes.ok) {
+          const json = await facilitiesRes.json();
+          setTopFacilities(json.data || []);
+        }
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load analytics data:", e);
       } finally {
         setIsLoading(false);
       }
     }
-    loadStats();
+    loadData();
   }, []);
-
-  const topFacilities = [
-    { rank: 1, name: "BGC Pickleball Hub", owner: "BGC Sports Inc.", bookings: 342, gmv: "₱171,000", rating: 4.9 },
-    { rank: 2, name: "Makati Smash Courts", owner: "Metro Pickleball Ltd", bookings: 289, gmv: "₱144,500", rating: 4.8 },
-    { rank: 3, name: "Ortigas Indoor Arena", owner: "East Coast Recreation", bookings: 215, gmv: "₱107,500", rating: 4.7 },
-    { rank: 4, name: "Alabang Country Club", owner: "South Sports Corp", bookings: 180, gmv: "₱90,000", rating: 4.9 },
-    { rank: 5, name: "Quezon City Pickle Park", owner: "QC Parks Dept", bookings: 140, gmv: "₱70,000", rating: 4.6 },
-  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,37 +67,45 @@ export default function AnalyticsBIPage() {
 
       {/* Primary KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total GMV Volume"
-          value={isLoading ? "..." : `₱${(stats?.total_revenue ?? 128500).toLocaleString()}`}
-          icon={DollarSign}
-          color="emerald"
-          trend="18.4% vs last month"
-          trendUp={true}
-        />
-        <StatCard
-          title="Total Registered Users"
-          value={isLoading ? "..." : stats?.total_users ?? 0}
-          icon={Users}
-          color="blue"
-          trend="124 new this week"
-          trendUp={true}
-        />
-        <StatCard
-          title="Bookings This Month"
-          value={isLoading ? "..." : stats?.bookings_this_month ?? 850}
-          icon={Calendar}
-          color="violet"
-          trend="8.2% conversion"
-          trendUp={true}
-        />
-        <StatCard
-          title="Active Facilities"
-          value={isLoading ? "..." : stats?.active_facilities ?? 0}
-          icon={Building2}
-          color="amber"
-          description="Verified partner courts"
-        />
+        {isLoading ? (
+          <>
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Total GMV Volume"
+              value={`₱${(stats?.total_revenue ?? 0).toLocaleString()}`}
+              icon={DollarSign}
+              color="emerald"
+              description="Platform total earnings"
+            />
+            <StatCard
+              title="Total Registered Users"
+              value={stats?.total_users ?? 0}
+              icon={Users}
+              color="blue"
+              description="Registered player profiles"
+            />
+            <StatCard
+              title="Bookings Today"
+              value={stats?.bookings_today ?? 0}
+              icon={Calendar}
+              color="violet"
+              description="Active reservations"
+            />
+            <StatCard
+              title="Active Facilities"
+              value={stats?.active_facilities ?? 0}
+              icon={Building2}
+              color="amber"
+              description="Verified partner courts"
+            />
+          </>
+        )}
       </div>
 
       {/* Facility Owner Leaderboard Table */}
@@ -104,7 +125,7 @@ export default function AnalyticsBIPage() {
             </div>
           </div>
           <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
-            Top 5 Partner Leaderboard
+            Live Database Ranking
           </span>
         </div>
 
@@ -121,16 +142,26 @@ export default function AnalyticsBIPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50 font-medium">
-              {topFacilities.map((f) => (
-                <tr key={f.rank} className="hover:bg-surface-raised/40 transition-colors">
-                  <td className="p-3 font-bold text-emerald-400">#{f.rank}</td>
-                  <td className="p-3 font-bold text-foreground">{f.name}</td>
-                  <td className="p-3 text-xs text-muted-foreground">{f.owner}</td>
-                  <td className="p-3 font-semibold">{f.bookings} bookings</td>
-                  <td className="p-3 font-bold text-emerald-400">{f.gmv}</td>
-                  <td className="p-3 text-right font-bold text-amber-400">★ {f.rating}</td>
+              {isLoading ? (
+                <SkeletonTableRows rows={5} cols={6} />
+              ) : topFacilities.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-xs text-muted-foreground">
+                    No active facilities available yet for ranking.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                topFacilities.map((f) => (
+                  <tr key={f.id || f.rank} className="hover:bg-surface-raised/40 transition-colors">
+                    <td className="p-3 font-bold text-emerald-400">#{f.rank}</td>
+                    <td className="p-3 font-bold text-foreground">{f.name}</td>
+                    <td className="p-3 text-xs text-muted-foreground">{f.owner}</td>
+                    <td className="p-3 font-semibold">{f.bookings} bookings</td>
+                    <td className="p-3 font-bold text-emerald-400">{f.gmv}</td>
+                    <td className="p-3 text-right font-bold text-amber-400">★ {f.rating}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

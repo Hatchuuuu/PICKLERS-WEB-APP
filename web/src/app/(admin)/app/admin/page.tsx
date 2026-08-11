@@ -11,8 +11,10 @@ import {
   Tag,
   ArrowRight,
   ShieldAlert,
+  BarChart3,
 } from "lucide-react";
 import { StatCard } from "@/components/admin/StatCard";
+import { SkeletonStatCard } from "@/components/admin/AdminSkeleton";
 import type { AdminStats, OwnerApplication } from "@/types/admin";
 
 export default function AdminOverviewPage() {
@@ -72,35 +74,46 @@ export default function AdminOverviewPage() {
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4">
-        <StatCard
-          title="Total Users"
-          value={isLoading ? "..." : stats?.total_users ?? 0}
-          icon={Users}
-          color="emerald"
-          description="Registered players"
-        />
-        <StatCard
-          title="Pending Apps"
-          value={isLoading ? "..." : stats?.pending_applications ?? 0}
-          icon={FileText}
-          color="amber"
-          pulse={(stats?.pending_applications ?? 0) > 0}
-          description="Needs review"
-        />
-        <StatCard
-          title="Facility Owners"
-          value={isLoading ? "..." : stats?.total_owners ?? 0}
-          icon={Building2}
-          color="blue"
-          description="Verified partners"
-        />
-        <StatCard
-          title="Active Promos"
-          value={isLoading ? "..." : stats?.active_promos ?? 0}
-          icon={Tag}
-          color="violet"
-          description="Running campaigns"
-        />
+        {isLoading ? (
+          <>
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Total Users"
+              value={stats?.total_users ?? 0}
+              icon={Users}
+              color="emerald"
+              description="Registered players"
+            />
+            <StatCard
+              title="Pending Apps"
+              value={stats?.pending_applications ?? 0}
+              icon={FileText}
+              color="amber"
+              pulse={(stats?.pending_applications ?? 0) > 0}
+              description="Needs review"
+            />
+            <StatCard
+              title="Facility Owners"
+              value={stats?.total_owners ?? 0}
+              icon={Building2}
+              color="blue"
+              description="Verified partners"
+            />
+            <StatCard
+              title="Active Promos"
+              value={stats?.active_promos ?? 0}
+              icon={Tag}
+              color="violet"
+              description="Running campaigns"
+            />
+          </>
+        )}
       </div>
 
       {/* Main Split Content */}
@@ -117,7 +130,9 @@ export default function AdminOverviewPage() {
                   Pending Owner Applications
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  {pendingApps.length} applications waiting for review
+                  {isLoading
+                    ? "Loading pending queue..."
+                    : `${pendingApps.length} application(s) waiting for review`}
                 </p>
               </div>
             </div>
@@ -130,8 +145,22 @@ export default function AdminOverviewPage() {
           </div>
 
           {isLoading ? (
-            <div className="py-12 text-center text-sm text-muted-foreground animate-pulse">
-              Loading applications...
+            <div className="flex flex-col gap-2.5">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="p-3.5 rounded-xl border border-border bg-surface-raised/40 animate-pulse flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-surface-raised shrink-0" />
+                    <div className="flex flex-col gap-2">
+                      <div className="h-3.5 w-32 rounded-lg bg-surface-raised" />
+                      <div className="h-3 w-44 rounded-lg bg-surface-raised" />
+                    </div>
+                  </div>
+                  <div className="h-6 w-16 rounded-full bg-surface-raised" />
+                </div>
+              ))}
             </div>
           ) : pendingApps.length === 0 ? (
             <div className="py-12 text-center flex flex-col items-center gap-2 border border-dashed border-border rounded-xl">
@@ -178,7 +207,7 @@ export default function AdminOverviewPage() {
 
         {/* Quick Operations Side Column */}
         <div className="flex flex-col gap-4">
-          <div className="p-5 rounded-2xl border border-border bg-surface-base/80 backdrop-blur-2xl shadow-xl flex flex-col gap-4">
+          <div className="p-5 rounded-2xl border border-border bg-surface-base/80 backdrop-blur-2xl shadow-xl flex flex-col gap-3">
             <h3 className="text-base font-bold text-foreground">Quick Actions</h3>
 
             <button
@@ -195,6 +224,26 @@ export default function AdminOverviewPage() {
                   </div>
                   <div className="text-xs text-muted-foreground">
                     Search and ban/unban users
+                  </div>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </button>
+
+            <button
+              onClick={() => router.push("/app/admin/analytics")}
+              className="w-full p-3.5 rounded-xl border border-border bg-surface-raised/60 hover:bg-surface-interactive flex items-center justify-between text-left transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-foreground">
+                    Executive Analytics BI
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    GMV metrics & partner ranks
                   </div>
                 </div>
               </div>

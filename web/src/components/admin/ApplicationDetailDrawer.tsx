@@ -15,16 +15,35 @@ import {
   MapPin,
   ExternalLink,
   ZoomIn,
+  Info,
 } from "lucide-react";
 import type { OwnerApplication } from "@/types/admin";
 import { RejectApplicationModal } from "./RejectApplicationModal";
+import { ApproveApplicationModal } from "./ApproveApplicationModal";
 import { useToast } from "@/contexts/ToastContext";
+import { cn } from "@/lib/utils";
 
 interface ApplicationDetailDrawerProps {
   application: OwnerApplication | null;
   onClose: () => void;
   onRefresh: () => void;
 }
+
+const STATUS_STYLES: Record<string, string> = {
+  pending: "bg-amber-500/10 border-amber-500/30 text-amber-400",
+  in_review: "bg-blue-500/10 border-blue-500/30 text-blue-400",
+  approved: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+  rejected: "bg-rose-500/10 border-rose-500/30 text-rose-400",
+  more_info_requested: "bg-violet-500/10 border-violet-500/30 text-violet-400",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Pending Review",
+  in_review: "In Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  more_info_requested: "More Info Requested",
+};
 
 export function ApplicationDetailDrawer({
   application,
@@ -33,6 +52,7 @@ export function ApplicationDetailDrawer({
 }: ApplicationDetailDrawerProps) {
   const { showToast } = useToast();
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [showRevisionInput, setShowRevisionInput] = useState(false);
   const [revisionNote, setRevisionNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,15 +60,10 @@ export function ApplicationDetailDrawer({
 
   if (!application) return null;
 
-  const handleApprove = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to approve "${application.facility_name}"? This will upgrade the user to a Verified Owner.`
-      )
-    ) {
-      return;
-    }
+  const isActionable =
+    application.status === "pending" || application.status === "in_review";
 
+  const handleApprove = async () => {
     setIsSubmitting(true);
     try {
       const res = await fetch(`/api/admin/applications/${application.id}`, {
@@ -68,10 +83,14 @@ export function ApplicationDetailDrawer({
         const err = await res.json();
         showToast(err.error || "Failed to approve application", "error");
       }
-    } catch (e: any) {
-      showToast(e.message || "Approval failed", "error");
+    } catch (e: unknown) {
+      showToast(
+        e instanceof Error ? e.message : "Approval failed",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
+      setIsApproveModalOpen(false);
     }
   };
 
@@ -85,15 +104,21 @@ export function ApplicationDetailDrawer({
       });
 
       if (res.ok) {
-        showToast(`Rejected application for "${application.facility_name}".`, "error");
+        showToast(
+          `Rejected application for "${application.facility_name}".`,
+          "error"
+        );
         onRefresh();
         onClose();
       } else {
         const err = await res.json();
         showToast(err.error || "Failed to reject application", "error");
       }
-    } catch (e: any) {
-      showToast(e.message || "Rejection failed", "error");
+    } catch (e: unknown) {
+      showToast(
+        e instanceof Error ? e.message : "Rejection failed",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -124,8 +149,11 @@ export function ApplicationDetailDrawer({
         const err = await res.json();
         showToast(err.error || "Failed to request revision", "error");
       }
-    } catch (e: any) {
-      showToast(e.message || "Failed to submit request", "error");
+    } catch (e: unknown) {
+      showToast(
+        e instanceof Error ? e.message : "Failed to submit request",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -213,17 +241,26 @@ export function ApplicationDetailDrawer({
         >
           {/* Header */}
           <div className="p-6 border-b border-border flex items-center justify-between bg-surface-base/80 backdrop-blur-2xl">
-            <div>
+            <div className="flex flex-col gap-1">
               <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
                 Owner Application Inspection
               </div>
               <h2 className="text-xl font-black text-foreground tracking-tight">
                 {application.facility_name}
               </h2>
+              {/* Status pill */}
+              <span
+                className={cn(
+                  "self-start px-3 py-1 rounded-full text-[11px] font-bold border uppercase tracking-wide mt-1",
+                  STATUS_STYLES[application.status] || STATUS_STYLES.pending
+                )}
+              >
+                {STATUS_LABELS[application.status] || application.status}
+              </span>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-surface-raised text-muted-foreground"
+              className="p-2 rounded-full hover:bg-surface-raised text-muted-foreground transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -231,6 +268,57 @@ export function ApplicationDetailDrawer({
 
           {/* Drawer Body Scrollable */}
           <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+
+            {/* Already-processed notice */}
+            {!isActionable && (
+              <div
+                className={cn(
+                  "flex items-start gap-3 p-4 rounded-xl border text-sm",
+                  application.status === "approved"
+                    ? "bg-emerald-500/5 border-emerald-500/20"
+                    : "bg-surface-raised border-border"
+                )}
+              >
+                <Info
+                  className={cn(
+                    "w-4 h-4 mt-0.5 shrink-0",
+                    application.status === "approved"
+                      ? "text-emerald-400"
+                      : "text-muted-foreground"
+                  )}
+                />
+                <div>
+                  <div className="font-bold text-foreground">
+                    {application.status === "approved"
+                      ? "Application already approved"
+                      : application.status === "rejected"
+                      ? "Application was rejected"
+                      : "Application marked as more info requested"}
+                  </div>
+                  {(application as unknown as Record<string, string>)
+                    .rejection_reason && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Reason:{" "}
+                      {
+                        (application as unknown as Record<string, string>)
+                          .rejection_reason
+                      }
+                    </div>
+                  )}
+                  {(application as unknown as Record<string, string>)
+                    .revision_request_note && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Revision note:{" "}
+                      {
+                        (application as unknown as Record<string, string>)
+                          .revision_request_note
+                      }
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Applicant Profile */}
             <div className="flex flex-col gap-3 p-4 rounded-2xl border border-border bg-surface-raised/40">
               <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -310,7 +398,7 @@ export function ApplicationDetailDrawer({
               </div>
             </div>
 
-            {/* Revision note section if requested */}
+            {/* Revision note section */}
             {showRevisionInput && (
               <div className="flex flex-col gap-2 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10">
                 <div className="text-xs font-bold text-amber-400">
@@ -321,7 +409,7 @@ export function ApplicationDetailDrawer({
                   value={revisionNote}
                   onChange={(e) => setRevisionNote(e.target.value)}
                   placeholder="Tell applicant what documents or details need correction..."
-                  className="w-full p-2.5 rounded-lg border border-amber-500/30 bg-background text-sm text-foreground focus:outline-none"
+                  className="w-full p-2.5 rounded-lg border border-amber-500/30 bg-background text-sm text-foreground focus:outline-none resize-none"
                 />
                 <div className="flex gap-2 justify-end">
                   <button
@@ -333,7 +421,7 @@ export function ApplicationDetailDrawer({
                   <button
                     onClick={handleRequestRevision}
                     disabled={isSubmitting}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-black hover:bg-amber-400"
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-black hover:bg-amber-400 disabled:opacity-60"
                   >
                     Submit Revision Request
                   </button>
@@ -342,34 +430,51 @@ export function ApplicationDetailDrawer({
             )}
           </div>
 
-          {/* Action Bar Footer */}
-          <div className="p-4 border-t border-border bg-surface-base/90 backdrop-blur-2xl flex items-center gap-2">
-            <button
-              onClick={() => setIsRejectModalOpen(true)}
-              disabled={isSubmitting}
-              className="flex-1 py-3 rounded-xl text-xs font-bold bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <XCircle className="w-4 h-4" /> Reject
-            </button>
+          {/* Action Bar Footer — only shown for actionable applications */}
+          {isActionable ? (
+            <div className="p-4 border-t border-border bg-surface-base/90 backdrop-blur-2xl flex items-center gap-2">
+              <button
+                onClick={() => setIsRejectModalOpen(true)}
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl text-xs font-bold bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <XCircle className="w-4 h-4" /> Reject
+              </button>
 
-            <button
-              onClick={() => setShowRevisionInput(!showRevisionInput)}
-              disabled={isSubmitting}
-              className="flex-1 py-3 rounded-xl text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <HelpCircle className="w-4 h-4" /> Revision Note
-            </button>
+              <button
+                onClick={() => setShowRevisionInput(!showRevisionInput)}
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <HelpCircle className="w-4 h-4" /> Revision Note
+              </button>
 
-            <button
-              onClick={handleApprove}
-              disabled={isSubmitting}
-              className="flex-1 py-3 rounded-xl text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <CheckCircle2 className="w-4 h-4" /> Approve
-            </button>
-          </div>
+              <button
+                onClick={() => setIsApproveModalOpen(true)}
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Approve
+              </button>
+            </div>
+          ) : (
+            <div className="p-4 border-t border-border bg-surface-base/90 backdrop-blur-2xl">
+              <p className="text-center text-xs text-muted-foreground font-medium">
+                No further actions available for this application.
+              </p>
+            </div>
+          )}
         </motion.div>
       </div>
+
+      {/* Approve Modal */}
+      <ApproveApplicationModal
+        isOpen={isApproveModalOpen}
+        facilityName={application.facility_name}
+        isSubmitting={isSubmitting}
+        onClose={() => setIsApproveModalOpen(false)}
+        onConfirm={handleApprove}
+      />
 
       {/* Reject Modal */}
       <RejectApplicationModal
@@ -392,7 +497,11 @@ export function ApplicationDetailDrawer({
             >
               <X className="w-5 h-5" />
             </button>
-            <img src={zoomedDoc} alt="Zoomed document" className="w-full h-auto max-h-[85vh] object-contain rounded-xl" />
+            <img
+              src={zoomedDoc}
+              alt="Zoomed document"
+              className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
+            />
           </div>
         </div>
       )}
