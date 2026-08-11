@@ -41,27 +41,27 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {/* Toast Floating Container - Bottom Center for Clean Non-Blocking Visibility */}
-      <div className="fixed bottom-24 sm:bottom-10 inset-x-0 mx-auto w-fit max-w-[90vw] px-4 z-[9999] flex flex-col items-center gap-2 pointer-events-none">
+      {/* Toast Floating Container - Top Right for Clean Non-Blocking Visibility */}
+      <div className="fixed top-5 sm:top-6 inset-x-0 sm:inset-x-auto sm:right-6 mx-auto sm:mx-0 w-fit max-w-[90vw] sm:max-w-md px-4 sm:px-0 z-[99999] flex flex-col items-center sm:items-end gap-2.5 pointer-events-none">
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
             <motion.div
               key={toast.id}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.95, transition: { duration: 0.15 } }}
-              className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl max-w-full text-center sm:text-left pointer-events-auto ${
+              exit={{ opacity: 0, y: -12, scale: 0.95, transition: { duration: 0.15 } }}
+              className={`flex items-center gap-2.5 px-4.5 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-2xl max-w-full text-center sm:text-left pointer-events-auto bg-slate-900/95 dark:bg-[#0d1527]/95 ${
                 toast.type === "success"
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400"
-                  : "bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400"
+                  ? "border-emerald-500/30 text-emerald-400 shadow-emerald-500/5"
+                  : "border-red-500/30 text-red-400 shadow-red-500/5"
               }`}
             >
               {toast.type === "success" ? (
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
               ) : (
-                <AlertCircle className="w-4 h-4 shrink-0" />
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
               )}
-              <span className="text-[13px] font-semibold tracking-wide leading-tight">
+              <span className="text-[13px] font-bold tracking-wide leading-tight text-white">
                 {toast.message}
               </span>
             </motion.div>

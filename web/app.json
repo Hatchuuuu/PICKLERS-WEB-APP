@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "35778d4a-83cd-4bcb-9009-835e4c7b6233"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.hatchuuuu.picklersapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}

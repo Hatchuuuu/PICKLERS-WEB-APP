@@ -96,9 +96,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             moto: String(f.moto || "15 min"),
             car: String(f.car || "30 min"),
             hours: String(f.hours || "6am - 10pm"),
-            courts: 6,
+            courts: Number(f.court_count || f.courts || 6),
             rating: Number(f.rating || 4.8),
-            reviews: 124,
+            reviews: Number(f.review_count || f.reviews || 0),
             price: f.price ? Number(f.price) : 400,
             indoor: String(f.type || "").toLowerCase().includes('indoor'),
             tags: []

@@ -69,55 +69,39 @@ export async function GET(req: NextRequest) {
     (myLikesRes.data ?? []).forEach(l => myFollowedIds.add(l.liked_id));
   }
 
-  // 2. Their Data
+  // 2. Their Data (Fetched in parallel via Promise.all)
   const likeCountMap: Record<string, number> = {};
   const iLikedSet = new Set<string>();
   const theirClubMemberships: Record<string, Set<string>> = {};
   const theirFollows: Record<string, Set<string>> = {};
-  const theirRecentPosts: Record<string, number> = {}; // count of posts in last 7 days
+  const theirRecentPosts: Record<string, number> = {};
 
-  // Get Likes (who liked them, and did I like them?)
-  const { data: likesReceivedData } = await supabase
-    .from("player_likes")
-    .select("liker_id, liked_id")
-    .in("liked_id", profileIds);
+  const isRecommendMode = !q.trim() && !idParam;
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  for (const row of (likesReceivedData ?? [])) {
+  const [likesReceivedRes, clubMembersRes, likesGivenRes, postsRes] = await Promise.all([
+    supabase.from("player_likes").select("liker_id, liked_id").in("liked_id", profileIds),
+    isRecommendMode ? supabase.from("club_members").select("user_id, club_id").in("user_id", profileIds) : Promise.resolve({ data: null }),
+    isRecommendMode ? supabase.from("player_likes").select("liker_id, liked_id").in("liker_id", profileIds) : Promise.resolve({ data: null }),
+    isRecommendMode ? supabase.from("feed_posts").select("author_id").in("author_id", profileIds).gte("created_at", sevenDaysAgo.toISOString()) : Promise.resolve({ data: null }),
+  ]);
+
+  for (const row of (likesReceivedRes.data ?? [])) {
     likeCountMap[row.liked_id] = (likeCountMap[row.liked_id] ?? 0) + 1;
     if (row.liker_id === myId) iLikedSet.add(row.liked_id);
   }
 
-  // If we are doing recommendations, we need more data for scoring
-  if (!q.trim() && !idParam) {
-    // Their club memberships
-    const { data: clubMembersData } = await supabase
-      .from("club_members")
-      .select("user_id, club_id")
-      .in("user_id", profileIds);
-    for (const row of (clubMembersData ?? [])) {
+  if (isRecommendMode) {
+    for (const row of (clubMembersRes.data ?? [])) {
       if (!theirClubMemberships[row.user_id]) theirClubMemberships[row.user_id] = new Set();
       theirClubMemberships[row.user_id].add(row.club_id);
     }
-
-    // Who they follow
-    const { data: likesGivenData } = await supabase
-      .from("player_likes")
-      .select("liker_id, liked_id")
-      .in("liker_id", profileIds);
-    for (const row of (likesGivenData ?? [])) {
+    for (const row of (likesGivenRes.data ?? [])) {
       if (!theirFollows[row.liker_id]) theirFollows[row.liker_id] = new Set();
       theirFollows[row.liker_id].add(row.liked_id);
     }
-
-    // Recent activity (posts in last 7 days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const { data: postsData } = await supabase
-      .from("feed_posts")
-      .select("author_id")
-      .in("author_id", profileIds)
-      .gte("created_at", sevenDaysAgo.toISOString());
-    for (const row of (postsData ?? [])) {
+    for (const row of (postsRes.data ?? [])) {
       theirRecentPosts[row.author_id] = (theirRecentPosts[row.author_id] ?? 0) + 1;
     }
   }

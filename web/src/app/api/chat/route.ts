@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { redis } from '@/lib/redis';
 
+const inMemoryRateLimits = new Map<string, { count: number; resetAt: number }>();
+
 export async function POST(req: NextRequest) {
   try {
     const forwardedFor = req.headers.get('x-forwarded-for');
@@ -21,6 +23,20 @@ export async function POST(req: NextRequest) {
           { error: 'Too many chat requests. Please wait a moment.' },
           { status: 429 }
         );
+      }
+    } else {
+      const now = Date.now();
+      const entry = inMemoryRateLimits.get(ip);
+      if (entry && now < entry.resetAt) {
+        entry.count++;
+        if (entry.count > 10) {
+          return NextResponse.json(
+            { error: 'Too many chat requests. Please wait a moment.' },
+            { status: 429 }
+          );
+        }
+      } else {
+        inMemoryRateLimits.set(ip, { count: 1, resetAt: now + 60000 });
       }
     }
 
@@ -51,7 +67,7 @@ export async function POST(req: NextRequest) {
         reqHeaders.set("Authorization", `Bearer ${apiKey}`);
         reqHeaders.set("Content-Type", "application/json");
         reqHeaders.set("HTTP-Referer", "https://picklers-web-app.vercel.app");
-        reqHeaders.set("X-Title", "Picklers Web App");
+        reqHeaders.set("X-Title", "Picklers Platform");
 
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",

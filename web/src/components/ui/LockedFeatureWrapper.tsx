@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useUserStore } from "@/store/useUserStore";
 import { VerificationGateModal } from "./VerificationGateModal";
 
@@ -18,17 +19,21 @@ export function LockedFeatureWrapper({
   className = "",
   featureLabel
 }: LockedFeatureWrapperProps) {
-  const { role, verificationStatus, isLoading } = useUserStore();
+  const { user, isLoading: authLoading } = useAuth();
+  const { role: storeRole, verificationStatus: storeStatus, isLoading: storeLoading } = useUserStore();
   const [showModal, setShowModal] = useState(false);
 
-  // Still loading state: render normally or lightly faded? We will render normally to prevent layout shift
-  if (isLoading) {
+  // If still loading auth context, render normally to avoid layout pop
+  if (authLoading && storeLoading) {
     return <div className={`relative ${className}`}>{children}</div>;
   }
 
-  // Demo accounts bypass the verification gate entirely
-  const isBypassed = role === "demo";
-  const isVerified = verificationStatus === "verified";
+  // Demo accounts and Owners bypass the verification gate entirely
+  const isDemoUser = user?.isDemo || user?.role === "demo" || (user?.email ? user.email.includes("demo") : false) || storeRole === "demo";
+  const isOwner = user?.role === "owner" || storeRole === "owner";
+  const isBypassed = isDemoUser || isOwner;
+
+  const isVerified = (user?.verificationStatus === "verified") || (storeStatus === "verified");
   
   const isLocked = !isBypassed && !isVerified;
 

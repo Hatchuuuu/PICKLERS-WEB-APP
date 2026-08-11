@@ -82,8 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .eq('id', session.user.id)
             .single();
 
+          const isDemoUser = Boolean(profile?.is_demo) || profile?.role === 'demo' || (email ? email.includes('demo') : false);
+
           if (profile?.role === 'owner')      assignedRole = "owner";
-          else if (profile?.role === 'demo')  assignedRole = "demo";
+          else if (isDemoUser)                assignedRole = "demo";
 
           if (profile?.verification_status) {
             dbVerificationStatus = profile.verification_status as VerificationStatus;
@@ -96,9 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             phone: session.user.phone,
             avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
             role: assignedRole,
-            isDemo: profile?.is_demo ?? false,
+            isDemo: isDemoUser,
             facilitySetupComplete: profile?.facility_setup_complete ?? false,
-            verificationStatus: ((assignedRole === "owner" || assignedRole === "demo")
+            verificationStatus: ((assignedRole === "owner" || assignedRole === "demo" || isDemoUser)
               ? "verified"
               : dbVerificationStatus) as VerificationStatus
           };

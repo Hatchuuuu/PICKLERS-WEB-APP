@@ -57,35 +57,53 @@ export function FacilitySetupWizard({ onClose }: FacilitySetupWizardProps) {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await res.json();
-          const address = data.display_name || 
-            [data.address?.road, data.address?.suburb, data.address?.city || data.address?.town, data.address?.country]
-              .filter(Boolean)
-              .join(", ");
-              
+          const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+          let address = "";
+
+          if (mapboxToken && mapboxToken.trim().startsWith("pk.")) {
+            const res = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&types=address,neighborhood,locality,place`
+            );
+            const data = await res.json();
+            if (data.features && data.features.length > 0) {
+              address = data.features[0].place_name || data.features[0].text;
+            }
+          }
+
+          if (!address) {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await res.json();
+            address = data.display_name || 
+              [data.address?.road, data.address?.suburb, data.address?.city || data.address?.town, data.address?.country]
+                .filter(Boolean)
+                .join(", ");
+          }
+
           if (address) {
             setFormData(prev => ({ ...prev, address }));
             showToast("Location detected successfully!", "success");
           } else {
-            setFormData(prev => ({ ...prev, address: "Bonifacio Global City, Taguig, Metro Manila" }));
-            showToast("Location set to current city!", "success");
+            setFormData(prev => ({ ...prev, address: "Bunao, Dumaguete City" }));
+            showToast("Location detected!", "success");
           }
         } catch (e) {
-          setFormData(prev => ({ ...prev, address: "Bonifacio Global City, Taguig, Metro Manila" }));
+          console.error("Geocoding error:", e);
           showToast("Location detected!", "success");
         } finally {
           setIsLocating(false);
         }
       },
-      (_error) => {
+      (error) => {
         setIsLocating(false);
-        setFormData(prev => ({ ...prev, address: "Bonifacio Global City, Taguig, Metro Manila" }));
-        showToast("Location set to default area (BGC, Taguig).", "success");
+        if (error.code === error.PERMISSION_DENIED) {
+          showToast("Location access denied.", "error");
+        } else {
+          showToast("Could not determine exact location.", "error");
+        }
       },
-      { timeout: 8000, enableHighAccuracy: true }
+      { timeout: 10000, enableHighAccuracy: true, maximumAge: 60000 }
     );
   };
 

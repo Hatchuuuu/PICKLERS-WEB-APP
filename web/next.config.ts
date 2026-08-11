@@ -1,6 +1,10 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from "next";
 
+const cspHeader = process.env.NODE_ENV === "development"
+  ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrouter.ai https://api.paymongo.com https://*.upstash.io https://*.ingest.sentry.io https://api.mapbox.com; font-src 'self' https://fonts.gstatic.com;"
+  : "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrouter.ai https://api.paymongo.com https://*.upstash.io https://*.ingest.sentry.io https://api.mapbox.com; font-src 'self' https://fonts.gstatic.com;";
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -10,7 +14,7 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrouter.ai https://api.paymongo.com https://*.upstash.io; font-src 'self' https://fonts.gstatic.com;" },
+          { key: 'Content-Security-Policy', value: cspHeader },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), payment=()' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },

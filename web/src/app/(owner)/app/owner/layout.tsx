@@ -72,226 +72,226 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
 
   return (
     <ProtectedRoute>
-    <RoleGate role="owner">
-    <OwnerProvider>
-    <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20 bg-surface-base/75 backdrop-blur-2xl border-border">
-        <div className="px-6 py-5 border-b border-solid flex items-center justify-between relative" style={{ borderColor: "var(--border-subtle)" }}>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <PicklersLogo size={32} />
-              <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
-            </div>
-            <div className="text-[12px] font-medium" style={{ color: "var(--accent-success)" }}>Owner Portal</div>
-          </div>
-          
-          <div className="relative">
-            <button
-              data-notif-toggle
-              onClick={() => setShowNotifs(!showNotifs)}
-              aria-label="Notifications"
-              className="relative p-2 rounded-xl border border-border hover:bg-surface-interactive text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center shadow-md">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-            <AnimatePresence>
-              {showNotifs && (
-                <div ref={notifRef} className="absolute right-0 top-12 z-50">
-                  <NotificationDropdown onClose={() => setShowNotifs(false)} />
+      <RoleGate role="owner">
+        <OwnerProvider>
+          <div className="flex h-screen overflow-hidden bg-background">
+            <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-solid relative z-20 bg-surface-base/75 backdrop-blur-2xl border-border">
+              <div className="px-6 py-5 border-b border-solid flex items-center justify-between relative" style={{ borderColor: "var(--border-subtle)" }}>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <PicklersLogo size={32} />
+                    <ShinyText text="PICKLERS" className="text-xl font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+                  </div>
+                  <div className="text-[12px] font-medium" style={{ color: "var(--accent-success)" }}>Owner Portal</div>
                 </div>
+
+                <div className="relative">
+                  <button
+                    data-notif-toggle
+                    onClick={() => setShowNotifs(!showNotifs)}
+                    aria-label="Notifications"
+                    className="relative p-2 rounded-xl border border-border hover:bg-surface-interactive text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center shadow-md">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {showNotifs && (
+                      <div ref={notifRef} className="absolute right-0 top-12 z-50">
+                        <NotificationDropdown onClose={() => setShowNotifs(false)} />
+                      </div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+              <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto relative">
+                {OWNER_TABS.map(tab => {
+                  const active = view === tab.id;
+                  const Icon = tab.icon;
+                  return (
+                    <button key={tab.id} onClick={() => router.push(`/app/owner/${tab.id.replace("owner-", "") === "dashboard" ? "" : tab.id.replace("owner-", "")}`)}
+                      className={cn("relative flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-left active:scale-[0.98] transition-colors group", active ? "font-bold" : "")}
+                      style={{ color: active ? "var(--ink-inverse)" : "var(--ink-secondary)" }}>
+                      {active && (
+                        <motion.div layoutId="owner-sidebar-active-pill" className="absolute inset-0 rounded-xl"
+                          style={{ background: "var(--accent-warning)" }}
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+                      )}
+
+                      <Icon className="w-4 h-4 shrink-0 relative z-10 transition-transform group-hover:scale-110" />
+                      <span className="relative z-10">{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+              <div className="p-4 border-t border-solid flex flex-col gap-1" style={{ borderColor: "var(--border-subtle)" }}>
+                <button onClick={() => {
+                  router.push("/app");
+                }}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
+                  style={{ color: "var(--ink-muted)" }}
+                  onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
+                  onMouseLeave={e => e.currentTarget.style.color = "var(--ink-muted)"}>
+                  <User className="w-5 h-5" />Player Dashboard
+                </button>
+                <button onClick={() => setShowLogoutConfirm(true)}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
+                  style={{ color: "var(--ink-muted)" }}
+                  onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
+                  onMouseLeave={e => e.currentTarget.style.color = "var(--ink-muted)"}>
+                  <LogOut className="w-4 h-4" />Log Out
+                </button>
+              </div>
+              <div className="p-5 border-t border-solid flex items-center gap-3" style={{ borderColor: "var(--border-subtle)", background: "rgba(0,0,0,0.1)" }}>
+                <div className="relative w-10 h-10 rounded-full flex items-center justify-center p-[2px] overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full"
+                    style={{
+                      background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
+                    }} />
+                  <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase overflow-hidden"
+                    style={{ background: "var(--surface-base)", color: "#FBBF24" }}>
+                    {user?.avatarUrl ? (
+                      <motion.img
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        src={user.avatarUrl}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      user?.name?.[0] || "O"
+                    )}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink-primary)" }}>{user?.name || "BGC Pickleball Hub"}</div>
+                  <div className="text-[12px]" style={{ color: "var(--accent-success)" }}>
+                    {user?.role === "demo" ? "● Demo Account — Owner View" : "● Verified Owner"}
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <main className="flex-1 overflow-y-auto pb-[120px] md:pb-0 relative bg-background flex flex-col">
+              {/* Mobile Premium Header */}
+              <div
+                className="md:hidden sticky top-0 z-[100] flex items-center justify-between px-[15px] py-[6px] border-b border-white/10 bg-[#0A1628]/95 dark:bg-[#0A1628]/95 backdrop-blur-3xl saturate-200">
+                <div className="flex items-center gap-1">
+                  <PicklersLogo size={36} />
+                  <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
+                </div>
+                <div className="flex items-center gap-2 relative">
+                  <div className="relative" ref={notifRef}>
+                    <button
+                      data-notif-toggle="true"
+                      onClick={() => setShowNotifs(!showNotifs)}
+                      className="relative active:scale-95 transition-transform flex items-center justify-center p-2 rounded-full hover:bg-surface-raised min-w-[44px] min-h-[44px]"
+                      aria-label="Notifications"
+                    >
+                      <Bell className="w-5 h-5 pointer-events-none" style={{ color: "var(--ink-secondary)" }} />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-[1.5px]" style={{ borderColor: "var(--surface-base)", background: "var(--accent-primary)" }} />
+                      )}
+                    </button>
+
+                    <AnimatePresence>
+                      {showNotifs && (
+                        <NotificationDropdown onClose={() => setShowNotifs(false)} className="!fixed !top-[60px] !left-[15px] !right-[15px] !w-auto !max-w-none origin-top" />
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <button onClick={() => setShowLogoutConfirm(true)} className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px]">
+                    <div className="absolute inset-0 w-full h-full"
+                      style={{
+                        background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
+                      }} />
+                    <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-[15px] font-extrabold uppercase pointer-events-none overflow-hidden"
+                      style={{ background: "var(--surface-base)", color: "#FBBF24" }}>
+                      {user?.avatarUrl ? (
+                        <motion.img
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          src={user.avatarUrl}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        user?.name?.[0] || "O"
+                      )}
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <DemoBanner />
+
+              <div className="flex-1 flex flex-col pt-2 md:pt-4">
+                <AnimatePresence mode="wait">
+                  <motion.div key={pathname} className="flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ ease: "easeInOut", duration: 0.25 }}>
+                    {children}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </main>
+
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/10 z-40 bg-[#0A1628] dark:bg-[#0A1628] backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.5)]" style={{ background: "#0A1628", paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
+              {OWNER_TABS.map(tab => {
+                const active = view === tab.id;
+                const Icon = tab.icon;
+                return (
+                  <button key={tab.id} onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(10);
+                    router.push(`/app/owner/${tab.id.replace("owner-", "") === "dashboard" ? "" : tab.id.replace("owner-", "")}`);
+                  }}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 min-h-[56px] py-2.5 transition-colors relative active:scale-95"
+                    aria-label={tab.label}
+                    style={{ color: active ? "#10b981" : "var(--ink-muted)" }}>
+                    {active && (
+                      <motion.div layoutId="owner-mobile-active-indicator" className="absolute top-0 inset-x-0 h-[3px] mx-auto w-10 rounded-full"
+                        style={{ background: "#10b981" }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+                    )}
+                    <Icon className="w-5 h-5" />
+                    <span className="text-[11px] font-semibold tracking-tight">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            <AnimatePresence>
+              {showLogoutConfirm && (
+                <motion.div key="logout-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl" onClick={() => setShowLogoutConfirm(false)}>
+                  <motion.div key="logout-modal" initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center" onClick={e => e.stopPropagation()}>
+                    <div className="w-[340px] bg-background dark:bg-surface-base border border-border rounded-3xl shadow-2xl relative p-6 pb-7 text-center flex flex-col items-center">
+                      <div className="w-14 h-14 relative z-10 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-5 mt-2">
+                        <LogOut className="w-6 h-6 text-red-500" style={{ marginLeft: "-2px" }} strokeWidth={2.5} />
+                      </div>
+                      <h3 className="text-[19px] font-bold text-foreground tracking-tight mb-2">Sign Out?</h3>
+                      <p className="text-[14px] text-muted-foreground font-medium leading-relaxed px-1">
+                        You will need to sign in again to access the facility dashboard.
+                      </p>
+                      <div className="flex gap-3 w-full mt-7">
+                        <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all active:scale-[0.98]">
+                          Cancel
+                        </button>
+                        <button onClick={() => { logout(); router.push("/auth"); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-red-500 hover:bg-red-600 transition-all active:scale-[0.98]">
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
-        </div>
-        <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto relative">
-          {OWNER_TABS.map(tab => {
-            const active = view === tab.id;
-            const Icon = tab.icon;
-            return (
-              <button key={tab.id} onClick={() => router.push(`/app/owner/${tab.id.replace("owner-", "") === "dashboard" ? "" : tab.id.replace("owner-", "")}`)}
-                className={cn("relative flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-left active:scale-[0.98] transition-colors group", active ? "font-bold" : "")}
-                style={{ color: active ? "var(--ink-inverse)" : "var(--ink-secondary)" }}>
-                {active && (
-                  <motion.div layoutId="owner-sidebar-active-pill" className="absolute inset-0 rounded-xl"
-                    style={{ background: "var(--accent-warning)" }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }} />
-                )}
-
-                <Icon className="w-4 h-4 shrink-0 relative z-10 transition-transform group-hover:scale-110" />
-                <span className="relative z-10">{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-        <div className="p-4 border-t border-solid flex flex-col gap-1" style={{ borderColor: "var(--border-subtle)" }}>
-          <button onClick={() => {
-            router.push("/app");
-          }}
-            className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
-            style={{ color: "var(--ink-muted)" }}
-            onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
-            onMouseLeave={e => e.currentTarget.style.color = "var(--ink-muted)"}>
-            <User className="w-5 h-5" />Player Dashboard
-          </button>
-          <button onClick={() => setShowLogoutConfirm(true)}
-            className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors hover:bg-surface-raised"
-            style={{ color: "var(--ink-muted)" }}
-            onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
-            onMouseLeave={e => e.currentTarget.style.color = "var(--ink-muted)"}>
-            <LogOut className="w-4 h-4" />Log Out
-          </button>
-        </div>
-        <div className="p-5 border-t border-solid flex items-center gap-3" style={{ borderColor: "var(--border-subtle)", background: "rgba(0,0,0,0.1)" }}>
-          <div className="relative w-10 h-10 rounded-full flex items-center justify-center p-[2px] overflow-hidden">
-            <div className="absolute inset-0 w-full h-full"
-              style={{
-                background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
-              }} />
-            <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-sm font-bold uppercase overflow-hidden"
-              style={{ background: "var(--surface-base)", color: "#FBBF24" }}>
-              {user?.avatarUrl ? (
-                <motion.img
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  src={user.avatarUrl}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                user?.name?.[0] || "O"
-              )}
-            </div>
-          </div>
-          <div className="min-w-0">
-            <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink-primary)" }}>{user?.name || "BGC Pickleball Hub"}</div>
-            <div className="text-[12px]" style={{ color: "var(--accent-success)" }}>
-              {user?.role === "demo" ? "● Demo Account — Owner View" : "● Verified Owner"}
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="flex-1 overflow-y-auto pb-[120px] md:pb-0 relative bg-background flex flex-col">
-        {/* Mobile Premium Header */}
-        <div
-          className="md:hidden sticky top-0 z-[100] flex items-center justify-between px-[15px] py-[6px] border-b border-white/10 bg-[#0A1628]/95 dark:bg-[#0A1628]/95 backdrop-blur-3xl saturate-200">
-          <div className="flex items-center gap-1">
-            <PicklersLogo size={36} />
-            <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
-          </div>
-          <div className="flex items-center gap-2 relative">
-            <div className="relative" ref={notifRef}>
-              <button
-                data-notif-toggle="true"
-                onClick={() => setShowNotifs(!showNotifs)}
-                className="relative active:scale-95 transition-transform flex items-center justify-center p-2 rounded-full hover:bg-surface-raised min-w-[44px] min-h-[44px]"
-                aria-label="Notifications"
-              >
-                <Bell className="w-5 h-5 pointer-events-none" style={{ color: "var(--ink-secondary)" }} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-[1.5px]" style={{ borderColor: "var(--surface-base)", background: "var(--accent-primary)" }} />
-                )}
-              </button>
-
-              <AnimatePresence>
-                {showNotifs && (
-                  <NotificationDropdown onClose={() => setShowNotifs(false)} className="!fixed !top-[60px] !left-[15px] !right-[15px] !w-auto !max-w-none origin-top" />
-                )}
-              </AnimatePresence>
-            </div>
-
-            <button onClick={() => setShowLogoutConfirm(true)} className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px]">
-              <div className="absolute inset-0 w-full h-full"
-                style={{
-                  background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
-                }} />
-              <div className="relative z-10 w-full h-full rounded-full flex items-center justify-center text-[15px] font-extrabold uppercase pointer-events-none overflow-hidden"
-                style={{ background: "var(--surface-base)", color: "#FBBF24" }}>
-                {user?.avatarUrl ? (
-                  <motion.img
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    src={user.avatarUrl}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  user?.name?.[0] || "O"
-                )}
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <DemoBanner />
-
-        <div className="flex-1 flex flex-col pt-2 md:pt-4">
-          <AnimatePresence mode="wait">
-            <motion.div key={pathname} className="flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ ease: "easeInOut", duration: 0.25 }}>
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </main>
-
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/10 z-40 bg-[#0A1628] dark:bg-[#0A1628] backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.5)]" style={{ background: "#0A1628", paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
-        {OWNER_TABS.map(tab => {
-          const active = view === tab.id;
-          const Icon = tab.icon;
-          return (
-            <button key={tab.id} onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(10);
-              router.push(`/app/owner/${tab.id.replace("owner-", "") === "dashboard" ? "" : tab.id.replace("owner-", "")}`);
-            }}
-              className="flex-1 flex flex-col items-center justify-center gap-1 min-h-[56px] py-2.5 transition-colors relative active:scale-95"
-              aria-label={tab.label}
-              style={{ color: active ? "#10b981" : "var(--ink-muted)" }}>
-              {active && (
-                <motion.div layoutId="owner-mobile-active-indicator" className="absolute top-0 inset-x-0 h-[3px] mx-auto w-10 rounded-full"
-                  style={{ background: "#10b981" }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }} />
-              )}
-              <Icon className="w-5 h-5" />
-              <span className="text-[11px] font-semibold tracking-tight">{tab.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      <AnimatePresence>
-        {showLogoutConfirm && (
-          <motion.div key="logout-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl" onClick={() => setShowLogoutConfirm(false)}>
-            <motion.div key="logout-modal" initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center" onClick={e => e.stopPropagation()}>
-              <div className="w-[340px] bg-background dark:bg-surface-base border border-border rounded-3xl shadow-2xl relative p-6 pb-7 text-center flex flex-col items-center">
-                <div className="w-14 h-14 relative z-10 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-5 mt-2">
-                  <LogOut className="w-6 h-6 text-red-500" style={{ marginLeft: "-2px" }} strokeWidth={2.5} />
-                </div>
-                <h3 className="text-[19px] font-bold text-foreground tracking-tight mb-2">Sign Out?</h3>
-                <p className="text-[14px] text-muted-foreground font-medium leading-relaxed px-1">
-                  You will need to sign in again to access the facility dashboard.
-                </p>
-                <div className="flex gap-3 w-full mt-7">
-                  <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all active:scale-[0.98]">
-                    Cancel
-                  </button>
-                  <button onClick={() => { logout(); router.push("/auth"); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-red-500 hover:bg-red-600 transition-all active:scale-[0.98]">
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-    </OwnerProvider>
-    </RoleGate>
+        </OwnerProvider>
+      </RoleGate>
     </ProtectedRoute>
   );
 }

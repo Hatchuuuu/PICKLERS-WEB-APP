@@ -13,13 +13,13 @@ export function useWallet() {
         return { balance: 2500 };
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return { balance: 0 };
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return { balance: 0 };
 
       const { data, error } = await supabase
         .from('wallets')
         .select('balance')
-        .eq('user_id', session.user.id)
+        .eq('user_id', authUser.id)
         .maybeSingle();
 
       if (error) {

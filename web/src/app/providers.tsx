@@ -8,6 +8,8 @@ import { AppProvider } from "@/contexts/AppContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { InitUserStore } from "@/components/InitUserStore";
+import { MobileDeepLinkProvider } from "@/components/providers/MobileDeepLinkProvider";
+import { PushNotificationProvider } from "@/components/providers/PushNotificationProvider";
 
 // Safe patch for browser extensions (Google Translate, Grammarly, etc.) that mutate DOM nodes directly
 if (typeof window !== "undefined") {
@@ -46,14 +48,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <AuthProvider>
-            <AppProvider>
-              <InitUserStore />
-              <ErrorBoundary>
-                {children}
-              </ErrorBoundary>
-            </AppProvider>
-          </AuthProvider>
+          <MobileDeepLinkProvider>
+            <AuthProvider>
+              <PushNotificationProvider>
+                <AppProvider>
+                  <InitUserStore />
+                  <ErrorBoundary>
+                    {children}
+                  </ErrorBoundary>
+                </AppProvider>
+              </PushNotificationProvider>
+            </AuthProvider>
+          </MobileDeepLinkProvider>
         </ToastProvider>
       </QueryClientProvider>
     </ThemeProvider>

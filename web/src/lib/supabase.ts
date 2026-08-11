@@ -1,4 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { isNativePlatform } from '@/lib/platform';
+import { CapacitorStorageAdapter } from '@/lib/capacitor-storage';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -32,9 +34,20 @@ const safeFetch: typeof fetch = async (...args) => {
   }
 };
 
+// Build auth options — on native mobile, use Capacitor Preferences for persistent token storage
+const authOptions: Record<string, unknown> = {};
+if (typeof window !== 'undefined' && isNativePlatform()) {
+  authOptions.storage = CapacitorStorageAdapter;
+  authOptions.autoRefreshToken = true;
+  authOptions.persistSession = true;
+  authOptions.detectSessionInUrl = true;
+}
+
 // Use SSR browser client so session is written to cookies, allowing middleware to read it
 export const supabase = createBrowserClient(supabaseUrl, supabaseKey, {
   global: {
     fetch: safeFetch,
   },
+  ...(Object.keys(authOptions).length > 0 ? { auth: authOptions } : {}),
 });
+

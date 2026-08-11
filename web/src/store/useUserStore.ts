@@ -27,7 +27,7 @@ export const useUserStore = create<UserState>((set) => ({
 
       const { data: profile, error } = await supabase
         .from("player_profiles")
-        .select("role, verification_status")
+        .select("role, verification_status, is_demo")
         .eq("id", session.user.id)
         .single();
 
@@ -45,9 +45,16 @@ export const useUserStore = create<UserState>((set) => ({
         return;
       }
 
+      const email = session.user.email ?? "";
+      const isDemoUser = Boolean(profile.is_demo) || profile.role === "demo" || email.includes("demo");
+      const isOwner = profile.role === "owner";
+
+      const assignedRole: UserRole = isOwner ? "owner" : isDemoUser ? "demo" : (profile.role as UserRole || "player");
+      const assignedStatus: VerificationStatus = (isOwner || isDemoUser) ? "verified" : (profile.verification_status as VerificationStatus || "unverified");
+
       set({
-        role: profile.role as UserRole,
-        verificationStatus: profile.verification_status as VerificationStatus,
+        role: assignedRole,
+        verificationStatus: assignedStatus,
         isLoading: false,
       });
     } catch (err) {

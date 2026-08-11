@@ -38,19 +38,7 @@ export function AvatarUpload() {
   const initialLetter = user?.name?.[0]?.toUpperCase() || "P";
 
   return (
-    <div className="flex flex-col items-center justify-center relative pb-6">
-      {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") && (
-        <button
-          onClick={() => {
-            user.facilitySetupComplete ? router.push('/app/owner') : setShowSetup(true);
-          }}
-          className="absolute top-0 left-[calc(50%+45px)] flex items-center gap-1.5 px-3 py-1.5 bg-surface-interactive border border-border rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors shadow-sm whitespace-nowrap"
-        >
-          <ArrowRightLeft className="w-3.5 h-3.5 text-foreground/70" />
-          <span className="text-[12px] font-bold text-foreground/80">Switch to Owner</span>
-        </button>
-      )}
-
+    <div className="flex flex-col items-center justify-center relative pb-2">
       <input 
         type="file" 
         ref={fileInputRef} 
@@ -136,7 +124,7 @@ export function AvatarUpload() {
           </AnimatePresence>
         </div>
       </motion.div>
-      <div className="mt-4 text-center">
+      <div className="mt-4 flex flex-col items-center text-center">
         <div className="font-bold text-[19px] tracking-tight text-foreground">{user?.name}</div>
         <div className="mt-1.5 inline-flex items-center justify-center text-[11px] font-black uppercase tracking-[0.1em] text-foreground/50 bg-black/5 dark:bg-white/5 px-3 py-1 rounded-full border border-black/5 dark:border-white/5 shadow-sm">
           <span className="text-emerald-500 drop-shadow-sm">Player</span>
@@ -147,6 +135,20 @@ export function AvatarUpload() {
             </>
           )}
         </div>
+
+        {/* Switch to Owner Button centered below profile details */}
+        {/* Switch to Owner Button with white glassmorphic background */}
+        {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") && (
+          <button
+            onClick={() => {
+              user?.facilitySetupComplete ? router.push('/app/owner') : setShowSetup(true);
+            }}
+            className="mt-3.5 inline-flex items-center gap-2 px-4.5 py-2 bg-white/10 hover:bg-white/20 dark:bg-white/10 dark:hover:bg-white/20 border border-white/25 backdrop-blur-xl rounded-full transition-all active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.25)] group"
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-400 transition-transform group-hover:rotate-180" />
+            <span className="text-[12.5px] font-extrabold text-foreground dark:text-white">Switch to Owner</span>
+          </button>
+        )}
       </div>
     
       {showSetup && <FacilitySetupWizard onClose={() => setShowSetup(false)} />}

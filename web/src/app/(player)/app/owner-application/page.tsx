@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from 'next/navigation';
 
 import { motion, AnimatePresence } from "motion/react";
-import { Check, ChevronRight, Send, AlertCircle, FileText, Upload, Loader2, MapPin } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Send, AlertCircle, FileText, Upload, Loader2, MapPin, User, Mail, Phone, Building2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,7 +30,7 @@ export default function OwnerApplication() {
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
-  
+
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
@@ -50,7 +50,7 @@ export default function OwnerApplication() {
       facilityName: "",
       address: "",
       courtsCount: 1,
-      surfaceType: "Hard Court (Acrylic)",
+      surfaceType: "Hard Court (Acrylic) - Indoor",
       firstName: user?.name?.split(" ")[0] || "",
       lastName: user?.name?.split(" ").slice(1).join(" ") || "",
       email: user?.email || "",
@@ -69,42 +69,74 @@ export default function OwnerApplication() {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await res.json();
-          const address = data.display_name || 
-            [data.address?.road, data.address?.suburb, data.address?.city || data.address?.town, data.address?.country]
-              .filter(Boolean)
-              .join(", ");
-              
+          const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+          let address = "";
+
+          if (mapboxToken && mapboxToken.trim().startsWith("pk.")) {
+            try {
+              const res = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&types=address,neighborhood,locality,place`
+              );
+              if (res.ok) {
+                const data = await res.json();
+                if (data.features && data.features.length > 0) {
+                  address = data.features[0].place_name || data.features[0].text;
+                }
+              }
+            } catch (err) {
+              console.warn("Mapbox geocoding fetch error:", err);
+            }
+          }
+
+          if (!address) {
+            try {
+              const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+              );
+              if (res.ok) {
+                const data = await res.json();
+                address = data.display_name ||
+                  [data.address?.road, data.address?.suburb, data.address?.city || data.address?.town, data.address?.country]
+                    .filter(Boolean)
+                    .join(", ");
+              }
+            } catch (err) {
+              console.warn("OSM geocoding fetch error:", err);
+            }
+          }
+
           if (address) {
             setValue("address", address, { shouldValidate: true });
             showToast("Location detected successfully!", "success");
           } else {
-            setValue("address", "Bonifacio Global City, Taguig, Metro Manila", { shouldValidate: true });
-            showToast("Location set to current city!", "success");
+            setValue("address", "Bunao, Dumaguete City", { shouldValidate: true });
+            showToast("Location set to Dumaguete City", "success");
           }
         } catch (e) {
-          setValue("address", "Bonifacio Global City, Taguig, Metro Manila", { shouldValidate: true });
-          showToast("Location detected!", "success");
+          console.error("Geocoding error:", e);
+          setValue("address", "Bunao, Dumaguete City", { shouldValidate: true });
+          showToast("Location set to Dumaguete City", "success");
         } finally {
           setIsLocating(false);
         }
       },
-      (_error) => {
+      (error) => {
         setIsLocating(false);
-        setValue("address", "Bonifacio Global City, Taguig, Metro Manila", { shouldValidate: true });
-        showToast("Location set to default area (BGC, Taguig).", "success");
+        setValue("address", "Bunao, Dumaguete City", { shouldValidate: true });
+        if (error.code === error.PERMISSION_DENIED) {
+          showToast("Location access denied. Set to Dumaguete City.", "error");
+        } else {
+          showToast("Location set to Dumaguete City.", "success");
+        }
       },
-      { timeout: 8000, enableHighAccuracy: true }
+      { timeout: 5000, enableHighAccuracy: false, maximumAge: 300000 }
     );
   };
 
   const nextStep = async () => {
     let isValid = false;
     if (step === 1) {
-      isValid = await trigger(["facilityName", "address", "courtsCount", "surfaceType"]);
+      isValid = await trigger(["facilityName", "address", "courtsCount"]);
     } else if (step === 2) {
       isValid = await trigger(["firstName", "lastName", "email", "phone"]);
     } else {
@@ -166,7 +198,7 @@ export default function OwnerApplication() {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-      
+
       const { data, error } = await supabase.storage
         .from('facility-documents')
         .upload(fileName, file, { cacheControl: '3600', upsert: true });
@@ -274,39 +306,74 @@ export default function OwnerApplication() {
       <input ref={permitInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handlePermitChange} />
       <input ref={idInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handleIdChange} />
 
-      <button onClick={() => router.back()} 
+      <button onClick={() => router.back()}
         className="group flex items-center justify-center w-11 h-11 rounded-full mb-8 transition-all active:scale-95 shadow-md bg-surface-interactive border-border text-muted-foreground hover:bg-black/5 hover:text-foreground dark:bg-white/[0.05] dark:border-white/10 dark:text-white/60 dark:hover:bg-white/[0.1] dark:hover:text-white"
         aria-label="Go Back">
         <ChevronRight className="w-6 h-6 rotate-180 transition-transform group-hover:-translate-x-0.5" />
       </button>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-foreground" >Partner with Picklers</h1>
-        <p className="text-muted-foreground">Apply for an Owner Dashboard to list your courts, manage bookings, and grow your facility.</p>
+        <h1 className="text-3xl font-extrabold mb-2 text-foreground tracking-tight">Partner with Picklers</h1>
+        <p className="text-slate-600 dark:text-slate-300 font-medium text-sm sm:text-base">Apply for an Owner Dashboard to list your courts, manage bookings, and grow your facility.</p>
       </div>
 
-      <div className="flex items-center gap-2 mb-8">
-        {[1, 2, 3].map(i => (
-          <div key={i} className={`h-2 rounded-full flex-1 transition-colors duration-300 ${step >= i ? "bg-accent-primary" : "bg-surface-interactive"}`} />
-        ))}
+      {/* Enhanced Step Progress Pill Bar */}
+      <div className="grid grid-cols-3 gap-2 mb-8">
+        {[
+          { num: 1, label: "Facility Details", icon: "🎾" },
+          { num: 2, label: "Contact Info", icon: "👤" },
+          { num: 3, label: "Verification", icon: "📄" },
+        ].map((s) => {
+          const isActive = step === s.num;
+          const isPassed = step > s.num;
+          return (
+            <div
+              key={s.num}
+              onClick={() => isPassed && setStep(s.num)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-extrabold transition-all cursor-pointer select-none",
+                isActive
+                  ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-400 shadow-[0_4px_16px_rgba(16,185,129,0.25)]"
+                  : isPassed
+                    ? "bg-slate-200/60 dark:bg-white/[0.08] border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:border-emerald-500/30"
+                    : "bg-slate-100/40 dark:bg-white/[0.03] border-slate-200 dark:border-white/5 text-slate-400 dark:text-slate-500"
+              )}
+            >
+              <span className="text-sm">{s.icon}</span>
+              <span className="hidden sm:inline">{s.label}</span>
+              <span className="sm:hidden">Step {s.num}</span>
+              {isPassed && <Check className="w-3.5 h-3.5 ml-auto text-emerald-500 shrink-0" />}
+            </div>
+          );
+        })}
       </div>
 
       <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ ease: "easeOut" }}
-        className="rounded-2xl p-6 md:p-8" style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
-        
+        className="rounded-3xl p-6 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-slate-900/90 dark:bg-[#0e172a]/90 border border-slate-700/60 dark:border-white/15">
+
         {step === 1 && (
-          <div className="flex flex-col gap-5">
-            <h2 className="text-xl font-semibold mb-2 text-foreground">Facility Details</h2>
+          <div className="flex flex-col gap-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-emerald-500" />
+              <span>Facility & Court Details</span>
+            </h2>
+
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">Facility Name</label>
-              <input {...register("facilityName")} type="text" placeholder="e.g. BGC Pickleball Hub" 
-                className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors", errors.facilityName ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                style={{ background: "var(--surface-base)", border: errors.facilityName ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
-              {errors.facilityName && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.facilityName.message}</span>}
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Facility Name</label>
+              <div className="relative">
+                <input {...register("facilityName")} type="text" placeholder="e.g. BGC Pickleball Hub"
+                  className={cn(
+                    "w-full pl-10 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.08] border border-slate-300 dark:border-white/15 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20",
+                    errors.facilityName && "border-red-500 focus:border-red-500"
+                  )} />
+                <Building2 className="w-4 h-4 text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              </div>
+              {errors.facilityName && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.facilityName.message}</span>}
             </div>
+
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">Complete Address</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Complete Address</label>
                 <button
                   type="button"
                   onClick={handleDetectLocation}
@@ -322,9 +389,11 @@ export default function OwnerApplication() {
                 </button>
               </div>
               <div className="relative">
-                <input {...register("address")} type="text" placeholder="Unit, Building, Street, City" 
-                  className={cn("w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-colors", errors.address ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                  style={{ background: "var(--surface-base)", border: errors.address ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
+                <input {...register("address")} type="text" placeholder="Unit, Building, Street, City"
+                  className={cn(
+                    "w-full pl-10 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.08] border border-slate-300 dark:border-white/15 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20",
+                    errors.address && "border-red-500 focus:border-red-500"
+                  )} />
                 <button
                   type="button"
                   onClick={handleDetectLocation}
@@ -335,125 +404,144 @@ export default function OwnerApplication() {
                   {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.address && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.address.message}</span>}
+              {errors.address && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.address.message}</span>}
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Number of Courts</label>
-                <input {...register("courtsCount")} type="number" placeholder="e.g. 4" 
-                  className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors", errors.courtsCount ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                  style={{ background: "var(--surface-base)", border: errors.courtsCount ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
-                {errors.courtsCount && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.courtsCount.message}</span>}
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Surface Type</label>
-                <select {...register("surfaceType")} 
-                  className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors appearance-none", errors.surfaceType ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                  style={{ background: "var(--surface-base)", border: errors.surfaceType ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }}>
-                  <option>Hard Court (Acrylic)</option>
-                  <option>Mixed (Indoor & Outdoor)</option>
-                  <option>Silica Turf / Sand</option>
-                  <option>Cushioned Acrylic</option>
-                  <option>Wood / Gymnasium</option>
-                  <option>Concrete</option>
-                  <option>Other / Custom Surface</option>
-                </select>
-                {errors.surfaceType && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.surfaceType.message}</span>}
-              </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Total Number of Courts</label>
+              <input {...register("courtsCount")} type="number" min="1" placeholder="e.g. 4"
+                className={cn(
+                  "w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.08] border border-slate-300 dark:border-white/15 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20",
+                  errors.courtsCount && "border-red-500 focus:border-red-500"
+                )} />
+              {errors.courtsCount && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.courtsCount.message}</span>}
             </div>
+
           </div>
         )}
 
         {step === 2 && (
-          <div className="flex flex-col gap-5">
-            <h2 className="text-xl font-semibold mb-2 text-foreground">Contact Information</h2>
+          <div className="flex flex-col gap-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <User className="w-5 h-5 text-emerald-500" />
+              <span>Contact Information</span>
+            </h2>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">First Name</label>
-                <input {...register("firstName")} type="text" 
-                  className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors", errors.firstName ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                  style={{ background: "var(--surface-base)", border: errors.firstName ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
-                {errors.firstName && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.firstName.message}</span>}
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">First Name</label>
+                <div className="relative">
+                  <input {...register("firstName")} type="text" placeholder="First Name"
+                    className={cn(
+                      "w-full pl-10 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.08] border border-slate-300 dark:border-white/15 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20",
+                      errors.firstName && "border-red-500 focus:border-red-500"
+                    )} />
+                  <User className="w-4 h-4 text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                </div>
+                {errors.firstName && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.firstName.message}</span>}
               </div>
+
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Last Name</label>
-                <input {...register("lastName")} type="text" 
-                  className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors", errors.lastName ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                  style={{ background: "var(--surface-base)", border: errors.lastName ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
-                {errors.lastName && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.lastName.message}</span>}
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Last Name</label>
+                <div className="relative">
+                  <input {...register("lastName")} type="text" placeholder="Last Name"
+                    className={cn(
+                      "w-full pl-10 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.08] border border-slate-300 dark:border-white/15 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20",
+                      errors.lastName && "border-red-500 focus:border-red-500"
+                    )} />
+                  <User className="w-4 h-4 text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                </div>
+                {errors.lastName && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.lastName.message}</span>}
               </div>
             </div>
+
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">Business Email</label>
-              <input {...register("email")} type="email" placeholder="owner@facility.com" 
-                className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors", errors.email ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                style={{ background: "var(--surface-base)", border: errors.email ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
-              {errors.email && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.email.message}</span>}
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Business Email</label>
+              <div className="relative">
+                <input {...register("email")} type="email" placeholder="owner@facility.com"
+                  className={cn(
+                    "w-full pl-10 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.08] border border-slate-300 dark:border-white/15 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20",
+                    errors.email && "border-red-500 focus:border-red-500"
+                  )} />
+                <Mail className="w-4 h-4 text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              </div>
+              {errors.email && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.email.message}</span>}
             </div>
+
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">Phone Number</label>
-              <input {...register("phone")} type="tel" placeholder="+63 9XX XXX XXXX" 
-                className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors", errors.phone ? "border-red-500 focus:border-red-500" : "focus:border-cyan-400")}
-                style={{ background: "var(--surface-base)", border: errors.phone ? "1px solid rgb(239 68 68)" : "1px solid var(--border-default)", color: "var(--ink-primary)" }} />
-              {errors.phone && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.phone.message}</span>}
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Phone Number</label>
+              <div className="relative">
+                <input {...register("phone")} type="tel" placeholder="+63 9XX XXX XXXX"
+                  className={cn(
+                    "w-full pl-10 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.08] border border-slate-300 dark:border-white/15 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20",
+                    errors.phone && "border-red-500 focus:border-red-500"
+                  )} />
+                <Phone className="w-4 h-4 text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              </div>
+              {errors.phone && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.phone.message}</span>}
             </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="flex flex-col gap-5">
-            <h2 className="text-xl font-semibold mb-2 text-foreground">Verification Docs</h2>
-            <p className="text-sm text-muted-foreground mb-4">To ensure trust on our platform, we require basic verification that you own or operate the facility.</p>
-            
+          <div className="flex flex-col gap-6">
+            <div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 mb-1">
+                <FileText className="w-5 h-5 text-emerald-500" />
+                <span>Verification Documents</span>
+              </h2>
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-300">To ensure trust on Picklers, please provide basic verification of facility ownership or operation.</p>
+            </div>
+
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">Business Permit / DTI Registration</label>
-              <div 
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Business Permit / DTI Registration</label>
+              <div
                 onClick={() => permitInputRef.current?.click()}
                 className={cn(
-                  "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2",
-                  permitFileName 
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" 
-                    : "hover:bg-surface-interactive/80 border-border bg-surface-base"
+                  "border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2.5",
+                  permitFileName
+                    ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+                    : "bg-slate-100/60 dark:bg-white/[0.04] border-slate-300 dark:border-white/15 hover:border-emerald-500/40 hover:bg-slate-200/50 dark:hover:bg-white/[0.08]"
                 )}
               >
                 {permitFileName ? (
                   <>
-                    <FileText className="w-8 h-8 text-emerald-400" />
-                    <div className="text-sm font-bold text-emerald-400">{permitFileName}</div>
-                    <div className="text-xs text-emerald-500/80 font-medium">Click to change attached document</div>
+                    <FileText className="w-9 h-9 text-emerald-400" />
+                    <div className="text-sm font-extrabold text-emerald-400">{permitFileName}</div>
+                    <div className="text-xs text-emerald-500/90 font-bold bg-emerald-500/10 px-3 py-1 rounded-full">Click to change attached file</div>
                   </>
                 ) : (
                   <>
-                    <Upload className="w-7 h-7 text-accent-primary opacity-80" />
-                    <div className="text-sm font-medium text-accent-primary">Click to upload Business Permit</div>
-                    <div className="text-xs text-muted-foreground">PDF, JPG, or PNG up to 10MB</div>
+                    <Upload className="w-8 h-8 text-emerald-500" />
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">Click to upload Business Permit</div>
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Supports PDF, JPG, PNG, WEBP up to 10MB</div>
                   </>
                 )}
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 mt-2">
-              <label className="text-sm font-medium text-foreground">Proof of Identity (Valid ID)</label>
-              <div 
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Proof of Identity (Valid Government ID)</label>
+              <div
                 onClick={() => idInputRef.current?.click()}
                 className={cn(
-                  "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2",
-                  idFileName 
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" 
-                    : "hover:bg-surface-interactive/80 border-border bg-surface-base"
+                  "border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2.5",
+                  idFileName
+                    ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+                    : "bg-slate-100/60 dark:bg-white/[0.04] border-slate-300 dark:border-white/15 hover:border-emerald-500/40 hover:bg-slate-200/50 dark:hover:bg-white/[0.08]"
                 )}
               >
                 {idFileName ? (
                   <>
-                    <FileText className="w-8 h-8 text-emerald-400" />
-                    <div className="text-sm font-bold text-emerald-400">{idFileName}</div>
-                    <div className="text-xs text-emerald-500/80 font-medium">Click to change attached document</div>
+                    <FileText className="w-9 h-9 text-emerald-400" />
+                    <div className="text-sm font-extrabold text-emerald-400">{idFileName}</div>
+                    <div className="text-xs text-emerald-500/90 font-bold bg-emerald-500/10 px-3 py-1 rounded-full">Click to change attached file</div>
                   </>
                 ) : (
                   <>
-                    <Upload className="w-7 h-7 text-accent-primary opacity-80" />
-                    <div className="text-sm font-medium text-accent-primary">Click to upload Valid ID</div>
-                    <div className="text-xs text-muted-foreground">PDF, JPG, or PNG up to 10MB</div>
+                    <Upload className="w-8 h-8 text-emerald-500" />
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">Click to upload Valid ID</div>
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Supports PDF, JPG, PNG, WEBP up to 10MB</div>
                   </>
                 )}
               </div>
@@ -461,16 +549,23 @@ export default function OwnerApplication() {
           </div>
         )}
 
-        <div className="flex items-center justify-between mt-10 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+        <div className="flex items-center justify-between mt-10 pt-6 border-t border-slate-300/60 dark:border-white/10">
           {step > 1 ? (
-            <button onClick={() => setStep(s => s - 1)} className="text-sm font-semibold text-muted-foreground hover:text-foreground">
-              Previous Step
+            <button
+              type="button"
+              onClick={() => setStep(s => s - 1)}
+              className="flex items-center gap-1.5 px-5 py-3 rounded-xl border border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-200/60 dark:bg-white/5 hover:bg-slate-300/80 dark:hover:bg-white/10 font-bold text-sm transition-all active:scale-95 cursor-pointer shadow-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Previous Step</span>
             </button>
           ) : <div />}
-          
-          <button onClick={nextStep}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold active:scale-[0.98] transition-all shadow-lg"
-            style={{ background: "var(--accent-primary)", color: "var(--surface-base)", boxShadow: "0 4px 14px rgba(0,217,139,0.25)" }}>
+
+          <button
+            type="button"
+            onClick={nextStep}
+            className="flex items-center gap-2 px-7 py-3.5 rounded-xl font-extrabold text-sm active:scale-[0.98] transition-all bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_4px_20px_rgba(16,185,129,0.4)] border border-emerald-400/30 cursor-pointer"
+          >
             {step < 3 ? "Next Step" : <><Send className="w-4 h-4" /> Submit Application</>}
           </button>
         </div>
@@ -481,37 +576,37 @@ export default function OwnerApplication() {
           <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-4 pb-8">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm" onClick={() => !isSubmitting && setShowSubmitConfirm(false)} />
             <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="relative w-full max-w-sm flex flex-col gap-2 z-10">
-              
+
               <div className="w-full max-w-sm bg-surface-raised/95 backdrop-blur-[40px] rounded-[24px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] border border-border">
-                 <div className="p-6 text-center pb-6">
-                   <div className="w-16 h-16 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5 border border-emerald-500/20 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
-                     <Send className="w-7 h-7 text-emerald-500 dark:text-emerald-400" style={{ marginLeft: "3px" }} />
-                   </div>
-                   <h3 className="text-[22px] font-black text-foreground tracking-tight" >Submit Application?</h3>
-                   <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
-                     Your facility details and documents will be sent for review. This process takes 24-48 hours.
-                   </p>
-                 </div>
-                 <div className="flex flex-col p-5 pt-0 gap-3">
-                   <button 
+                <div className="p-6 text-center pb-6">
+                  <div className="w-16 h-16 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5 border border-emerald-500/20 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
+                    <Send className="w-7 h-7 text-emerald-500 dark:text-emerald-400" style={{ marginLeft: "3px" }} />
+                  </div>
+                  <h3 className="text-[22px] font-black text-foreground tracking-tight" >Submit Application?</h3>
+                  <p className="text-[15px] text-foreground/60 mt-3 leading-relaxed">
+                    Your facility details and documents will be sent for review. This process takes 24-48 hours.
+                  </p>
+                </div>
+                <div className="flex flex-col p-5 pt-0 gap-3">
+                  <button
                     disabled={isSubmitting}
-                    onClick={handleSubmit(onSubmit)} 
+                    onClick={handleSubmit(onSubmit)}
                     className="w-full py-4 rounded-[18px] text-[16px] font-extrabold text-black bg-emerald-400 hover:bg-emerald-300 active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(52,211,153,0.3)] flex items-center justify-center gap-2 disabled:opacity-50"
-                   >
-                     {isSubmitting ? (
+                  >
+                    {isSubmitting ? (
                       <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>
-                     ) : (
+                    ) : (
                       "Submit for Review"
-                     )}
-                   </button>
-                   <button 
+                    )}
+                  </button>
+                  <button
                     disabled={isSubmitting}
-                    onClick={() => setShowSubmitConfirm(false)} 
+                    onClick={() => setShowSubmitConfirm(false)}
                     className="w-full py-4 rounded-[18px] text-[16px] font-semibold text-foreground/80 bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-[0.98] transition-all"
-                   >
-                     Review Details
-                   </button>
-                 </div>
+                  >
+                    Review Details
+                  </button>
+                </div>
               </div>
 
             </motion.div>

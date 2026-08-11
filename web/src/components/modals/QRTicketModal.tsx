@@ -101,10 +101,18 @@ export function QRTicketModal({ isOpen, onClose, booking }: QRTicketModalProps) 
                   <div className="relative p-3.5 rounded-2xl bg-white shadow-xl border border-black/10 flex flex-col items-center justify-center">
                     <QRCodeSVG
                       value={qrPayload}
-                      size={140}
-                      level="L"
+                      size={160}
+                      level="H"
                       marginSize={0}
                       includeMargin={false}
+                      imageSettings={{
+                        src: "/PICKLERS_OFFICIAL_LOGO.svg",
+                        x: undefined,
+                        y: undefined,
+                        height: 34,
+                        width: 34,
+                        excavate: true,
+                      }}
                     />
                     <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
                       <Ticket className="w-3 h-3 text-emerald-600" /> {fullRef}

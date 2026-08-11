@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { CalendarDays, Wallet, AlertTriangle, Navigation, Map } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Wallet, AlertTriangle, Navigation, Map, PlusCircle, ArrowDownLeft, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -10,9 +11,7 @@ import { NavigationOverlay } from "@/components/shared/NavigationOverlay";
 import { useWallet } from "@/hooks/useWallet";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-
 import { QRTicketModal } from "@/components/modals/QRTicketModal";
-import { QrCode } from "lucide-react";
 
 export default function BookingsTab() {
   const { bookings, setBookings, setJoinedMatches } = useApp();
@@ -26,13 +25,19 @@ export default function BookingsTab() {
   const { showToast } = useToast();
   const { data: wallet } = useWallet();
 
-  const [transactions, setTransactions] = useState<{ id: string; label: string; amount: string; date: string }[]>([
-    { id: "1", label: "Refund — BGC Hub Court 2", amount: "+₱400", date: "Jun 28" },
-    { id: "2", label: "Refund — SM Southmall Court 1", amount: "+₱800", date: "Jun 15" },
-  ]);
+  const [transactions, setTransactions] = useState<{ id: string; label: string; amount: string; date: string }[]>([]);
 
   useEffect(() => {
     async function fetchTransactions() {
+      const isDemo = user?.isDemo || user?.role === "demo";
+      if (isDemo) {
+        setTransactions([
+          { id: "1", label: "Refund — BGC Hub Court 2", amount: "+₱400", date: "Jun 28" },
+          { id: "2", label: "Refund — SM Southmall Court 1", amount: "+₱800", date: "Jun 15" },
+        ]);
+        return;
+      }
+
       if (!user?.id || !supabase?.from) return;
       try {
         const { data, error } = await supabase
@@ -49,13 +54,15 @@ export default function BookingsTab() {
             date: new Date(t.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric" }),
           }));
           setTransactions(formatted);
+        } else {
+          setTransactions([]);
         }
       } catch (err) {
         console.warn("Wallet transactions fetch warning:", err);
       }
     }
     fetchTransactions();
-  }, [user?.id]);
+  }, [user]);
   
   const tabs = ["Upcoming", "Completed", "Refunds", "Cancelled", "Wallet"];
   const filtered = tab === "Wallet" || tab === "Refunds" ? [] : bookings.filter(b => b.status === tab.toLowerCase());
@@ -191,7 +198,7 @@ export default function BookingsTab() {
             <h1 className="text-[32px] font-extrabold tracking-tight leading-none mb-1.5" style={{ color: "var(--ink-primary)" }}>
               Bookings
             </h1>
-            <p className="text-sm text-muted-foreground truncate">Manage your bookings</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400 truncate">Manage your bookings</p>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -202,7 +209,7 @@ export default function BookingsTab() {
             <button key={t} onClick={() => setTab(t)}
               className={cn(
                 "relative pb-3 text-[14px] font-bold tracking-wide transition-colors whitespace-nowrap",
-                active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                active ? "text-foreground" : "text-slate-500 dark:text-slate-400 hover:text-foreground"
               )}>
               {t}
               {active && (
@@ -226,26 +233,66 @@ export default function BookingsTab() {
           <p className="text-xs">Cancelled bookings within the safe window appear here as Pickle Credits.</p>
         </div>
       ) : tab === "Wallet" ? (
-        <div className="max-w-sm">
-          <div className="rounded-2xl p-6 mb-6" style={{ background: "linear-gradient(135deg, var(--surface-interactive) 0%, var(--surface-raised) 100%)", border: "1px solid var(--border-emphasis)" }}>
-            <div className="text-xs text-muted-foreground mb-1">Pickle Credits Balance</div>
-            <div className="text-4xl font-bold text-cyan-400 font-mono">₱{(wallet?.balance || 0).toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground mt-1">~≈ {Math.floor((wallet?.balance || 0) / 400)} court sessions</div>
-          </div>
-          <div className="text-xs text-muted-foreground mb-3">Recent Transactions</div>
-          {transactions.length === 0 ? (
-            <div className="text-xs text-muted-foreground py-4 text-center">No recent wallet transactions</div>
-          ) : (
-            transactions.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between py-3 border-b border-border">
-                <div>
-                  <div className="text-sm text-foreground">{tx.label}</div>
-                  <div className="text-xs text-muted-foreground">{tx.date}</div>
-                </div>
-                <span className="text-emerald-400 font-mono text-sm font-medium">{tx.amount}</span>
+        <div className="max-w-3xl space-y-6">
+          {/* Main Balance Card */}
+          <div className="relative overflow-hidden rounded-3xl p-6 sm:p-7 border border-emerald-500/25 bg-gradient-to-br from-emerald-950/60 via-slate-900 to-emerald-900/40 shadow-xl backdrop-blur-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            {/* Decorative Glow */}
+            <div className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+
+            <div className="flex flex-col min-w-0">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 mb-1">
+                <Wallet className="w-3.5 h-3.5" /> Pickle Credits Balance
               </div>
-            ))
-          )}
+              <div className="text-4xl sm:text-5xl font-black tracking-tight text-white font-sans my-1">
+                ₱{(wallet?.balance || 0).toLocaleString()}
+              </div>
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-[11.5px] font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-0.5 rounded-full inline-flex items-center gap-1">
+                  ~≈ {Math.floor((wallet?.balance || 0) / 400)} court sessions
+                </span>
+              </div>
+            </div>
+
+            <Link
+              href="/app/wallet"
+              className="shrink-0 text-xs sm:text-sm font-extrabold px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_4px_16px_rgba(16,185,129,0.4)] border border-emerald-400/40 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <PlusCircle className="w-4 h-4" /> Top Up Credits
+            </Link>
+          </div>
+
+          {/* Recent Transactions List */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-[11px] sm:text-[12px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 px-1">
+              <span>Recent Transactions</span>
+              <span className="text-slate-400 font-semibold lowercase">({transactions.length})</span>
+            </div>
+
+            <div className="bg-surface-base dark:bg-white/[0.03] border border-border dark:border-white/10 rounded-2xl p-2 sm:p-3 shadow-sm backdrop-blur-xl divide-y divide-border/60 dark:divide-white/5">
+              {transactions.length === 0 ? (
+                <div className="text-xs text-slate-400 dark:text-slate-400 py-8 text-center font-medium">
+                  No recent wallet transactions
+                </div>
+              ) : (
+                transactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-400">
+                        <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-foreground dark:text-white truncate">{tx.label}</div>
+                        <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{tx.date}</div>
+                      </div>
+                    </div>
+                    <span className="text-[15px] font-black text-emerald-600 dark:text-emerald-400 tracking-tight shrink-0">
+                      {tx.amount}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
@@ -341,31 +388,41 @@ export default function BookingsTab() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/70 backdrop-blur-md"
               onClick={() => setCancelModal(null)}
             />
             
             <motion.div 
-              initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 400 }}>
-              <div className="w-[340px] bg-background dark:bg-surface-base border border-border rounded-3xl shadow-2xl relative p-6 pb-7 text-center flex flex-col items-center">
-                 <div className="w-14 h-14 relative z-10 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-5 mt-2">
-                   <AlertTriangle className="w-6 h-6 text-red-500" strokeWidth={2.5} />
+              initial={{ scale: 1.05, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", damping: 25, stiffness: 400 }}
+              className="relative z-10 w-full max-w-[360px]"
+            >
+              <div className="bg-background/95 dark:bg-[#0d1527]/95 border border-border/80 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.7)] p-6 text-center flex flex-col items-center backdrop-blur-2xl">
+                 <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-4 shadow-lg shadow-red-500/10 text-red-500 dark:text-red-400">
+                   <AlertTriangle className="w-6.5 h-6.5 stroke-[2.5]" />
                  </div>
-                 <h3 className="text-[19px] font-bold text-foreground tracking-tight mb-2">Cancel Booking?</h3>
-                 <p className="text-[14px] text-muted-foreground font-medium leading-relaxed px-1">
+                 <h3 className="text-[20px] font-black text-foreground tracking-tight mb-2">Cancel Booking?</h3>
+                 <p className="text-[13.5px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed px-1 mb-2">
                    {isBookingWithin24Hours(cancelModal.date, cancelModal.time) ? (
-                    <>Cancel reservation for <span className="text-foreground font-semibold">{cancelModal.court}</span>? <span className="text-red-400 font-semibold block mt-1">⚠️ No refund available for cancellations within 24 hours of start time (venue policy).</span></>
+                    <>Cancel reservation for <span className="text-foreground dark:text-white font-extrabold">{cancelModal.court}</span>? <span className="text-red-500 dark:text-red-400 font-bold block mt-2 p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-[12.5px]">⚠️ No refund available for cancellations within 24 hours of start time (venue policy).</span></>
                    ) : (
-                    <>Cancel reservation for <span className="text-foreground font-semibold">{cancelModal.court}</span>? You will receive <span className="text-emerald-400 font-semibold">₱{(cancelModal.total ?? cancelModal.price ?? 0).toLocaleString()}</span> in Pickle Credits.</>
+                    <>Cancel reservation for <span className="text-foreground dark:text-white font-extrabold">{cancelModal.court}</span>? You will receive <span className="text-emerald-600 dark:text-emerald-400 font-black">₱{(cancelModal.total ?? cancelModal.price ?? 0).toLocaleString()}</span> in Pickle Credits.</>
                    )}
                  </p>
-                 <div className="flex gap-3 w-full mt-7">
-                   <button onClick={() => setCancelModal(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all active:scale-[0.98]">
-                     Keep It
+                 <div className="flex gap-3 w-full mt-5">
+                   <button
+                     type="button"
+                     onClick={() => setCancelModal(null)}
+                     className="flex-1 py-3 rounded-xl text-[14px] font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10 transition-all active:scale-[0.98] shadow-sm"
+                   >
+                     No
                    </button>
-                   <button onClick={handleCancelConfirm} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-red-500 hover:bg-red-600 transition-all active:scale-[0.98]">
-                     Cancel
+                   <button
+                     type="button"
+                     onClick={handleCancelConfirm}
+                     className="flex-1 py-3 rounded-xl text-[14px] font-extrabold text-white bg-red-500 hover:bg-red-600 shadow-[0_4px_16px_rgba(239,68,68,0.35)] border border-red-400/30 transition-all active:scale-[0.98]"
+                   >
+                     Yes
                    </button>
                  </div>
               </div>

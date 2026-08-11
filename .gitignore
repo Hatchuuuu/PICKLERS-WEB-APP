@@ -17,3 +17,7 @@ build/
 # Analysis and Build Artifacts
 graphify-out/
 *.tsbuildinfo
+
+# Capacitor Native Platforms
+web/android/
+web/ios/
