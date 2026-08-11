@@ -1239,7 +1239,10 @@ CREATE POLICY "Users can delete own comment likes" ON public.feed_comment_likes 
 -- PICKLERS ADMIN SYSTEM — DATABASE MIGRATION
 -- =============================================
 
--- 1. Extend player_profiles with admin fields
+-- 1. Extend player_profiles with admin fields & update role check constraint
+ALTER TABLE public.player_profiles DROP CONSTRAINT IF EXISTS player_profiles_role_check;
+ALTER TABLE public.player_profiles ADD CONSTRAINT player_profiles_role_check CHECK (role IN ('player', 'owner', 'admin', 'demo', 'dev'));
+
 ALTER TABLE public.player_profiles
   ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   ADD COLUMN IF NOT EXISTS admin_role TEXT DEFAULT NULL
