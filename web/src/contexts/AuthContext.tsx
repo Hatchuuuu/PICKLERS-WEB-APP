@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "./ToastContext";
 
-export type UserRole = "player" | "owner" | "demo" | "admin";
+export type UserRole = "player" | "owner" | "demo" | "admin" | "dev";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
@@ -97,9 +97,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           const isDemoUser = Boolean(profile?.is_demo) || profile?.role === 'demo' || (email ? email.includes('demo') : false);
-          const isAdminUser = Boolean(profile?.is_admin);
+          const isDevUser = profile?.role === 'dev';
+          const isAdminUser = Boolean(profile?.is_admin) || profile?.role === 'admin' || isDevUser;
 
-          if (isAdminUser)                    assignedRole = "admin";
+          if (isDevUser)                      assignedRole = "dev";
+          else if (isAdminUser)               assignedRole = "admin";
           else if (profile?.role === 'owner') assignedRole = "owner";
           else if (isDemoUser)                assignedRole = "demo";
 

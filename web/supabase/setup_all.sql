@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS public.player_profiles (
     silver_medals INTEGER DEFAULT 0,
     bronze_medals INTEGER DEFAULT 0,
     online BOOLEAN DEFAULT false NOT NULL,
-    role TEXT DEFAULT 'player' CHECK (role IN ('player', 'owner', 'admin', 'demo')),
+    role TEXT DEFAULT 'player' CHECK (role IN ('player', 'owner', 'admin', 'demo', 'dev')),
     -- P2 FIX: verification_status CHECK constraint
     verification_status TEXT DEFAULT 'unverified' CHECK (verification_status IN ('unverified', 'pending', 'verified', 'rejected')),
     is_demo BOOLEAN DEFAULT false NOT NULL,
@@ -1328,7 +1328,7 @@ CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.player_profiles
-    WHERE id = auth.uid() AND is_admin = TRUE
+    WHERE id = auth.uid() AND (is_admin = TRUE OR role = 'admin' OR role = 'dev')
   );
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 

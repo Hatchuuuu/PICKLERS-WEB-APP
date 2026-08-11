@@ -9,12 +9,14 @@ export async function requireAdmin(supabase: SupabaseClient): Promise<{ adminId:
 
   const { data: profile, error: profileError } = await supabase
     .from('player_profiles')
-    .select('is_admin')
+    .select('is_admin, role')
     .eq('id', user.id)
     .single();
 
-  if (profileError || !profile?.is_admin) {
-    return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+  const isAdminOrDev = Boolean(profile?.is_admin) || profile?.role === 'admin' || profile?.role === 'dev';
+
+  if (profileError || !isAdminOrDev) {
+    return NextResponse.json({ error: 'Forbidden: Admin or Developer access required' }, { status: 403 });
   }
 
   return { adminId: user.id };

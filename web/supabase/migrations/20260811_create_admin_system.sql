@@ -91,7 +91,7 @@ CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.player_profiles
-    WHERE id = auth.uid() AND is_admin = TRUE
+    WHERE id = auth.uid() AND (is_admin = TRUE OR role = 'admin' OR role = 'dev')
   );
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 
-export type UserRole = "player" | "owner" | "demo" | "admin";
+export type UserRole = "player" | "owner" | "demo" | "admin" | "dev";
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
 interface UserState {
@@ -77,11 +77,12 @@ export const useUserStore = create<UserState>((set) => ({
 
       const email = session.user.email ?? "";
       const isDemoUser = Boolean(profile.is_demo) || profile.role === "demo" || email.includes("demo");
-      const isAdminUser = Boolean(profile.is_admin);
+      const isDevUser = profile.role === "dev";
+      const isAdminUser = Boolean(profile.is_admin) || profile.role === "admin" || isDevUser;
       const isOwner = profile.role === "owner";
 
-      const assignedRole: UserRole = isAdminUser ? "admin" : isOwner ? "owner" : isDemoUser ? "demo" : (profile.role as UserRole || "player");
-      const assignedStatus: VerificationStatus = (isAdminUser || isOwner || isDemoUser) ? "verified" : (profile.verification_status as VerificationStatus || "unverified");
+      const assignedRole: UserRole = isDevUser ? "dev" : isAdminUser ? "admin" : isOwner ? "owner" : isDemoUser ? "demo" : (profile.role as UserRole || "player");
+      const assignedStatus: VerificationStatus = (isAdminUser || isOwner || isDemoUser || isDevUser) ? "verified" : (profile.verification_status as VerificationStatus || "unverified");
 
       set({
         role: assignedRole,
