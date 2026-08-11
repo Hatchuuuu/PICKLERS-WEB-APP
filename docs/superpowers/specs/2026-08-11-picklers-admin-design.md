@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS public.admin_audit_logs (
 CREATE TABLE IF NOT EXISTS public.promotions (
     id UUID PRIMARY KEY DEFAULT gen_random_state(),
     code TEXT UNIQUE NOT NULL,
+    description TEXT,
     discount_type TEXT CHECK (discount_type IN ('percentage', 'fixed_amount')) NOT NULL,
     discount_value NUMERIC(10, 2) NOT NULL,
     min_booking_amount NUMERIC(10, 2) DEFAULT 0,
@@ -129,6 +130,13 @@ CREATE TABLE IF NOT EXISTS public.promotions (
 - **Geographic Demand Heatmap**: Interactive map overlay showing areas of high player activity vs court scarcity.
 - **Facility Owner Leaderboards**: Rank facility owners by customer ratings, court availability uptime, and revenue generation.
 - **Financial Report Export**: One-click CSV/Excel export for monthly tax and accounting reconciliation.
+
+### Module 8: ⌨️ Global Command Palette (`Cmd + K` / `Ctrl + K`)
+- Instant keyboard shortcut (`Cmd+K`) opening a universal search overlay across all Admin modules.
+- Search users, owner applications, facilities, or promos in real time.
+
+### Module 9: 🕵️ Admin Impersonation ("View As Player")
+- Safe read-only impersonation mode allowing Admins to inspect the app as a specific user to troubleshoot bug reports or booking issues cleanly.
 
 ---
 
