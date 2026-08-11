@@ -271,6 +271,33 @@ export default function PlayerSettingsTab() {
         <AvatarUpload />
       </motion.div>
 
+      {(user?.isAdmin || user?.role === "admin" || user?.role === "dev") && (
+        <motion.div variants={itemVariants} className="mb-6">
+          <div
+            onClick={() => router.push("/app/admin")}
+            className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent border border-emerald-500/40 shadow-lg active:scale-[0.98] transition-transform group"
+          >
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[16px] font-bold text-foreground mb-0.5 flex items-center gap-2">
+                  <span>Admin Console Active</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500 text-white">
+                    {user?.role === "dev" ? "Dev" : "Admin"}
+                  </span>
+                </div>
+                <div className="text-[14px] text-foreground/60 font-medium">
+                  Tap to launch Admin & System Operations Hub
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {(user?.isDemo || user?.role === "demo") ? (
         <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
           <WalletPill />

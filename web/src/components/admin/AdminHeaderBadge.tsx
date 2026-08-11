@@ -3,11 +3,15 @@
 import { motion } from "motion/react";
 import { ShieldCheck, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import { useUserStore } from "@/store/useUserStore";
 
 export function AdminHeaderBadge() {
-  const { isAdmin, adminMode, toggleAdminMode } = useUserStore();
+  const { user } = useAuth();
+  const { isAdmin: storeIsAdmin, adminMode, toggleAdminMode } = useUserStore();
   const router = useRouter();
+
+  const isAdmin = Boolean(storeIsAdmin || user?.isAdmin || user?.role === 'admin' || user?.role === 'dev');
 
   if (!isAdmin) return null;
 
