@@ -9,7 +9,23 @@ export const TIME_SLOTS = [
 ];
 
 export function slotIndex(t: string) { return TIME_SLOTS.indexOf(t); }
-export function slotHours(start: string, end: string) { return slotIndex(end) - slotIndex(start); }
+
+// A-016 FIX: The previous implementation returned a raw array difference with
+// no guards. slotHours("8:00 AM", "8:00 AM") = 0, slotHours("9 AM", "8 AM") = -1.
+// Either case propagated to the booking price calculation as a zero or negative
+// multiplier, making ₱0 bookings possible through a crafted request.
+export function slotHours(start: string, end: string): number {
+  const s = slotIndex(start);
+  const e = slotIndex(end);
+  if (s === -1 || e === -1) {
+    throw new Error(`[slotHours] Invalid time slot: "${start}" or "${end}" not in TIME_SLOTS`);
+  }
+  const diff = e - s;
+  if (diff <= 0) {
+    throw new Error(`[slotHours] End time "${end}" must be strictly after start time "${start}"`);
+  }
+  return diff;
+}
 
 export function formatFullDate(dateStr: string): string {
   if (!dateStr) return "";

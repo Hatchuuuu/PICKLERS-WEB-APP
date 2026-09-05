@@ -127,11 +127,19 @@ export function AvatarUpload() {
       <div className="mt-4 flex flex-col items-center text-center">
         <div className="font-bold text-[19px] tracking-tight text-foreground">{user?.name}</div>
         <div className="mt-1.5 inline-flex items-center justify-center text-[11px] font-black uppercase tracking-[0.1em] text-foreground/50 bg-black/5 dark:bg-white/5 px-3 py-1 rounded-full border border-black/5 dark:border-white/5 shadow-sm">
-          <span className="text-emerald-500 drop-shadow-sm">Player</span>
-          {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") && (
+          {user?.role === "dev" ? (
+            <span className="text-cyan-400 drop-shadow-sm">Developer</span>
+          ) : user?.role === "admin" || user?.isAdmin ? (
+            <span className="text-purple-400 drop-shadow-sm">Admin</span>
+          ) : (
             <>
-              <span className="mx-2 opacity-30">/</span>
-              <span className="text-amber-400 drop-shadow-sm">Court Owner</span>
+              <span className="text-emerald-500 drop-shadow-sm">Player</span>
+              {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") && (
+                <>
+                  <span className="mx-2 opacity-30">/</span>
+                  <span className="text-amber-400 drop-shadow-sm">Court Owner</span>
+                </>
+              )}
             </>
           )}
         </div>
@@ -141,7 +149,11 @@ export function AvatarUpload() {
         {(user?.role === "owner" || user?.isDemo || user?.verificationStatus === "verified") && (
           <button
             onClick={() => {
-              user?.facilitySetupComplete ? router.push('/app/owner') : setShowSetup(true);
+              if (user?.facilitySetupComplete) {
+                router.push('/app/owner');
+              } else {
+                setShowSetup(true);
+              }
             }}
             className="mt-3.5 inline-flex items-center gap-2 px-4.5 py-2 bg-white/10 hover:bg-white/20 dark:bg-white/10 dark:hover:bg-white/20 border border-white/25 backdrop-blur-xl rounded-full transition-all active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.25)] group"
           >

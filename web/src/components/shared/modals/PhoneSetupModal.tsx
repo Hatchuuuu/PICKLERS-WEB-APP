@@ -190,23 +190,23 @@ export function PhoneSetupModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="relative z-10 w-full max-w-[360px] flex flex-col items-center"
+            className="relative z-[610] w-full max-w-[360px] flex flex-col items-center"
           >
-            <div className="w-full flex flex-col items-center gap-4 px-6 py-6 rounded-[var(--radius-xl)] border shadow-xl backdrop-blur-2xl bg-background/95 border-border/50 relative">
+            <div className="w-full flex flex-col items-center gap-4 px-6 py-6 rounded-3xl border border-border dark:border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.5)] bg-surface-overlay dark:bg-[#13223F] relative">
               
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+                className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-surface-interactive hover:bg-surface-interactive/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4 text-muted-foreground" />
+                <X className="w-4 h-4" />
               </button>
 
               {/* Icon */}

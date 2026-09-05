@@ -60,12 +60,12 @@ export function PricingRulesModal({ isOpen, onClose }: PricingRulesModalProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+      <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] dark:bg-black/50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-lg bg-surface-raised border border-border rounded-2xl p-6 shadow-2xl overflow-hidden text-foreground"
+          className="relative w-full max-w-lg bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden text-foreground"
         >
           <div className="flex items-center justify-between border-b border-border pb-4 mb-5">
             <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ export function PricingRulesModal({ isOpen, onClose }: PricingRulesModalProps) {
                 <p className="text-xs text-muted-foreground">Configure peak rates, early bird discounts & member pricing</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 rounded-xl text-muted-foreground hover:text-foreground">
+            <button onClick={onClose} aria-label="Close dialog" className="p-2 rounded-xl text-muted-foreground hover:text-foreground bg-surface-interactive border border-border cursor-pointer transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -91,21 +91,21 @@ export function PricingRulesModal({ isOpen, onClose }: PricingRulesModalProps) {
                 value={ruleName}
                 onChange={(e) => setRuleName(e.target.value)}
                 placeholder="Rule Name (e.g. Night Lights Rate)"
-                className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface-interactive focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface-interactive text-foreground focus:outline-none focus:border-emerald-500"
                 required
               />
               <select
                 value={multiplier}
                 onChange={(e) => setMultiplier(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface-interactive focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface-interactive text-foreground focus:outline-none focus:border-emerald-500"
               >
-                <option value="1.25">+25% Peak Rate</option>
-                <option value="1.15">+15% Peak Rate</option>
-                <option value="0.90">-10% Discount</option>
-                <option value="0.80">-20% Discount</option>
+                <option value="1.25" className="bg-surface-base text-foreground">+25% Peak Rate</option>
+                <option value="1.15" className="bg-surface-base text-foreground">+15% Peak Rate</option>
+                <option value="0.90" className="bg-surface-base text-foreground">-10% Discount</option>
+                <option value="0.80" className="bg-surface-base text-foreground">-20% Discount</option>
               </select>
             </div>
-            <button type="submit" className="w-full py-2 bg-emerald-500 text-white font-bold text-xs rounded-lg hover:bg-emerald-600 transition-colors flex items-center justify-center gap-1">
+            <button type="submit" className="w-full py-2 bg-emerald-500 text-white font-bold text-xs rounded-lg hover:bg-emerald-600 transition-colors flex items-center justify-center gap-1 cursor-pointer">
               <Plus className="w-3.5 h-3.5" /> Add Rule
             </button>
           </form>
@@ -134,8 +134,9 @@ export function PricingRulesModal({ isOpen, onClose }: PricingRulesModalProps) {
 
                 <button
                   onClick={() => toggleRule(r.id)}
-                  className={`w-9 h-5 rounded-full px-0.5 flex items-center transition-colors ${
-                    r.isActive ? "bg-emerald-500 justify-end" : "bg-muted justify-start"
+                  aria-label="Toggle rule"
+                  className={`w-9 h-5 rounded-full px-0.5 flex items-center transition-colors cursor-pointer ${
+                    r.isActive ? "bg-emerald-500 justify-end" : "bg-surface-interactive border border-border justify-start"
                   }`}
                 >
                   <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
@@ -145,7 +146,7 @@ export function PricingRulesModal({ isOpen, onClose }: PricingRulesModalProps) {
           </div>
 
           <div className="pt-4 border-t border-border mt-5 flex justify-end">
-            <button onClick={onClose} className="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs">
+            <button onClick={onClose} className="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 transition-colors cursor-pointer">
               Done
             </button>
           </div>

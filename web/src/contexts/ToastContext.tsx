@@ -2,9 +2,9 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
 
-type ToastType = "success" | "error";
+type ToastType = "success" | "error" | "info" | "warning";
 
 interface Toast {
   id: string;
@@ -23,8 +23,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const showToast = useCallback((message: string, type: ToastType = "success") => {
     setToasts((prev) => {
-      // Deduplicate identical messages currently being displayed
-      if (prev.some((t) => t.message === message)) return prev;
+      // A-018 FIX: Deduplicate on (message + type) not just message.
+      // Previously: showToast("X", "error") then showToast("X", "success")
+      // would suppress the success toast because the message matched.
+      if (prev.some((t) => t.message === message && t.type === type)) return prev;
       const id = Math.random().toString(36).substring(2, 9);
 
       // Auto dismiss after 3.5s
@@ -32,40 +34,71 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         setToasts((current) => current.filter((t) => t.id !== id));
       }, 3500);
 
-      // Keep maximum 2 toasts at a time
-      const trimmed = prev.length >= 2 ? prev.slice(1) : prev;
+      // Keep maximum 3 toasts at a time
+      const trimmed = prev.length >= 3 ? prev.slice(1) : prev;
       return [...trimmed, { id, message, type }];
     });
+  }, []);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((current) => current.filter((t) => t.id !== id));
   }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {/* Toast Floating Container - Top Right for Clean Non-Blocking Visibility */}
-      <div className="fixed top-5 sm:top-6 inset-x-0 sm:inset-x-auto sm:right-6 mx-auto sm:mx-0 w-fit max-w-[90vw] sm:max-w-md px-4 sm:px-0 z-[99999] flex flex-col items-center sm:items-end gap-2.5 pointer-events-none">
+      {/* Toast Floating Container - Universally positioned at bottom center */}
+      <div 
+        className="fixed bottom-6 sm:bottom-8 inset-x-0 mx-auto w-fit max-w-[calc(100vw-2rem)] sm:max-w-md px-3 z-[700] flex flex-col-reverse items-center gap-2.5 pointer-events-none pb-[env(safe-area-inset-bottom,0px)]"
+        style={{ transform: "translateZ(0)" }}
+      >
         <AnimatePresence mode="popLayout">
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: -20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.95, transition: { duration: 0.15 } }}
-              className={`flex items-center gap-2.5 px-4.5 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-2xl max-w-full text-center sm:text-left pointer-events-auto bg-slate-900/95 dark:bg-[#0d1527]/95 ${
-                toast.type === "success"
-                  ? "border-emerald-500/30 text-emerald-400 shadow-emerald-500/5"
-                  : "border-red-500/30 text-red-400 shadow-red-500/5"
-              }`}
-            >
-              {toast.type === "success" ? (
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-              ) : (
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
-              )}
-              <span className="text-[13px] font-bold tracking-wide leading-tight text-white">
-                {toast.message}
-              </span>
-            </motion.div>
-          ))}
+          {toasts.map((toast) => {
+            let colorClasses = "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400";
+            let IconComponent = CheckCircle2;
+
+            if (toast.type === "error") {
+              colorClasses = "bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400";
+              IconComponent = AlertCircle;
+            } else if (toast.type === "warning") {
+              colorClasses = "bg-amber-500/10 border-amber-500/20 text-amber-500 dark:text-amber-400";
+              IconComponent = AlertTriangle;
+            } else if (toast.type === "info") {
+              colorClasses = "bg-cyan-500/10 border-cyan-500/20 text-cyan-500 dark:text-cyan-400";
+              IconComponent = Info;
+            }
+
+            return (
+              <motion.div
+                key={toast.id}
+                initial={{ opacity: 0, y: 16, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95, transition: { duration: 0.15 } }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.4}
+                onDragEnd={(_, info) => {
+                  if (Math.abs(info.offset.x) > 60) {
+                    dismissToast(toast.id);
+                  }
+                }}
+                className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl max-w-full pointer-events-auto cursor-grab active:cursor-grabbing ${colorClasses}`}
+              >
+                <IconComponent className="w-4 h-4 shrink-0" />
+                <span className="text-[13px] font-bold tracking-tight leading-tight select-none">
+                  {toast.message}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => dismissToast(toast.id)}
+                  className="p-0.5 ml-1 rounded-md opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
+                  aria-label="Dismiss toast"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
     </ToastContext.Provider>

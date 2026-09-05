@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { FeedTab } from "@/components/community/FeedTab";
+import PlayerProfileSheet from "@/components/community/PlayerProfileSheet";
 import type { FeedPost } from "@/types";
 
 export default function OwnerCommunityPage() {
@@ -37,10 +38,9 @@ export default function OwnerCommunityPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-all hover:bg-surface-interactive"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-sm"
           >
-            <p className="w-4 h-4" style={{ background: "var(--accent-primary)" }} />
-            Share Update
+            <span>Share Update</span>
           </button>
         </div>
       </div>
@@ -56,9 +56,11 @@ export default function OwnerCommunityPage() {
       <PlayerProfileSheet
         playerId={profileId}
         onClose={() => setProfileId(null)}
-        onOpenChat={(_p) => {
+        onOpenChat={(player) => {
           setProfileId(null);
-          // TODO: Implement open chat functionality
+          if (player?.id) {
+            router.push(`/app/owner/messages?recipient=${player.id}`);
+          }
         }}
       />
 
@@ -70,54 +72,6 @@ export default function OwnerCommunityPage() {
           // Newly created post handled
         }}
       />
-    </div>
-  );
-}
-
-// Import the PlayerProfileSheet from the community components
-function PlayerProfileSheet({
-  playerId,
-  onClose,
-  onOpenChat,
-}: {
-  playerId: string | null;
-  onClose: () => void;
-  onOpenChat: (p: any) => void;
-}) {
-  // Simple placeholder - in a real implementation, this would be imported from the community components
-  if (!playerId) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-4">
-      <div className="relative w-full max-w-md">
-        {/* This would normally import the actual PlayerProfileSheet component */}
-        <div className="bg-surface-raised rounded-t-3xl shadow-2xl border border-subtle">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Player Profile</h3>
-              <button onClick={onClose} className="text-ink-muted hover:text-foreground">
-                ✕
-              </button>
-            </div>
-            <p className="text-sm text-ink-muted">Profile placeholder - would show player details</p>
-            <button
-              onClick={() => {
-                // Mock player data
-                onOpenChat({
-                  id: playerId,
-                  name: "Player Name",
-                  online: true,
-                  avatar_url: null
-                });
-              }}
-              className="w-full mt-4 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-              style={{ background: "var(--accent-primary)", color: "var(--surface-base)" }}
-            >
-              Start Chat
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -229,35 +183,33 @@ function CreatePostModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          className="fixed inset-0 z-[600] flex items-end sm:items-center justify-center p-4"
         >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
             onClick={onClose}
           />
 
           {/* Modal */}
           <motion.div
-            initial={{ scale: 0.95, y: 40, opacity: 0 }}
+            initial={{ scale: 0.95, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.95, y: 40, opacity: 0 }}
+            exit={{ scale: 0.95, y: 20, opacity: 0 }}
             transition={{ type: "spring", stiffness: 350, damping: 32 }}
-            className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden"
-            style={{ background: "var(--surface-base)", border: "1px solid var(--border-subtle)" }}
+            className="relative w-full max-w-lg rounded-3xl overflow-hidden bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-[610]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
-              <button onClick={onClose} className="text-ink-muted text-sm font-semibold">Cancel</button>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-surface-interactive/30">
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xs font-semibold cursor-pointer">Cancel</button>
               <span className="text-sm font-bold text-foreground">Share Update</span>
               <button
                 onClick={handlePost}
                 disabled={(!content.trim() && !imageFile) || posting}
-                className="text-sm font-bold px-4 py-1.5 rounded-full transition-all disabled:opacity-40"
-                style={{ background: "var(--accent-primary)", color: "var(--surface-base)" }}
+                className="text-xs font-bold px-4 py-1.5 rounded-full transition-all disabled:opacity-40 bg-emerald-500 hover:bg-emerald-400 text-white shadow-md cursor-pointer"
               >
                 {posting ? "Sharing..." : "Share"}
               </button>
@@ -273,11 +225,11 @@ function CreatePostModal({
                     value={content}
                     onChange={(e) => setContent(e.target.value.slice(0, 500))}
                     placeholder="What's happening at your facility?"
-                    className="w-full resize-none outline-none text-[15px] leading-relaxed bg-transparent text-foreground placeholder:text-ink-muted"
+                    className="w-full resize-none outline-none text-sm leading-relaxed bg-transparent text-foreground placeholder:text-muted-foreground"
                     rows={4}
                     autoFocus
                   />
-                  <p className="text-[11px] text-ink-muted text-right">{content.length}/500</p>
+                  <p className="text-[11px] text-muted-foreground text-right">{content.length}/500</p>
                 </div>
               </div>
 
@@ -286,12 +238,12 @@ function CreatePostModal({
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="relative mt-3 rounded-2xl overflow-hidden"
+                  className="relative mt-3 rounded-2xl overflow-hidden border border-border"
                 >
                   <img src={imagePreview} alt="Upload preview" className="w-full max-h-64 object-cover rounded-2xl" />
                   <button
                     onClick={removeImage}
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white"
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white cursor-pointer transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -300,14 +252,13 @@ function CreatePostModal({
             </div>
 
             {/* Footer */}
-            <div className="px-5 pb-5 flex items-center gap-3 border-t pt-3" style={{ borderColor: "var(--border-subtle)" }}>
+            <div className="px-5 pb-5 flex items-center gap-3 border-t border-border pt-3 bg-surface-interactive/20">
               <button
                 onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-                style={{ background: "var(--surface-raised)", color: "var(--accent-primary)" }}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-surface-interactive hover:bg-surface-interactive/80 text-foreground transition-colors cursor-pointer border border-border"
               >
-                <p className="w-4 h-4" style={{ background: "var(--accent-primary)" }} />
-                Photo
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                Add Photo
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
             </div>

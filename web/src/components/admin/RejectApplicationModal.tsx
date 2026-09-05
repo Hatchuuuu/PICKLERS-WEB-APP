@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertTriangle, X, Check } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 
 interface RejectApplicationModalProps {
   isOpen: boolean;
@@ -54,7 +54,7 @@ export function RejectApplicationModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-3xl"
+        className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
         onClick={onClose}
       >
         <motion.div
@@ -62,19 +62,20 @@ export function RejectApplicationModal({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md bg-surface-base border border-border rounded-3xl p-6 shadow-2xl flex flex-col gap-4"
+          className="relative w-full max-w-md bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex flex-col gap-4 z-[610]"
         >
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-raised text-muted-foreground"
+            aria-label="Close modal"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
 
           {/* Header */}
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 dark:text-red-400 shrink-0">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -94,51 +95,49 @@ export function RejectApplicationModal({
               <select
                 value={selectedPreset}
                 onChange={(e) => setSelectedPreset(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-raised text-sm text-foreground focus:outline-none focus:border-rose-500/50"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-interactive text-sm text-foreground focus:outline-none focus:border-red-500"
               >
                 {PRESET_REASONS.map((r) => (
-                  <option key={r} value={r}>
+                  <option key={r} value={r} className="bg-surface-overlay text-foreground">
                     {r}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Custom Notes */}
+            {/* Custom note textarea */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Detailed Feedback for Applicant
+                Additional Notes / Feedback for Applicant
               </label>
               <textarea
-                rows={3}
                 value={customNote}
                 onChange={(e) => setCustomNote(e.target.value)}
-                placeholder="Specify exact details so the applicant can correct their application..."
-                className="w-full p-3 rounded-xl border border-border bg-surface-raised text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-rose-500/50 resize-none"
+                placeholder="Provide specific feedback so the applicant knows what to fix before reapplying…"
+                rows={3}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-interactive text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-red-500 resize-none"
               />
             </div>
 
-            {/* Action buttons */}
+            {/* Actions */}
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-surface-raised hover:bg-surface-interactive text-foreground transition-colors"
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-surface-interactive hover:bg-surface-interactive/80 border border-border text-foreground transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl text-sm font-bold bg-red-500 hover:bg-red-600 text-white shadow-md transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
               >
                 {isSubmitting ? (
-                  <span>Processing...</span>
+                  <span>Rejecting…</span>
                 ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Confirm Reject</span>
-                  </>
+                  <span>Confirm Rejection</span>
                 )}
               </button>
             </div>

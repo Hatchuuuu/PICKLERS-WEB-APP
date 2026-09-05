@@ -107,24 +107,37 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
 
   useEffect(() => {
     if (!myId) return;
+    // Use a deterministic channel name based on sorted participant IDs
+    // so both sides share the same channel subscription space
+    const channelName = `dm-conv-${[myId, partner.id].sort().join("-")}`;
     const channel = supabase
-      .channel(`dm-${myId}-${partner.id}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "direct_messages", filter: `receiver_id=eq.${myId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "direct_messages",
+          // Scoped filter: only messages FROM partner TO me in this conversation
+          filter: `receiver_id=eq.${myId},sender_id=eq.${partner.id}`,
+        },
         (payload) => {
           const msg = payload.new as DirectMessage;
-          if (msg.sender_id !== partner.id) return;
           setMessages(prev => [...prev, msg]);
           setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
         }
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "direct_messages", filter: `sender_id=eq.${myId}` },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "direct_messages",
+          // Scoped filter: only read-receipt updates on messages I sent to partner
+          filter: `sender_id=eq.${myId},receiver_id=eq.${partner.id}`,
+        },
         (payload) => {
           const updated = payload.new as DirectMessage;
-          if (updated.receiver_id !== partner.id) return;
           setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, read: updated.read } : m));
         }
       )
@@ -232,9 +245,9 @@ export default function ChatPanel({ partner, onBack, onOpenProfile }: {
           </button>
         </div>
 
-        {/* Right Initial Badge */}
+        {/* Right: My Initial Badge (dynamic) */}
         <div className="w-8 h-8 rounded-full bg-[#111C2E] border border-white/10 flex items-center justify-center font-bold text-xs text-white shadow-inner">
-          N
+          {user?.name?.[0]?.toUpperCase() ?? "?"}
         </div>
       </div>
 

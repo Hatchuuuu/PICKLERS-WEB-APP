@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send, CheckCircle2, LifeBuoy } from "lucide-react";
+import { X, Send, CheckCircle2, LifeBuoy, ChevronDown } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 
 export function SupportContactModal({
@@ -33,92 +33,112 @@ export function SupportContactModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+          {/* Subtle Dim Backdrop — Keeps App Background Visible */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[130]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50 z-0"
           />
+
+          {/* Elevated Modal Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: "-45%", x: "-50%" }}
-            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
-            exit={{ opacity: 0, scale: 0.95, y: "-45%", x: "-50%" }}
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="fixed top-1/2 left-1/2 w-[calc(100%-2rem)] max-w-md bg-background/95 dark:bg-[#0d1527]/95 backdrop-blur-2xl rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.7)] z-[140] border border-white/20 dark:border-white/[0.15] flex flex-col overflow-hidden"
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+            className="relative w-full max-w-md bg-surface-overlay dark:bg-[#13223F] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-10 border border-border dark:border-white/12 flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="p-4 px-6 border-b border-border-subtle dark:border-white/[0.1] flex justify-between items-center bg-surface-interactive/30 dark:bg-white/[0.04] shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                  <LifeBuoy className="w-4 h-4 stroke-[2.5]" />
+            <div className="p-5 px-6 border-b border-border dark:border-white/10 flex justify-between items-center bg-surface-interactive/40 dark:bg-white/[0.03] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shadow-sm">
+                  <LifeBuoy className="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-foreground" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>Help & Support</h3>
-                  <p className="text-[11px] font-bold text-muted-foreground">Contact PICKLERS Support Team</p>
+                  <h3 className="text-base font-bold text-foreground tracking-tight" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
+                    Help & Support
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium">Contact PICKLERS Support Team</p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-black/20 dark:bg-white/10 hover:bg-black/30 dark:hover:bg-white/20 active:scale-90 transition-all text-foreground flex items-center justify-center"
+                aria-label="Close support modal"
+                className="w-8 h-8 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 dark:bg-white/10 dark:hover:bg-white/20 border border-border dark:border-white/10 active:scale-90 transition-all text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
-            {/* Content */}
+            {/* Content Body */}
             <div className="p-6">
               {submitted ? (
                 <div className="py-8 flex flex-col items-center text-center gap-3">
-                  <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shadow-lg">
                     <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
                   </div>
-                  <h4 className="text-lg font-black text-foreground">Message Received!</h4>
-                  <p className="text-xs text-muted-foreground">Our support team has logged your inquiry (`support@picklers.app`).</p>
+                  <h4 className="text-lg font-bold text-foreground">Ticket Received!</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+                    Our support team has logged your inquiry. We'll reply via email (<span className="text-foreground font-semibold">support@picklers.app</span>).
+                  </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Category Selector */}
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-muted-foreground tracking-wider mb-1.5">Category</label>
-                    <select
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl text-xs sm:text-sm font-extrabold outline-none bg-surface-interactive/80 dark:bg-[#162238] border border-border dark:border-white/15 text-foreground cursor-pointer shadow-sm"
-                    >
-                      <option value="General Support" className="bg-[#162238] text-slate-100 dark:bg-[#162238] dark:text-slate-100 font-bold">General Inquiry</option>
-                      <option value="Court Booking Issue" className="bg-[#162238] text-slate-100 dark:bg-[#162238] dark:text-slate-100 font-bold">Court Booking & Payment Issue</option>
-                      <option value="Account & Login" className="bg-[#162238] text-slate-100 dark:bg-[#162238] dark:text-slate-100 font-bold">Account & Login Help</option>
-                      <option value="Report Bug" className="bg-[#162238] text-slate-100 dark:bg-[#162238] dark:text-slate-100 font-bold">Report a Bug / Glitch</option>
-                      <option value="Court Owner Partner" className="bg-[#162238] text-slate-100 dark:bg-[#162238] dark:text-slate-100 font-bold">Facility / Owner Inquiry</option>
-                    </select>
+                    <label className="block text-[11px] font-bold uppercase text-muted-foreground tracking-wider mb-1.5">
+                      Category
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        className="w-full px-4 py-3 pr-10 rounded-2xl text-xs sm:text-sm font-semibold outline-none bg-surface-interactive/70 dark:bg-white/[0.06] border border-border dark:border-white/12 text-foreground cursor-pointer shadow-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 appearance-none"
+                      >
+                        <option value="General Support" className="bg-surface-overlay dark:bg-[#13223F] text-foreground font-medium">General Inquiry</option>
+                        <option value="Court Booking Issue" className="bg-surface-overlay dark:bg-[#13223F] text-foreground font-medium">Court Booking & Payment Issue</option>
+                        <option value="Account & Login" className="bg-surface-overlay dark:bg-[#13223F] text-foreground font-medium">Account & Login Help</option>
+                        <option value="Report Bug" className="bg-surface-overlay dark:bg-[#13223F] text-foreground font-medium">Report a Bug / Glitch</option>
+                        <option value="Court Owner Partner" className="bg-surface-overlay dark:bg-[#13223F] text-foreground font-medium">Facility / Owner Inquiry</option>
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
 
+                  {/* Message Input */}
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-muted-foreground tracking-wider mb-1.5">How can we help?</label>
+                    <label className="block text-[11px] font-bold uppercase text-muted-foreground tracking-wider mb-1.5">
+                      How can we help?
+                    </label>
                     <textarea
                       rows={4}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Describe your issue or question in detail..."
-                      className="w-full p-4 rounded-xl text-xs sm:text-sm outline-none bg-surface-interactive/80 dark:bg-white/[0.05] border border-border dark:border-white/10 text-foreground placeholder:text-ink-muted focus:border-emerald-500/50 transition-all resize-none"
+                      className="w-full p-4 rounded-2xl text-xs sm:text-sm outline-none bg-surface-interactive/70 dark:bg-white/[0.06] border border-border dark:border-white/12 text-foreground placeholder:text-muted-foreground/60 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none shadow-sm"
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={!message.trim()}
-                    className="w-full py-3 rounded-xl font-black text-xs sm:text-sm text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-emerald-400/40 shadow-[0_0_20px_rgba(0,217,139,0.3)] active:scale-[0.98] transition-all cursor-pointer tracking-wider uppercase"
-                    style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
-                  >
-                    <Send className="w-4 h-4 stroke-[2.5]" />
-                    Submit Support Ticket
-                  </button>
+                  {/* Submit Button */}
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={!message.trim()}
+                      className="w-full py-3.5 rounded-2xl font-bold text-xs sm:text-sm text-white bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer tracking-wider uppercase"
+                    >
+                      <Send className="w-4 h-4 stroke-[2.5]" />
+                      <span>Submit Support Ticket</span>
+                    </button>
+                  </div>
                 </form>
               )}
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

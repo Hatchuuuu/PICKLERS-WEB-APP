@@ -1,32 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { z } from "zod";
-
-async function makeSupabase() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-}
+import { getCache, setCache, generateCacheKey } from '@/lib/cacheUtils';
 
 /**
  * GET /api/community/messages?with=<userId>&before=<timestamp>&limit=<n>
  * Paginated messages with cursor-based pagination
  */
 export async function GET(req: NextRequest) {
-  const supabase = await makeSupabase();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -35,8 +18,39 @@ export async function GET(req: NextRequest) {
 
   const myId = user.id;
   const limit = parseInt(req.nextUrl.searchParams.get("limit") ?? "50");
-  const before = req.nextUrl.searchParams.get("before");
+  const before = req.nextUrl.searchParams.get("before") ?? "";
 
+  // Create a normalized cache key based on query parameters
+  const cacheKey = generateCacheKey(
+    'community-messages',
+    `${myId}-${withUserId}-${before}-${limit}`
+  );
+
+  // 1. Check HEURISTIC CACHE FIRST (medium TTL: 2 minutes for messages - balances freshness with performance)
+  const cachedHeuristic = await getCache<any>(cacheKey);
+  if (cachedHeuristic !== null) {
+    return NextResponse.json({
+      data: cachedHeuristic.data,
+      cacheInfo: {
+        source: 'heuristic',
+        timestamp: cachedHeuristic.timestamp
+      }
+    }, { status: 200 });
+  }
+
+  // 2. Try to get from API cache (shorter TTL: 30 seconds)
+  const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+  if (cachedAPI !== null) {
+    return NextResponse.json({
+      data: cachedAPI.data,
+      cacheInfo: {
+        source: 'api',
+        timestamp: cachedAPI.timestamp
+      }
+    }, { status: 200 });
+  }
+
+  // If not in cache, proceed with the original logic
   let query = supabase
     .from("direct_messages")
     .select("*")
@@ -51,7 +65,22 @@ export async function GET(req: NextRequest) {
 
   const { data: messages, error } = await query;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    // Try to return cached data on error (fallback to stale cache)
+    const cachedData = await getCache<any>(cacheKey);
+    if (cachedData !== null) {
+      return NextResponse.json({
+        data: cachedData.data,
+        cacheInfo: {
+          source: 'fallback',
+          timestamp: cachedData.timestamp,
+          error: 'Using cached data due to error'
+        }
+      }, { status: 200 });
+    }
+
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   // Mark unread messages from this partner as read
   await supabase
@@ -62,11 +91,26 @@ export async function GET(req: NextRequest) {
     .eq("read", false);
 
   // Return in chronological order (oldest first) for display
-  return NextResponse.json((messages ?? []).reverse());
+  const responseData = {
+    data: (messages ?? []).reverse(),
+    cacheInfo: { source: 'api', timestamp: new Date().toISOString() }
+  };
+
+  // Store in heuristic cache (TTL: 2 minutes = 120 seconds)
+  await setCache(cacheKey, responseData, 120);
+
+  // Store in API cache (TTL: 30 seconds = 30 seconds)
+  await setCache(`${cacheKey}:api`, responseData, 30);
+
+  return NextResponse.json(responseData);
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await makeSupabase();
+  // Rate limit: max 30 messages per 60 seconds
+  const rateLimitResponse = await checkRateLimit(req, "direct-message", 30, 60);
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

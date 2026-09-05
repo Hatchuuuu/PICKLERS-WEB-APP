@@ -60,7 +60,21 @@ function AuthCallbackInner() {
           await supabase.auth.updateUser({ data: { role } });
         }
         
-        router.replace(next);
+        let targetDestination = next;
+        if (next === '/app' || next === '/') {
+          const { data: profile } = await supabase
+            .from('player_profiles')
+            .select('console_access, role')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+          const consoleAccess: string[] = Array.isArray(profile?.console_access) ? profile.console_access : ['player'];
+          if (consoleAccess.includes('dev') || profile?.role === 'dev') {
+            targetDestination = '/app/dev';
+          }
+        }
+
+        router.replace(targetDestination);
       } else {
         // If there's no session yet, we might need to wait for onAuthStateChange
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
@@ -73,7 +87,22 @@ function AuthCallbackInner() {
               const role = next.includes("/owner") ? "owner" : "player";
               await supabase.auth.updateUser({ data: { role } });
             }
-            router.replace(next);
+
+            let targetDestination = next;
+            if (next === '/app' || next === '/') {
+              const { data: profile } = await supabase
+                .from('player_profiles')
+                .select('console_access, role')
+                .eq('id', newSession.user.id)
+                .maybeSingle();
+
+              const consoleAccess: string[] = Array.isArray(profile?.console_access) ? profile.console_access : ['player'];
+              if (consoleAccess.includes('dev') || profile?.role === 'dev') {
+                targetDestination = '/app/dev';
+              }
+            }
+
+            router.replace(targetDestination);
           }
         });
         authSub = subscription;

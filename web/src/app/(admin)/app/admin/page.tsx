@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
@@ -12,6 +12,8 @@ import {
   ArrowRight,
   ShieldAlert,
   BarChart3,
+  AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 import { StatCard } from "@/components/admin/StatCard";
 import { SkeletonStatCard } from "@/components/admin/AdminSkeleton";
@@ -22,32 +24,43 @@ export default function AdminOverviewPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [pendingApps, setPendingApps] = useState<OwnerApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [statsRes, appsRes] = await Promise.all([
+        fetch("/api/admin/analytics"),
+        fetch("/api/admin/applications?status=pending"),
+      ]);
+
+      if (!statsRes.ok) {
+        const json = await statsRes.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to load analytics overview data");
+      }
+
+      if (!appsRes.ok) {
+        const json = await appsRes.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to load pending applications queue");
+      }
+
+      const statsData = await statsRes.json();
+      setStats(statsData.data);
+
+      const appsData = await appsRes.json();
+      setPendingApps(appsData.data || []);
+    } catch (err: any) {
+      console.error("Error loading admin overview:", err);
+      setError(err.message || "Failed to load admin data");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [statsRes, appsRes] = await Promise.all([
-          fetch("/api/admin/analytics"),
-          fetch("/api/admin/applications?status=pending"),
-        ]);
-
-        if (statsRes.ok) {
-          const statsData = await statsRes.json();
-          setStats(statsData.data);
-        }
-
-        if (appsRes.ok) {
-          const appsData = await appsRes.json();
-          setPendingApps(appsData.data || []);
-        }
-      } catch (err) {
-        console.error("Error loading admin overview:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
     loadData();
-  }, []);
+  }, [loadData]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -71,6 +84,33 @@ export default function AdminOverviewPage() {
           </button>
         </div>
       </div>
+
+      {/* Error Alert Banner */}
+      {error && (
+        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400 backdrop-blur-2xl shadow-lg">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {error.includes("Forbidden") && (
+              <button
+                onClick={() => router.push("/auth")}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 transition-colors text-amber-300"
+              >
+                Log In as Admin
+              </button>
+            )}
+            <button
+              onClick={loadData}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/20 hover:bg-red-500/30 transition-colors text-red-400"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4">

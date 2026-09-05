@@ -99,6 +99,43 @@ export const TournamentAPI = {
     }
   },
 
+  async updateMatch(matchId: string, updates: Partial<Match>) {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.status !== undefined) dbUpdates.status = updates.status;
+    if (updates.winner_id !== undefined) dbUpdates.winner_id = updates.winner_id;
+    if (updates.loser_id !== undefined) dbUpdates.loser_id = updates.loser_id;
+    if (updates.team1_id !== undefined) dbUpdates.team1_id = updates.team1_id;
+    if (updates.team2_id !== undefined) dbUpdates.team2_id = updates.team2_id;
+
+    const { error } = await supabase
+      .from('tournament_matches')
+      .update(dbUpdates)
+      .eq('id', matchId);
+    if (error) {
+      console.error("Failed to update tournament match:", error);
+      throw error;
+    }
+  },
+
+  async undoMatch(matchId: string, revertedMatches: Match[]) {
+    if (revertedMatches.length === 0) return;
+    await Promise.all(
+      revertedMatches.map(m =>
+        supabase
+          .from('tournament_matches')
+          .update({
+            status: m.status,
+            winner_id: m.winner_id,
+            loser_id: m.loser_id,
+            team1_id: m.team1_id,
+            team2_id: m.team2_id,
+          })
+          .eq('id', m.id)
+      )
+    );
+    await supabase.from('tournament_games').delete().eq('match_id', matchId);
+  },
+
   async getAllTournaments() {
     const { data, error } = await supabase.from('tournaments').select('*').order('created_at', { ascending: false });
     if (error) {

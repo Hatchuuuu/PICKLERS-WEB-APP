@@ -4,20 +4,14 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Wallet, Plus } from "lucide-react";
 import { useWalletStore } from "@/store/useWalletStore";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWallet } from "@/hooks/useWallet";
 
 export function WalletPill({ className = "" }: { className?: string }) {
-  const { balance, setTopUpModalOpen, fetchBalance } = useWalletStore();
-  const { user } = useAuth();
+  const { setTopUpModalOpen } = useWalletStore();
+  const { data: walletData } = useWallet();
+  const balance = walletData?.balance ?? 0;
   const [displayBalance, setDisplayBalance] = useState(balance);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    if (user?.id) {
-      const isDemo = user.isDemo || user.role === "demo";
-      fetchBalance(user.id, isDemo);
-    }
-  }, [user?.id, user?.isDemo, user?.role, fetchBalance]);
 
   useEffect(() => {
     if (balance !== displayBalance) {

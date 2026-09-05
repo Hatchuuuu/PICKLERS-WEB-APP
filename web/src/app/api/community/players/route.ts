@@ -1,27 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-
-async function makeSupabase() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-}
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getCache, setCache, generateCacheKey } from "@/lib/cacheUtils";
 
 export async function GET(req: NextRequest) {
-  const supabase = await makeSupabase();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -29,6 +11,24 @@ export async function GET(req: NextRequest) {
   const idParam = req.nextUrl.searchParams.get("id");
   const myId = user.id;
 
+  // Create a normalized cache key based on query parameters
+  const cacheKey = generateCacheKey('community-players', `${q}-${idParam}-${myId}`);
+
+  // 1. Check HEURISTIC CACHE FIRST (longest TTL: 1 hour for recommendations, 10 min for search)
+  const cachedHeuristic = await getCache<any>(cacheKey);
+  if (cachedHeuristic !== null) {
+    const list = Array.isArray(cachedHeuristic) ? cachedHeuristic : cachedHeuristic.data || [];
+    return NextResponse.json(list, { status: 200 });
+  }
+
+  // 2. Try to get from API cache (shorter TTL: 10 minutes)
+  const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+  if (cachedAPI !== null) {
+    const list = Array.isArray(cachedAPI) ? cachedAPI : cachedAPI.data || [];
+    return NextResponse.json(list, { status: 200 });
+  }
+
+  // If not in cache, proceed with the original logic
   let query = supabase.from("player_profiles").select("*");
 
   if (idParam) {
@@ -44,29 +44,42 @@ export async function GET(req: NextRequest) {
   }
 
   const { data: profiles, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    // Try to return cached data on error (fallback to stale cache)
+    const cachedData = await getCache<any>(cacheKey);
+    if (cachedData !== null) {
+      const list = Array.isArray(cachedData) ? cachedData : cachedData.data || [];
+      return NextResponse.json(list, { status: 200 });
+    }
+
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   const profileIds = (profiles ?? []).map((p: any) => p.id);
-  
-  if (profileIds.length === 0) return NextResponse.json([]);
+
+  if (profileIds.length === 0) {
+    await setCache(cacheKey, [], 30); // 30 seconds
+    await setCache(`${cacheKey}:api`, [], 60); // 1 minute
+    return NextResponse.json([], { status: 200 });
+  }
 
   // --- Scoring / Enrichment Data ---
-  
+
   // 1. My Data (for People You May Know scoring)
   let myLevel = "2.5";
   const myClubIds = new Set<string>();
   const myFollowedIds = new Set<string>();
 
   if (!q.trim() && !idParam) {
-    const [myProfileRes, myClubsRes, myLikesRes] = await Promise.all([
+    const [myProfileRes, myClubsRes, myFollowsRes] = await Promise.all([
       supabase.from("player_profiles").select("level").eq("id", myId).single(),
       supabase.from("club_members").select("club_id").eq("user_id", myId),
-      supabase.from("player_likes").select("liked_id").eq("liker_id", myId),
+      supabase.from("player_follows").select("following_id").eq("follower_id", myId),
     ]);
 
     if (myProfileRes.data) myLevel = myProfileRes.data.level;
     (myClubsRes.data ?? []).forEach(c => myClubIds.add(c.club_id));
-    (myLikesRes.data ?? []).forEach(l => myFollowedIds.add(l.liked_id));
+    (myFollowsRes.data ?? []).forEach(l => myFollowedIds.add(l.following_id));
   }
 
   // 2. Their Data (Fetched in parallel via Promise.all)
@@ -80,16 +93,16 @@ export async function GET(req: NextRequest) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const [likesReceivedRes, clubMembersRes, likesGivenRes, postsRes] = await Promise.all([
-    supabase.from("player_likes").select("liker_id, liked_id").in("liked_id", profileIds),
+  const [followsReceivedRes, clubMembersRes, followsGivenRes, postsRes] = await Promise.all([
+    supabase.from("player_follows").select("follower_id, following_id").in("following_id", profileIds),
     isRecommendMode ? supabase.from("club_members").select("user_id, club_id").in("user_id", profileIds) : Promise.resolve({ data: null }),
-    isRecommendMode ? supabase.from("player_likes").select("liker_id, liked_id").in("liker_id", profileIds) : Promise.resolve({ data: null }),
+    isRecommendMode ? supabase.from("player_follows").select("follower_id, following_id").in("follower_id", profileIds) : Promise.resolve({ data: null }),
     isRecommendMode ? supabase.from("feed_posts").select("author_id").in("author_id", profileIds).gte("created_at", sevenDaysAgo.toISOString()) : Promise.resolve({ data: null }),
   ]);
 
-  for (const row of (likesReceivedRes.data ?? [])) {
-    likeCountMap[row.liked_id] = (likeCountMap[row.liked_id] ?? 0) + 1;
-    if (row.liker_id === myId) iLikedSet.add(row.liked_id);
+  for (const row of (followsReceivedRes.data ?? [])) {
+    likeCountMap[row.following_id] = (likeCountMap[row.following_id] ?? 0) + 1;
+    if (row.follower_id === myId) iLikedSet.add(row.following_id);
   }
 
   if (isRecommendMode) {
@@ -97,9 +110,9 @@ export async function GET(req: NextRequest) {
       if (!theirClubMemberships[row.user_id]) theirClubMemberships[row.user_id] = new Set();
       theirClubMemberships[row.user_id].add(row.club_id);
     }
-    for (const row of (likesGivenRes.data ?? [])) {
-      if (!theirFollows[row.liker_id]) theirFollows[row.liker_id] = new Set();
-      theirFollows[row.liker_id].add(row.liked_id);
+    for (const row of (followsGivenRes.data ?? [])) {
+      if (!theirFollows[row.follower_id]) theirFollows[row.follower_id] = new Set();
+      theirFollows[row.follower_id].add(row.following_id);
     }
     for (const row of (postsRes.data ?? [])) {
       theirRecentPosts[row.author_id] = (theirRecentPosts[row.author_id] ?? 0) + 1;
@@ -107,10 +120,10 @@ export async function GET(req: NextRequest) {
   }
 
   // --- Map & Score ---
-  
+
   let enriched = (profiles ?? []).map((p: any) => {
     let score = 0;
-    
+
     if (!q.trim() && !idParam) {
       // (same_level × 3)
       if (p.level === myLevel) score += 3;
@@ -142,7 +155,11 @@ export async function GET(req: NextRequest) {
       silver: p.silver_medals ?? 0,
       bronze: p.bronze_medals ?? 0,
       online: p.online ?? false,
+      follower_count: likeCountMap[p.id] ?? 0,
+      /** @deprecated use follower_count — kept for backward compat */
       like_count: likeCountMap[p.id] ?? 0,
+      i_follow: iLikedSet.has(p.id),
+      /** @deprecated use i_follow — kept for backward compat */
       i_liked: iLikedSet.has(p.id),
       _score: score // internal use for sorting
     };
@@ -150,9 +167,8 @@ export async function GET(req: NextRequest) {
 
   // If no search query, sort by score and limit to 15
   if (!q.trim() && !idParam) {
-    // Filter out people I already follow for the "People You May Know" widget?
-    // Usually PYMK filters out existing friends.
-    enriched = enriched.filter(p => !p.i_liked);
+    // Filter out people I already follow for the "People You May Know" widget
+    enriched = enriched.filter(p => !p.i_follow);
     enriched.sort((a, b) => b._score - a._score);
     enriched = enriched.slice(0, 15);
   }
@@ -160,5 +176,23 @@ export async function GET(req: NextRequest) {
   // Clean up internal _score
   const finalResult = enriched.map(({ _score, ...rest }) => rest);
 
-  return NextResponse.json(finalResult);
+  // Determine TTL based on query type
+  let heuristicTTL = 3600; // 1 hour default
+  let apiTTL = 600; // 10 minutes default
+
+  if (!q.trim() && !idParam) {
+    heuristicTTL = 3600; // 1 hour
+    apiTTL = 1800; // 30 minutes
+  } else if (q.trim()) {
+    heuristicTTL = 300; // 5 minutes
+    apiTTL = 600; // 10 minutes
+  }
+
+  // Store in heuristic cache
+  await setCache(cacheKey, finalResult, heuristicTTL);
+
+  // Store in API cache
+  await setCache(`${cacheKey}:api`, finalResult, apiTTL);
+
+  return NextResponse.json(finalResult, { status: 200 });
 }

@@ -256,7 +256,7 @@ export default function OwnerCourts() {
                             }}
                             className={cn(
                               "w-full px-3.5 py-2 rounded-xl text-xs font-bold text-left transition-all flex items-center justify-between",
-                              newSurface === s ? "bg-amber-500/20 text-amber-300" : "text-slate-300 hover:bg-white/5"
+                              newSurface === s ? "bg-amber-500/20 text-amber-300" : "text-muted-foreground hover:bg-white/5"
                             )}
                           >
                             <span>{s}</span>
@@ -339,7 +339,7 @@ export default function OwnerCourts() {
                         : "bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 border border-amber-500/30 shadow-[0_4px_16px_rgba(245,158,11,0.15)] active:scale-[0.97]"
                     )}
                   >
-                    <Flame className={cn("w-3.5 h-3.5", c.currentBooking ? "text-slate-500" : "text-amber-400")} />
+                    <Flame className={cn("w-3.5 h-3.5", c.currentBooking ? "text-muted-foreground" : "text-amber-400")} />
                     <span>Host Open Play Here</span>
                   </button>
                 </div>
@@ -512,12 +512,12 @@ export default function OwnerCourts() {
       {/* Add Court Modal */}
       <AnimatePresence>
         {showAddModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/70 dark:bg-[#020617]/80 backdrop-blur-2xl"
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
               onClick={() => setShowAddModal(false)} 
             />
             
@@ -526,17 +526,17 @@ export default function OwnerCourts() {
               animate={{ scale: 1, opacity: 1, y: 0 }} 
               exit={{ scale: 0.95, opacity: 0, y: 20 }} 
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="relative w-full max-w-md bg-surface-base dark:bg-[#0C1938]/95 backdrop-blur-3xl rounded-2xl shadow-[0_32px_96px_rgba(0,0,0,0.85)] border border-border dark:border-white/15 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] z-10"
+              className="relative w-full max-w-md bg-surface-overlay dark:bg-[#13223F] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] border border-border dark:border-white/12 z-[610]"
               onClick={e => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 pb-4 border-b border-border dark:border-white/10 rounded-t-2xl">
+              <div className="flex items-center justify-between p-6 pb-4 border-b border-border rounded-t-2xl">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-foreground dark:text-white">List New Court</h2>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">List New Court</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">Add a new court to your facility catalog</p>
                 </div>
-                <button onClick={() => setShowAddModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-colors">
-                  <X className="w-5 h-5" />
+                <button onClick={() => setShowAddModal(false)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-surface-interactive hover:bg-surface-interactive/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" aria-label="Close modal">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
@@ -548,7 +548,7 @@ export default function OwnerCourts() {
                     value={newName} 
                     onChange={e => setNewName(e.target.value)} 
                     placeholder="e.g. Championship Court 7"
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all bg-surface-interactive border border-border text-foreground dark:bg-white/[0.05] dark:border-white/15 dark:text-white focus:border-emerald-500 dark:focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500 placeholder:text-muted-foreground/60" 
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all bg-surface-interactive border border-border text-foreground focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-muted-foreground" 
                   />
                 </div>
                 
@@ -558,7 +558,7 @@ export default function OwnerCourts() {
                     <button
                       type="button"
                       onClick={() => setIsAddSurfaceOpen(!isAddSurfaceOpen)}
-                      className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all bg-surface-interactive border border-border text-foreground dark:bg-white/[0.05] dark:border-white/15 dark:text-white flex items-center justify-between"
+                      className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all bg-surface-interactive border border-border text-foreground flex items-center justify-between cursor-pointer"
                     >
                       <span>{newSurface}</span>
                       <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isAddSurfaceOpen && "rotate-180")} />
@@ -571,7 +571,7 @@ export default function OwnerCourts() {
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                          className="overflow-hidden mt-2 p-1.5 bg-surface-interactive border border-border dark:bg-white/[0.04] dark:border-white/10 rounded-xl space-y-1"
+                          className="overflow-hidden mt-2 p-1.5 bg-surface-interactive border border-border rounded-xl space-y-1"
                         >
                           {surfaces.map((s) => (
                             <button
@@ -582,12 +582,12 @@ export default function OwnerCourts() {
                                 setIsAddSurfaceOpen(false);
                               }}
                               className={cn(
-                                "w-full px-3.5 py-2.5 rounded-lg text-xs font-bold text-left transition-all flex items-center justify-between",
-                                newSurface === s ? "bg-emerald-500/20 text-emerald-300" : "text-slate-200 hover:bg-white/10"
+                                "w-full px-3.5 py-2.5 rounded-lg text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer",
+                                newSurface === s ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400" : "text-foreground hover:bg-surface-raised"
                               )}
                             >
                               <span>{s}</span>
-                              {newSurface === s && <Check className="w-4 h-4 text-emerald-400" />}
+                              {newSurface === s && <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />}
                             </button>
                           ))}
                         </motion.div>
@@ -599,32 +599,32 @@ export default function OwnerCourts() {
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Price per Hour</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-emerald-400">₱</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-emerald-500 dark:text-emerald-400">₱</span>
                     <input 
                       value={newPrice} 
                       onChange={e => setNewPrice(e.target.value)} 
                       type="number" 
                       min="100" 
                       placeholder="400"
-                      className="w-full pl-9 pr-4 py-3 rounded-xl text-sm outline-none transition-all bg-surface-interactive border border-border text-foreground dark:bg-white/[0.05] dark:border-white/15 dark:text-white focus:border-emerald-500 dark:focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                      className="w-full pl-9 pr-4 py-3 rounded-xl text-sm outline-none transition-all bg-surface-interactive border border-border text-foreground focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                     />
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="p-6 border-t border-border dark:border-white/10 bg-surface-base dark:bg-[#09132A]/95 flex items-center justify-end gap-3">
+              <div className="p-6 border-t border-border bg-surface-raised flex items-center justify-end gap-3 rounded-b-2xl">
                 <button 
                   type="button" 
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-3 rounded-xl text-xs font-bold text-muted-foreground hover:text-white transition-all"
+                  className="px-4 py-3 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={addCourt} 
                   disabled={!newName.trim()}
-                  className="px-6 py-3 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-[#080D1C] shadow-[0_4px_16px_rgba(16,185,129,0.3)] border border-emerald-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none disabled:border-transparent disabled:active:scale-100 disabled:pointer-events-none"
+                  className="px-6 py-3 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-white shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none disabled:active:scale-100 disabled:pointer-events-none cursor-pointer"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>Add Court</span>

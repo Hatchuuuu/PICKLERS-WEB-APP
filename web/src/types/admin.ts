@@ -1,9 +1,10 @@
 export type ApplicationStatus = 'pending' | 'in_review' | 'approved' | 'rejected' | 'more_info_requested';
-export type AdminRole = 'super_admin' | 'moderator' | 'finance_admin';
+export type AdminRole = 'super_admin' | 'platform_admin' | 'operations_admin' | 'moderator' | 'finance_admin';
 export type AuditAction =
   | 'APPROVE_OWNER_APPLICATION' | 'REJECT_OWNER_APPLICATION' | 'REQUEST_REVISION'
   | 'BAN_USER' | 'UNBAN_USER' | 'PROMOTE_ADMIN' | 'DEMOTE_ADMIN'
-  | 'CREATE_PROMO' | 'DEACTIVATE_PROMO' | 'UPDATE_PROMO';
+  | 'CREATE_PROMO' | 'DEACTIVATE_PROMO' | 'UPDATE_PROMO' | 'DELETE_PROMO' | 'ACTIVATE_PROMO'
+  | 'UPDATE_PLATFORM_SETTINGS';
 
 export interface OwnerApplication {
   id: string;
@@ -26,6 +27,7 @@ export interface OwnerApplication {
   status: ApplicationStatus;
   rejection_reason?: string;
   revision_request_note?: string;
+  internal_notes?: string | null;
   reviewed_by?: string;
   reviewed_at?: string;
   created_at: string;

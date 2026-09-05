@@ -6,11 +6,11 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary">
       {/* Simple Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <ArrowLeft className="w-4 h-4 text-ink-muted" />
-            <span className="text-sm font-medium text-ink-muted">Back to Home</span>
+            <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Back to Home</span>
           </Link>
           <Link href="/">
             <PicklersLogo size={32} />
@@ -22,11 +22,11 @@ export default function PrivacyPolicy() {
       {/* Content */}
       <main className="container mx-auto px-4 py-12 md:py-24 max-w-3xl">
         <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-rajdhani font-bold text-white mb-4">Privacy Policy</h1>
-          <p className="text-ink-muted">Last Updated: {new Date().toLocaleDateString()}</p>
+          <h1 className="text-4xl md:text-5xl font-rajdhani font-bold text-foreground mb-4">Privacy Policy</h1>
+          <p className="text-muted-foreground">Last Updated: {new Date().toLocaleDateString()}</p>
         </div>
 
-        <div className="prose prose-invert prose-p:text-ink-muted prose-headings:font-rajdhani prose-headings:text-white max-w-none">
+        <div className="prose dark:prose-invert prose-p:text-muted-foreground prose-headings:font-rajdhani prose-headings:text-foreground max-w-none">
           <p>
             Welcome to PICKLERS! We respect your privacy and are committed to protecting your personal data. 
             This privacy policy will inform you as to how we look after your personal data when you visit our 

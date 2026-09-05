@@ -32,10 +32,10 @@ export function formatTimeRange(timeStr: string): string {
   const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
   if (!match) return timeStr;
 
-  let [_, hoursStr, minsStr, period] = match;
+  const [, hoursStr, minsStr, rawPeriod] = match;
   let hours = parseInt(hoursStr, 10);
   const mins = minsStr;
-  period = period.toUpperCase();
+  const period = rawPeriod.toUpperCase();
 
   if (period === "PM" && hours < 12) hours += 12;
   if (period === "AM" && hours === 12) hours = 0;
@@ -130,8 +130,8 @@ function MatchCardInner({ m, publicMode, onJoin, joined = false }: { m: CardMatc
       whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className={`p-5 flex flex-col justify-between cursor-default h-full rounded-[24px] border backdrop-blur-[20px] transition-all duration-300 ${joined
-          ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_8px_32px_rgba(16,185,129,0.15)]'
-          : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/[0.07] dark:to-white/[0.02] dark:border-white/[0.1] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+        ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_8px_32px_rgba(16,185,129,0.15)]'
+        : 'bg-surface-base border-border shadow-lg dark:bg-gradient-to-br dark:from-white/[0.07] dark:to-white/[0.02] dark:border-white/[0.1] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
         }`}
     >
       {/* Header: Facility Title & Location (Left), Skill Badge (Right) */}
@@ -219,10 +219,10 @@ function MatchCardInner({ m, publicMode, onJoin, joined = false }: { m: CardMatc
               onClick={onJoin}
               disabled={joined || full}
               className={`text-[14px] px-7 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[84px] ${joined
-                  ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none'
-                  : full
-                    ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none'
-                    : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'
+                ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none'
+                : full
+                  ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none'
+                  : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'
                 }`}
             >
               {joined ? "Joined" : full ? "Full" : "Join"}
@@ -232,10 +232,10 @@ function MatchCardInner({ m, publicMode, onJoin, joined = false }: { m: CardMatc
               <button
                 disabled={joined || full}
                 className={`text-[14px] px-7 py-2.5 rounded-full font-bold active:scale-[0.95] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[84px] ${joined
-                    ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none'
-                    : full
-                      ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none'
-                      : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'
+                  ? 'bg-transparent text-emerald-400 border-[1.5px] border-emerald-400 shadow-none'
+                  : full
+                    ? 'bg-black/5 dark:bg-white/5 text-muted-foreground border-none shadow-none'
+                    : 'bg-[#3B82F6] text-white border-none shadow-[0_4px_16px_rgba(59,130,246,0.35)] hover:opacity-90'
                   }`}
               >
                 {loading ? (
@@ -261,38 +261,49 @@ function MatchCardInner({ m, publicMode, onJoin, joined = false }: { m: CardMatc
       {mounted && createPortal(
         <AnimatePresence>
           {showJoinConfirm && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pb-8">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/20 dark:bg-[#0A1118]/80 backdrop-blur-3xl"
-                onClick={() => setShowJoinConfirm(false)} />
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
+                onClick={() => setShowJoinConfirm(false)}
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 400 }}
-                className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-                <div className="w-full max-w-[340px] bg-black/20 dark:bg-[#0A1118]/80 backdrop-blur-3xl rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl border border-black/5 dark:border-white/[0.08]">
+                className="relative w-full max-w-sm flex flex-col gap-2 z-[610] items-center"
+              >
+                <div className="w-full max-w-[340px] bg-surface-overlay dark:bg-[#13223F] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.5)] border border-border dark:border-white/12">
                   <div className="p-6 text-center pb-5">
-                    <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-4 ring-1 ring-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                      <span className="text-[24px] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]">🤝</span>
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4 text-emerald-500 dark:text-emerald-400">
+                      <span className="text-[24px]">🤝</span>
                     </div>
-                    <h3 className="text-[20px] font-bold text-foreground tracking-tight mb-2" >Join Match?</h3>
-                    <p className="text-[14px] text-foreground/70 leading-relaxed font-medium px-2">
-                      Join <span className="font-bold text-foreground">{m.level}</span> match at <span className="font-bold text-foreground">{m.facility}</span> on <span className="font-bold text-foreground">{formatFullDate(m.date)}</span> for <span className="font-bold text-emerald-400">₱{m.price}</span>?</p>
+                    <h3 className="text-lg font-bold text-foreground tracking-tight mb-2">Join Match?</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed font-medium px-2">
+                      Join <span className="font-bold text-foreground">{m.level}</span> match at <span className="font-bold text-foreground">{m.facility}</span> on <span className="font-bold text-foreground">{formatFullDate(m.date)}</span> for <span className="font-bold text-emerald-500 dark:text-emerald-400">₱{m.price}</span>?
+                    </p>
                   </div>
                   <div className="p-5 pt-0 flex gap-2.5">
-                    <button onClick={() => setShowJoinConfirm(false)} className="flex-1 py-3.5 rounded-[16px] text-[15px] font-semibold text-foreground bg-black/10 hover:bg-black/20 dark:bg-white/10 dark:hover:bg-white/20 active:scale-[0.98] transition-all">
+                    <button
+                      onClick={() => setShowJoinConfirm(false)}
+                      className="flex-1 py-3 rounded-xl text-xs font-semibold text-foreground bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-[0.98] transition-all cursor-pointer"
+                    >
                       Cancel
                     </button>
                     <button
                       onClick={confirmJoin}
                       disabled={isSimulating || simSuccess}
-                      className="flex-[1.5] py-3.5 rounded-[16px] text-[15px] font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-400 active:scale-[0.98] transition-all shadow-[0_8px_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/50 flex items-center justify-center gap-2"
+                      className="flex-[1.5] py-3 rounded-xl text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       {isSimulating ? (
                         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
-                          className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+                          className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
                       ) : simSuccess ? (
                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-                          <Check className="w-6 h-6 text-white" />
+                          <Check className="w-5 h-5 text-white" />
                         </motion.div>
                       ) : (
                         "Confirm & Join"

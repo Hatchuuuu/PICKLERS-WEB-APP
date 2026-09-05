@@ -1,41 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-
-async function makeSupabase() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-}
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getCache, setCache, generateCacheKey } from "@/lib/cacheUtils";
 
 /**
  * GET /api/community/inbox — list all conversations, sorted by most recent message
  *
- * Performance fix: instead of loading ALL messages and grouping in JS,
- * we now use a targeted approach:
- *   1. Fetch only the most recent message per conversation partner
- *   2. Count unreads in a separate efficient query
+ * Uses the optimized get_inbox RPC with fallback to query aggregation.
  */
 export async function GET(_req: NextRequest) {
-  const supabase = await makeSupabase();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const myId = user.id;
 
-  // Step 1: Get recent messages (limited set) to identify active conversations
+  // Create a normalized cache key based on user ID
+  const cacheKey = generateCacheKey('community-inbox', myId);
+
+  // 1. Check HEURISTIC CACHE FIRST (medium TTL: 2 minutes for inbox data)
+  const cachedHeuristic = await getCache<any>(cacheKey);
+  if (cachedHeuristic !== null) {
+    const list = Array.isArray(cachedHeuristic) ? cachedHeuristic : cachedHeuristic.data || [];
+    return NextResponse.json(list, { status: 200 });
+  }
+
+  // 2. Try to get from API cache (shorter TTL: 30 seconds)
+  const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+  if (cachedAPI !== null) {
+    const list = Array.isArray(cachedAPI) ? cachedAPI : cachedAPI.data || [];
+    return NextResponse.json(list, { status: 200 });
+  }
+
+  // If not in cache, proceed with the original logic
+  // 1. Try optimized database RPC
+  const { data: rpcData, error: rpcError } = await supabase.rpc("get_inbox", {
+    p_user_id: myId,
+  });
+
+  if (!rpcError && Array.isArray(rpcData)) {
+    // Store in heuristic cache (TTL: 2 minutes = 120 seconds)
+    await setCache(cacheKey, rpcData, 120);
+
+    // Store in API cache (TTL: 30 seconds = 30 seconds)
+    await setCache(`${cacheKey}:api`, rpcData, 30);
+
+    return NextResponse.json(rpcData);
+  }
+
+  // 2. Fallback in case RPC is not yet applied
   const { data: sentMessages } = await supabase
     .from("direct_messages")
     .select("receiver_id, content, created_at")
@@ -50,7 +62,6 @@ export async function GET(_req: NextRequest) {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  // Step 2: Build conversation map — keep only the latest message per partner
   const convMap = new Map<string, { user_id: string; last_message: string; last_at: string; unread_count: number }>();
 
   for (const msg of (sentMessages ?? [])) {
@@ -82,20 +93,18 @@ export async function GET(_req: NextRequest) {
     }
   }
 
-  // Step 3: Enrich with player profiles
   const partnerIds = [...convMap.keys()];
-  let nameMap: Record<string, { name: string; level: string; online: boolean; avatar_url: string | null }> = {};
+  const nameMap: Record<string, { name: string; level: string; online: boolean; avatar_url: string | null }> = {};
   if (partnerIds.length > 0) {
     const { data: profiles } = await supabase
       .from("player_profiles")
       .select("id, name, level, online, avatar_url")
       .in("id", partnerIds);
-    (profiles ?? []).forEach((p: any) => {
+    (profiles ?? []).forEach((p: { id: string; name: string; level: string | null; online: boolean | null; avatar_url: string | null }) => {
       nameMap[p.id] = { name: p.name, level: p.level ?? "2.5", online: p.online ?? false, avatar_url: p.avatar_url ?? null };
     });
   }
 
-  // Step 4: Build final response, sorted by most recent
   const conversations = [...convMap.values()]
     .map((c) => ({
       ...c,
@@ -105,6 +114,12 @@ export async function GET(_req: NextRequest) {
       avatar_url: nameMap[c.user_id]?.avatar_url ?? null,
     }))
     .sort((a, b) => new Date(b.last_at).getTime() - new Date(a.last_at).getTime());
+
+  // Store in heuristic cache (TTL: 2 minutes = 120 seconds)
+  await setCache(cacheKey, conversations, 120);
+
+  // Store in API cache (TTL: 30 seconds = 30 seconds)
+  await setCache(`${cacheKey}:api`, conversations, 30);
 
   return NextResponse.json(conversations);
 }

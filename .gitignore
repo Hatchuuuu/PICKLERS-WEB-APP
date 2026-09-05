@@ -21,3 +21,8 @@ graphify-out/
 # Capacitor Native Platforms
 web/android/
 web/ios/
+
+.claude/
+.gemini/
+.loop-engineering/
+web/.loop-engineering/

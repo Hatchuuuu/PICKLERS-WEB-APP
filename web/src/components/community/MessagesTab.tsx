@@ -23,7 +23,10 @@ export default function MessagesTab({
     (async () => {
       setLoading(true);
       const res = await fetch("/api/community/inbox");
-      if (res.ok) setConversations(await res.json());
+      if (res.ok) {
+        const raw = await res.json();
+        setConversations(Array.isArray(raw) ? raw : raw?.data || []);
+      }
       setLoading(false);
     })();
   }, []);
@@ -123,7 +126,7 @@ export default function MessagesTab({
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-slate-950 bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                      className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-emerald-500 shadow-sm"
                     >
                       {c.unread_count > 9 ? "9+" : c.unread_count}
                     </motion.span>

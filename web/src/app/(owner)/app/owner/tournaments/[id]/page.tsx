@@ -298,13 +298,13 @@ export default function OwnerBracket() {
                         </button>
                         <div className="w-full h-px bg-border" />
                         <button onClick={() => resetTransform()} className="p-1.5 hover:bg-surface-interactive rounded-lg transition-colors text-foreground" title="Reset View">
-                          <Maximize className="w-4 h-4 text-slate-400" />
+                          <Maximize className="w-4 h-4 text-muted-foreground" />
                         </button>
                       </div>
 
                       {/* Format/Team Info Pill */}
-                      <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-surface-overlay/80 dark:bg-slate-900/80 backdrop-blur-md border border-border/60 rounded-full px-3 py-1.5 shadow-xl text-foreground">
-                        <span className="text-[10px] font-bold text-slate-500 tracking-tight">
+                      <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-surface-overlay/80 backdrop-blur-md border border-border/60 rounded-full px-3 py-1.5 shadow-xl text-foreground">
+                        <span className="text-[10px] font-bold text-muted-foreground tracking-tight">
                           {format === 'DOUBLE' ? 'Double Elim' : 'Single Elim'} · {teamCount} Teams · {teamType === 'DOUBLES' ? '2v2' : '1v1'}
                         </span>
                       </div>

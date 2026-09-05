@@ -1,28 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-
-async function makeSupabase() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-}
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 /** POST /api/community/feed/upload — upload a feed image to Supabase Storage */
 export async function POST(req: NextRequest) {
-  const supabase = await makeSupabase();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -39,9 +20,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Only JPEG, PNG, WebP, and GIF images are allowed" }, { status: 400 });
   }
 
-  // Validate file size (5MB max)
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: "File must be smaller than 5MB" }, { status: 400 });
+  // Validate file size (15MB max)
+  if (file.size > 15 * 1024 * 1024) {
+    return NextResponse.json({ error: "File must be smaller than 15MB" }, { status: 400 });
   }
 
   const ext = file.name.split(".").pop() ?? "jpg";

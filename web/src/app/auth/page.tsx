@@ -71,7 +71,7 @@ function AuthContent() {
   const strengthLabels = ["", "WEAK", "FAIR", "STRONG"];
   const strengthColors = ["bg-gray-300", "bg-red-400", "bg-yellow-400", "bg-emerald-400"];
 
-  const inputClassName = "w-full rounded-[10px] px-4 py-2 sm:py-2.5 text-[14px] sm:text-[15px] outline-none transition-all duration-300 border focus:scale-[1.005] focus:shadow-[0_0_0_3px_rgba(0,217,139,0.15)] focus:-translate-y-[1px] bg-surface-interactive text-ink-primary border-border-default focus:border-border-emphasis";
+  const inputClassName = "w-full rounded-xl px-4 py-2 sm:py-2.5 text-[14px] sm:text-[15px] outline-none transition-all duration-300 border focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-surface-interactive text-foreground border-border placeholder:text-muted-foreground";
   const errors = form.formState.errors;
 
   const { ref: nameRef, ...nameProps } = form.register("name");
@@ -91,7 +91,7 @@ function AuthContent() {
   const { ref: confirmPasswordRef, ...confirmPasswordProps } = form.register("confirmPassword");
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center px-4 pt-4 pb-24 sm:pt-8 sm:pb-8 bg-background relative overflow-y-auto selection:bg-accent-primary/20">
+    <div className="min-h-[100dvh] flex flex-col items-center px-4 pt-4 pb-24 sm:pt-8 sm:pb-8 bg-background relative overflow-y-auto selection:bg-emerald-500/20">
       
       {/* Subtle Premium Texture Grid */}
       <div className="absolute inset-0 z-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02] pointer-events-none" />
@@ -106,10 +106,7 @@ function AuthContent() {
             router.push("/");
           }
         }}
-          className="flex items-center gap-2 text-[14px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 rounded-md px-2 py-1 -ml-2"
-          style={{ color: "var(--ink-secondary)" }}
-          onMouseEnter={e => e.currentTarget.style.color = "var(--ink-primary)"}
-          onMouseLeave={e => e.currentTarget.style.color = "var(--ink-secondary)"}>
+          className="flex items-center gap-2 text-[14px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg px-2 py-1 -ml-2 text-muted-foreground hover:text-foreground cursor-pointer">
           <ArrowLeft className="w-4 h-4" /> {view !== "auth" ? "Back to Login" : "Back to Home"}
         </button>
       </div>
@@ -117,7 +114,7 @@ function AuthContent() {
       <div className="w-full flex justify-center my-auto scale-[0.95] sm:scale-100 origin-center">
         <motion.div layout initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ ease: [0.23, 1, 0.32, 1], duration: 0.6, layout: { type: "spring", bounce: 0, duration: 0.5 } }}
           className={cn(
-            "w-full max-w-[440px] flex flex-col justify-start rounded-[24px] px-5 pt-4 pb-6 sm:px-8 sm:pt-6 sm:pb-8 relative z-10 overflow-hidden bg-white/80 dark:bg-[#111f3a]/60 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-[0_24px_48px_rgba(0,0,0,0.1)]",
+            "w-full max-w-[440px] flex flex-col justify-start rounded-3xl px-5 pt-4 pb-6 sm:px-8 sm:pt-6 sm:pb-8 relative z-10 overflow-hidden bg-surface-raised border border-border shadow-2xl",
             "h-auto min-h-auto sm:min-h-[440px]"
           )}>
 
@@ -127,14 +124,14 @@ function AuthContent() {
             </div>
             <AnimatePresence mode="wait">
               <motion.div key={view + tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-                <h2 className="text-[20px] sm:text-[26px] font-black tracking-tight mb-1" style={{ color: "var(--ink-primary)" }}>
+                <h2 className="text-[20px] sm:text-[26px] font-black tracking-tight mb-1 text-foreground">
                   {view === "forgot-password" ? "Reset Your Password" :
                     view === "verify-code" ? "Check Your Code" :
                     view === "verify-phone" ? "Verify Your Phone" :
                       view === "reset-password" ? "Set New Password" :
                         tab === "signin" ? "Welcome Back!" : "Start Playing Pickleball"}
                 </h2>
-                <p className="text-[14px] font-medium" style={{ color: "var(--ink-secondary)" }}>
+                <p className="text-[14px] font-medium text-muted-foreground">
                   {view === "forgot-password" ? "Enter your email or phone to receive a code" :
                     view === "verify-code" ? (
                       <>Please check, we sent a code to <span className="font-semibold">{authMethod === 'email' ? formEmail : `+63 ${formPhone}`}</span></>

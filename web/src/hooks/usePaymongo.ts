@@ -1,9 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export const usePaymongo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isShaking, setIsShaking] = useState(false);
+
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setIsLoading(false);
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const shakeError = (msg: string) => {
     setError(msg);

@@ -1,34 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-
-async function makeSupabase() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-}
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
-  const supabase = await makeSupabase();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const clubId = params.id;
+  const { id: clubId } = await params;
 
   const { data: myMem } = await supabase
     .from("club_members")
@@ -48,17 +29,19 @@ export async function GET(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const userIds = (members ?? []).map((m: any) => m.user_id);
-  let nameMap: Record<string, { name: string; level: string; avatar_url: string | null }> = {};
+  const userIds = (members ?? []).map((m: { user_id: string }) => m.user_id);
+  const nameMap: Record<string, { name: string; level: string; avatar_url: string | null }> = {};
   if (userIds.length > 0) {
     const { data: profiles } = await supabase
       .from("player_profiles")
       .select("id, name, level, avatar_url")
       .in("id", userIds);
-    (profiles ?? []).forEach((p: any) => { nameMap[p.id] = { name: p.name, level: p.level, avatar_url: p.avatar_url ?? null }; });
+    (profiles ?? []).forEach((p: { id: string; name: string; level: string | null; avatar_url: string | null }) => { 
+      nameMap[p.id] = { name: p.name, level: p.level ?? "2.5", avatar_url: p.avatar_url ?? null }; 
+    });
   }
 
-  const enriched = (members ?? []).map((m: any) => ({
+  const enriched = (members ?? []).map((m: { id: string; user_id: string; status: string; joined_at: string }) => ({
     id: m.id,
     user_id: m.user_id,
     name: nameMap[m.user_id]?.name ?? "Unknown",
@@ -73,13 +56,13 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
-  const supabase = await makeSupabase();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const clubId = params.id;
+  const { id: clubId } = await params;
   const { member_user_id, action } = await req.json();
 
   const { data: myMem } = await supabase

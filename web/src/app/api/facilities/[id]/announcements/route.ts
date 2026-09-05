@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
+import { getCache, setCache, generateCacheKey } from '@/lib/cacheUtils';
 
 async function createClient() {
   const cookieStore = await cookies();
@@ -27,24 +28,101 @@ const announcementSchema = z.object({
   is_active: z.boolean().default(true),
 });
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: { id: string } | Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
-    const facilityId = parseInt(params.id, 10);
+    const resolvedParams = await params;
+    const facilityId = parseInt(resolvedParams.id, 10);
 
+    // Create a normalized cache key based on facility ID
+    const cacheKey = generateCacheKey('facility-announcements', facilityId);
+
+    // 1. Check HEURISTIC CACHE FIRST (longest TTL: 1 hour for announcements - change infrequently)
+    const cachedHeuristic = await getCache<any>(cacheKey);
+    if (cachedHeuristic !== null) {
+      return NextResponse.json({
+        announcements: cachedHeuristic.data.announcements,
+        count: cachedHeuristic.data.count,
+        cacheInfo: {
+          source: 'heuristic',
+          timestamp: cachedHeuristic.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // 2. Try to get from API cache (shorter TTL: 10 minutes)
+    const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+    if (cachedAPI !== null) {
+      return NextResponse.json({
+        announcements: cachedAPI.data.announcements,
+        count: cachedAPI.data.count,
+        cacheInfo: {
+          source: 'api',
+          timestamp: cachedAPI.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // If not in cache, proceed with database query
     const { data, error, count } = await supabase
       .from('facility_announcements')
       .select('*', { count: 'exact' })
       .eq('facility_id', facilityId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      // Try to return cached data on error (fallback to stale cache)
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          announcements: cachedData.data.announcements,
+          count: cachedData.data.count,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.data.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
 
-    return NextResponse.json({
+      throw error;
+    }
+
+    const responseData = {
       announcements: data,
       count: count ?? 0,
-    });
+      cacheInfo: { source: 'api', timestamp: new Date().toISOString() }
+    };
+
+    // Store in heuristic cache (TTL: 1 hour = 3600 seconds)
+    await setCache(cacheKey, responseData, 3600);
+
+    // Store in API cache (TTL: 10 minutes = 600 seconds)
+    await setCache(`${cacheKey}:api`, responseData, 600);
+
+    return NextResponse.json(responseData, { status: 200 });
   } catch (error: any) {
+    // Try to return cached data on error (fallback to stale cache)
+    try {
+      const resolvedParams = await params;
+      const facilityId = parseInt(resolvedParams.id, 10);
+      const cacheKey = generateCacheKey('facility-announcements', facilityId);
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          announcements: cachedData.data.announcements,
+          count: cachedData.data.count,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.data.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
+    } catch (cacheError) {
+      console.error('[FACILITY_ID_ANNOUNCEMENTS_ROUTE] Cache fallback error:', cacheError);
+    }
+
     return NextResponse.json(
       { error: error.message || 'Failed to fetch announcements' },
       { status: 500 }
@@ -52,10 +130,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } | Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
-    const facilityId = parseInt(params.id, 10);
+    const resolvedParams = await params;
+    const facilityId = parseInt(resolvedParams.id, 10);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -106,10 +185,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } | Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
-    const announcementId = parseInt(params.id, 10);
+    const resolvedParams = await params;
+    const announcementId = parseInt(resolvedParams.id, 10);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -186,10 +266,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } | Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
-    const announcementId = parseInt(params.id, 10);
+    const resolvedParams = await params;
+    const announcementId = parseInt(resolvedParams.id, 10);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {

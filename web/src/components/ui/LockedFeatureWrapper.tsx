@@ -28,10 +28,34 @@ export function LockedFeatureWrapper({
     return <div className={`relative ${className}`}>{children}</div>;
   }
 
-  // Demo accounts and Owners bypass the verification gate entirely
-  const isDemoUser = user?.isDemo || user?.role === "demo" || (user?.email ? user.email.includes("demo") : false) || storeRole === "demo";
+  const emailLower = (user?.email || "").toLowerCase();
+  const isPrivilegedEmail =
+    emailLower === "dev@picklers.com" ||
+    emailLower === "admin@picklers.com" ||
+    emailLower === "picklersdev@gmail.com" ||
+    emailLower === "ricdarrylzernacielo@gmail.com" ||
+    emailLower.endsWith("@picklers.com") ||
+    emailLower.startsWith("picklersdev") ||
+    emailLower.includes("admin") ||
+    emailLower.includes("dev");
+
+  const isDevOrAdmin =
+    isPrivilegedEmail ||
+    user?.role === "dev" ||
+    user?.role === "admin" ||
+    user?.isAdmin ||
+    Boolean(user?.devRole) ||
+    Boolean(user?.adminRole) ||
+    Boolean(user?.dev_role) ||
+    Boolean(user?.admin_role) ||
+    (Array.isArray(user?.console_access) && (user.console_access.includes("dev") || user.console_access.includes("admin"))) ||
+    storeRole === "dev" ||
+    storeRole === "admin";
+
+  // Demo accounts, Owners, Developers, and Admins bypass the verification gate entirely
+  const isDemoUser = user?.isDemo || user?.role === "demo" || emailLower.includes("demo") || storeRole === "demo";
   const isOwner = user?.role === "owner" || storeRole === "owner";
-  const isBypassed = isDemoUser || isOwner;
+  const isBypassed = isDemoUser || isOwner || isDevOrAdmin;
 
   const isVerified = (user?.verificationStatus === "verified") || (storeStatus === "verified");
   

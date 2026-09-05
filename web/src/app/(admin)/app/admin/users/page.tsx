@@ -11,13 +11,17 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  RotateCcw,
+  Check,
+  Download,
 } from "lucide-react";
 import type { AdminUser } from "@/types/admin";
 import { useToast } from "@/contexts/ToastContext";
 import { SkeletonUserRow } from "@/components/admin/AdminSkeleton";
+import { UserDetailDrawer } from "@/components/admin/UserDetailDrawer";
 import { cn } from "@/lib/utils";
 
-export default function UserModerationPage() {
+export default function UserModerationHubPage() {
   const { showToast } = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState("");
@@ -25,7 +29,14 @@ export default function UserModerationPage() {
   const [page, setPage] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [inspectUser, setInspectUser] = useState<AdminUser | null>(null);
   const [selectedUserForBan, setSelectedUserForBan] = useState<AdminUser | null>(null);
+  const [confirmActionUser, setConfirmActionUser] = useState<{
+    user: AdminUser;
+    action: "unban" | "promote_admin" | "demote_admin";
+    admin_role?: string;
+  } | null>(null);
   const [banReason, setBanReason] = useState("");
   const [banReasonError, setBanReasonError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +46,7 @@ export default function UserModerationPage() {
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
@@ -42,13 +54,16 @@ export default function UserModerationPage() {
       params.set("page", String(page));
 
       const res = await fetch(`/api/admin/users?${params.toString()}`);
-      if (res.ok) {
-        const json = await res.json();
-        setUsers(json.data || []);
-        setTotalUsers(json.total || 0);
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to load user list");
       }
-    } catch (err) {
+      const json = await res.json();
+      setUsers(json.data || []);
+      setTotalUsers(json.total || 0);
+    } catch (err: any) {
       console.error("Failed to load users:", err);
+      setError(err.message || "Failed to load user moderation data");
     } finally {
       setIsLoading(false);
     }
@@ -60,11 +75,11 @@ export default function UserModerationPage() {
       fetchUsers();
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, roleFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [search, roleFilter]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page]);
 
   const handleAction = async (
     targetUserId: string,
@@ -94,6 +109,7 @@ export default function UserModerationPage() {
     } finally {
       setIsSubmitting(false);
       setSelectedUserForBan(null);
+      setConfirmActionUser(null);
     }
   };
 
@@ -122,6 +138,23 @@ export default function UserModerationPage() {
         </p>
       </div>
 
+      {/* Error Alert Banner */}
+      {error && (
+        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400 backdrop-blur-2xl shadow-lg">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={fetchUsers}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/20 hover:bg-red-500/30 transition-colors text-red-400"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
+        </div>
+      )}
+
       {/* Controls Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative flex-1">
@@ -136,6 +169,7 @@ export default function UserModerationPage() {
           {search && (
             <button
               onClick={() => setSearch("")}
+              aria-label="Clear search"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
@@ -149,11 +183,22 @@ export default function UserModerationPage() {
           className="px-4 py-2.5 rounded-xl border border-border bg-surface-base text-sm font-semibold text-foreground focus:outline-none"
         >
           <option value="all">All Roles</option>
-          <option value="player">Player</option>
-          <option value="owner">Facility Owner</option>
           <option value="admin">Admin</option>
           <option value="dev">Developer</option>
         </select>
+
+        <button
+          onClick={() => {
+            const params = new URLSearchParams();
+            if (search) params.set("search", search);
+            if (roleFilter !== "all") params.set("role", roleFilter);
+            window.open(`/api/admin/users/export?${params.toString()}`, "_blank");
+          }}
+          className="px-4 py-2.5 rounded-xl border border-border bg-surface-base hover:bg-surface-interactive text-sm font-semibold text-foreground flex items-center justify-center gap-2 transition-colors shrink-0"
+        >
+          <Download className="w-4 h-4 text-emerald-400" />
+          <span>Export CSV</span>
+        </button>
       </div>
 
       {/* Total count */}
@@ -212,7 +257,11 @@ export default function UserModerationPage() {
               </thead>
               <tbody className="divide-y divide-border/60 font-medium">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-surface-interactive/50 transition-colors">
+                  <tr
+                    key={u.id}
+                    onClick={() => setInspectUser(u)}
+                    className="hover:bg-surface-interactive/50 cursor-pointer transition-colors"
+                  >
                     <td className="p-4 flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 text-sm overflow-hidden shrink-0">
                         {u.avatar_url ? (
@@ -233,14 +282,12 @@ export default function UserModerationPage() {
                           "px-2.5 py-1 rounded-full text-xs font-bold border capitalize",
                           u.is_admin
                             ? "bg-violet-500/10 border-violet-500/30 text-violet-400"
-                            : u.role === "owner"
-                            ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
                             : u.role === "dev"
                             ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                             : "bg-surface-raised border-border text-foreground"
                         )}
                       >
-                        {u.is_admin ? "Admin" : u.role || "Player"}
+                        {u.is_admin ? "Admin" : u.role === "dev" ? "Developer" : u.role || "User"}
                       </span>
                     </td>
 
@@ -260,11 +307,11 @@ export default function UserModerationPage() {
                       {new Date(u.created_at).toLocaleDateString()}
                     </td>
 
-                    <td className="p-4 text-right">
+                    <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         {u.is_banned ? (
                           <button
-                            onClick={() => handleAction(u.id, "unban")}
+                            onClick={() => setConfirmActionUser({ user: u, action: "unban" })}
                             disabled={isSubmitting}
                             className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 flex items-center gap-1 disabled:opacity-50"
                           >
@@ -287,7 +334,7 @@ export default function UserModerationPage() {
                         {!u.is_admin ? (
                           <button
                             onClick={() =>
-                              handleAction(u.id, "promote_admin", { admin_role: "moderator" })
+                              setConfirmActionUser({ user: u, action: "promote_admin" })
                             }
                             disabled={isSubmitting}
                             className="px-3 py-1.5 rounded-xl text-xs font-bold bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 flex items-center gap-1 disabled:opacity-50"
@@ -296,7 +343,7 @@ export default function UserModerationPage() {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleAction(u.id, "demote_admin")}
+                            onClick={() => setConfirmActionUser({ user: u, action: "demote_admin" })}
                             disabled={isSubmitting}
                             className="px-3 py-1.5 rounded-xl text-xs font-bold bg-surface-raised border border-border text-muted-foreground hover:text-foreground disabled:opacity-50"
                           >
@@ -343,10 +390,10 @@ export default function UserModerationPage() {
 
       {/* Ban Reason Modal */}
       {selectedUserForBan && (
-        <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-surface-base border border-border rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+        <div className="fixed inset-0 z-[600] bg-black/40 backdrop-blur-[2px] dark:bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex flex-col gap-4 z-[610]">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500">
+              <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 shrink-0">
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div>
@@ -370,26 +417,26 @@ export default function UserModerationPage() {
                 }}
                 placeholder="Enter mandatory reason for account ban (min 10 characters)…"
                 className={cn(
-                  "w-full p-3 rounded-xl border bg-surface-raised text-sm text-foreground focus:outline-none resize-none",
-                  banReasonError ? "border-rose-500/60" : "border-border focus:border-rose-500/40"
+                  "w-full p-3 rounded-xl border bg-surface-interactive text-sm text-foreground focus:outline-none resize-none",
+                  banReasonError ? "border-red-500" : "border-border focus:border-red-500"
                 )}
               />
               {banReasonError && (
-                <p className="text-xs text-rose-400 font-semibold">{banReasonError}</p>
+                <p className="text-xs text-red-500 font-semibold">{banReasonError}</p>
               )}
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setSelectedUserForBan(null)}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-surface-raised hover:bg-surface-interactive transition-colors"
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-surface-interactive hover:bg-surface-interactive/80 text-foreground transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBanSubmit}
                 disabled={isSubmitting}
-                className="flex-1 py-3 rounded-xl text-sm font-bold bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20 transition-colors disabled:opacity-60"
+                className="flex-1 py-3 rounded-xl text-sm font-bold bg-red-500 hover:bg-red-600 text-white shadow-md transition-colors disabled:opacity-60 cursor-pointer"
               >
                 {isSubmitting ? "Banning…" : "Confirm Ban"}
               </button>
@@ -397,6 +444,114 @@ export default function UserModerationPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal for Unban / Promote / Demote */}
+      {confirmActionUser && (
+        <div className="fixed inset-0 z-[600] bg-black/40 backdrop-blur-[2px] dark:bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex flex-col gap-4 z-[610]">
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "p-3 rounded-2xl border shrink-0",
+                  confirmActionUser.action === "unban"
+                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400"
+                    : confirmActionUser.action === "promote_admin"
+                    ? "bg-violet-500/10 border-violet-500/20 text-violet-400"
+                    : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                )}
+              >
+                {confirmActionUser.action === "unban" ? (
+                  <UserCheck className="w-6 h-6" />
+                ) : (
+                  <ShieldCheck className="w-6 h-6" />
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground capitalize">
+                  {confirmActionUser.action === "unban"
+                    ? "Unban User Account"
+                    : confirmActionUser.action === "promote_admin"
+                    ? "Promote to Admin"
+                    : "Demote Admin"}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Target user:{" "}
+                  <span className="text-foreground font-bold">
+                    {confirmActionUser.user.name}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {confirmActionUser.action === "unban"
+                ? `Are you sure you want to restore full access for ${confirmActionUser.user.name}? Their ban restriction will be removed immediately.`
+                : confirmActionUser.action === "promote_admin"
+                ? `Are you sure you want to assign the ${confirmActionUser.admin_role || "moderator"} administrative role to ${confirmActionUser.user.name}?`
+                : `Are you sure you want to demote ${confirmActionUser.user.name}? Their admin access will be revoked.`}
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setConfirmActionUser(null)}
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-surface-interactive hover:bg-surface-interactive/80 text-foreground transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() =>
+                  handleAction(
+                    confirmActionUser.user.id,
+                    confirmActionUser.action,
+                    confirmActionUser.action === "promote_admin"
+                      ? { admin_role: confirmActionUser.admin_role || "moderator" }
+                      : undefined
+                  )
+                }
+                disabled={isSubmitting}
+                className={cn(
+                  "flex-1 py-3 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer",
+                  confirmActionUser.action === "unban"
+                    ? "bg-emerald-500 hover:bg-emerald-400 shadow-md"
+                    : confirmActionUser.action === "promote_admin"
+                    ? "bg-violet-500 hover:bg-violet-600 shadow-md"
+                    : "bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-md"
+                )}
+              >
+                {isSubmitting ? (
+                  "Processing…"
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Confirm</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Inspection Drawer */}
+      <UserDetailDrawer
+        user={inspectUser}
+        onClose={() => setInspectUser(null)}
+        onAction={(usr, act, extra) => {
+          setInspectUser(null);
+          if (act === "ban") {
+            setSelectedUserForBan(usr);
+            setBanReason("");
+            setBanReasonError("");
+          } else {
+            setConfirmActionUser({
+              user: usr,
+              action: act,
+              admin_role: (extra?.admin_role as string) || "moderator",
+            });
+          }
+        }}
+      />
     </div>
   );
 }

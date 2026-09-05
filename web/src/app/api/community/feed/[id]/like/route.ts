@@ -23,13 +23,13 @@ async function makeSupabase() {
 /** POST /api/community/feed/[id]/like — toggle like on a feed post */
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   const supabase = await makeSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const postId = params.id;
+  const { id: postId } = await params;
   const myId = user.id;
 
   // Check if post exists

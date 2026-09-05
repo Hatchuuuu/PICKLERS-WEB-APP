@@ -29,7 +29,8 @@ export function useWallet() {
 
       return data || { balance: 0 };
     },
-    staleTime: 1000 * 60,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 }
 

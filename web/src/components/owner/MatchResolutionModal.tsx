@@ -112,32 +112,32 @@ export function MatchResolutionModal({
 
     return createPortal(
         <AnimatePresence>
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
                     onClick={handleClose}
                 />
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="relative bg-background rounded-xl shadow-2xl border border-border w-full max-w-lg overflow-hidden flex flex-col z-10"
+                    className="relative bg-surface-overlay dark:bg-[#13223F] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] border border-border dark:border-white/12 w-full max-w-lg overflow-hidden flex flex-col z-10 text-foreground"
                 >
-                    <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-muted/30">
-                        <h2 className="text-lg font-bold tracking-tight">Match Scorecard</h2>
-                        <button onClick={handleClose} className="p-1 rounded-full hover:bg-muted transition-colors">
-                            <X className="w-5 h-5 text-muted-foreground" />
+                    <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface-interactive/30">
+                        <h2 className="text-lg font-bold tracking-tight text-foreground">Match Scorecard</h2>
+                        <button onClick={handleClose} className="p-2 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-colors text-muted-foreground hover:text-foreground cursor-pointer">
+                            <X className="w-5 h-5" />
                         </button>
                     </div>
 
                     <div className="p-6 flex flex-col gap-6">
                         <div className="text-center space-y-1">
-                            <h3 className="font-semibold text-lg tracking-tight">{isEditMode ? 'Edit Match Result' : 'Enter Official Scores'}</h3>
-                            <p className="text-sm text-muted-foreground/80">
+                            <h3 className="font-semibold text-lg tracking-tight text-foreground">{isEditMode ? 'Edit Match Result' : 'Enter Official Scores'}</h3>
+                            <p className="text-sm text-muted-foreground">
                                 {isLocked ? 'Waiting for teams to advance to this match.' : 
                                  scoringFormat === 'BEST_OF_3_TO_11' ? 'USAP Rules: Best of 3 to 11. Must win by 2 points.' :
                                  scoringFormat === 'SINGLE_GAME_TO_15' ? 'USAP Rules: 1 Game to 15. Must win by 2 points.' :
@@ -146,7 +146,7 @@ export function MatchResolutionModal({
                         </div>
 
                         {error && (
-                            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2 text-destructive text-left">
+                            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2.5 text-red-500 dark:text-red-400 text-left">
                                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                                 <p className="text-sm font-medium">{error}</p>
                             </motion.div>
@@ -154,8 +154,8 @@ export function MatchResolutionModal({
 
                         <div className="grid grid-cols-[auto_1fr_1fr] gap-4 items-center">
                             <div className="font-semibold text-sm text-muted-foreground invisible">Game</div>
-                            <div className="font-bold text-center truncate px-2 text-primary">{team1 ? team1.name : 'TBD'}</div>
-                            <div className="font-bold text-center truncate px-2 text-primary">{team2 ? team2.name : 'TBD'}</div>
+                            <div className="font-bold text-center truncate px-2 text-emerald-500 dark:text-emerald-400">{team1 ? team1.name : 'TBD'}</div>
+                            <div className="font-bold text-center truncate px-2 text-emerald-500 dark:text-emerald-400">{team2 ? team2.name : 'TBD'}</div>
 
                             {Array.from({ length: numGames }).map((_, i) => (
                                 <React.Fragment key={i}>
@@ -163,7 +163,7 @@ export function MatchResolutionModal({
                                     <input 
                                         type="number"
                                         placeholder="-"
-                                        className="w-full h-12 text-center text-xl font-bold bg-muted/50 border border-border rounded-md focus:outline-none focus-visible:ring-2 focus:ring-primary focus:bg-background transition-all"
+                                        className="w-full h-12 text-center text-xl font-bold bg-surface-interactive border border-border rounded-xl text-foreground focus:outline-none focus-visible:ring-2 focus:ring-emerald-500 transition-all"
                                         value={games[i]?.team1_score ?? ''}
                                         onChange={e => handleScoreChange(i, 1, e.target.value)}
                                         disabled={isEditMode}
@@ -171,7 +171,7 @@ export function MatchResolutionModal({
                                     <input 
                                         type="number"
                                         placeholder="-"
-                                        className="w-full h-12 text-center text-xl font-bold bg-muted/50 border border-border rounded-md focus:outline-none focus-visible:ring-2 focus:ring-primary focus:bg-background transition-all"
+                                        className="w-full h-12 text-center text-xl font-bold bg-surface-interactive border border-border rounded-xl text-foreground focus:outline-none focus-visible:ring-2 focus:ring-emerald-500 transition-all"
                                         value={games[i]?.team2_score ?? ''}
                                         onChange={e => handleScoreChange(i, 2, e.target.value)}
                                         disabled={isEditMode}
@@ -181,13 +181,13 @@ export function MatchResolutionModal({
                         </div>
                     </div>
 
-                    <div className="px-6 py-4 bg-muted/30 border-t border-border flex justify-between items-center">
+                    <div className="px-6 py-4 bg-surface-overlay border-t border-border flex justify-between items-center">
                         {isEditMode ? (
-                            <button onClick={handleUndo} className="px-4 py-2 text-sm font-bold text-destructive hover:bg-destructive/10 rounded-md transition-all active:scale-[0.97] flex items-center gap-2">
+                            <button onClick={handleUndo} className="px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10 rounded-xl transition-all active:scale-[0.97] flex items-center gap-2 cursor-pointer">
                                 <RotateCcw className="w-4 h-4" /> Undo Match Result
                             </button>
                         ) : (
-                            <button onClick={handleClose} className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-all active:scale-[0.97]">
+                            <button onClick={handleClose} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-interactive rounded-xl transition-all active:scale-[0.97] cursor-pointer">
                                 Cancel
                             </button>
                         )}
@@ -196,13 +196,13 @@ export function MatchResolutionModal({
                             <button 
                                 disabled={isLocked || isSubmitting}
                                 onClick={handleConfirm}
-                                className={`px-6 py-2 flex items-center justify-center min-w-[140px] gap-2 text-sm font-bold rounded-md shadow-md transition-all ${isLocked || isSubmitting ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                                className={`px-6 py-2.5 flex items-center justify-center min-w-[140px] gap-2 text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer ${isLocked || isSubmitting ? 'bg-surface-interactive text-muted-foreground opacity-50 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-white'}`}
                             >
                                 {isSubmitting ? (
                                     <motion.div
                                         animate={{ rotate: 360 }}
                                         transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                                        className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full"
+                                        className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                                     />
                                 ) : (
                                     'Submit Scores'

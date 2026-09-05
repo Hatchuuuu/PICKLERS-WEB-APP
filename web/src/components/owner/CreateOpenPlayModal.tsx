@@ -9,6 +9,7 @@ import { useOwner } from "@/contexts/OwnerContext";
 import { useToast } from "@/contexts/ToastContext";
 import { supabase } from "@/lib/supabase";
 import { MatchData } from "@/types";
+import { FocusTrap } from "@/components/a11y/FocusTrap";
 
 interface CreateOpenPlayModalProps {
   isOpen: boolean;
@@ -224,62 +225,63 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-2xl overflow-hidden">
+      <div className="fixed inset-0 z-[600] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-[2px] dark:bg-black/50 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 100 }}
           transition={{ type: "spring", stiffness: 400, damping: 35 }}
-          className="relative w-full max-h-[85vh] sm:h-auto sm:max-w-md sm:max-h-[90vh] bg-[#0C172E] border-t sm:border border-white/15 rounded-t-[32px] sm:rounded-[28px] p-4 sm:p-6 shadow-[0_32px_80px_rgba(0,0,0,0.9)] flex flex-col text-white mb-0 sm:my-auto overflow-hidden"
+          className="relative w-full max-h-[85vh] sm:h-auto sm:max-w-md sm:max-h-[90vh] bg-surface-overlay dark:bg-[#13223F] border-t sm:border border-border dark:border-white/12 rounded-t-[32px] sm:rounded-[28px] p-4 sm:p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex flex-col text-foreground mb-0 sm:my-auto overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
+          <FocusTrap onEscape={onClose} ariaLabel="Host open play session">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
+          <div className="flex items-center justify-between border-b border-border pb-3 shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)]">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)]">
                 <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight leading-none mb-1">Host Open Play</h3>
-                <p className="text-[11px] sm:text-xs text-slate-400 font-medium leading-none">Schedule a joinable match at your court</p>
+                <h3 className="text-base sm:text-lg font-extrabold text-foreground tracking-tight leading-none mb-1">Host Open Play</h3>
+                <p className="text-[11px] sm:text-xs text-muted-foreground font-medium leading-none">Schedule a joinable match at your court</p>
               </div>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="w-8 h-8 rounded-full bg-surface-interactive border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto py-3 space-y-3.5 sm:space-y-4 pr-1 text-slate-200 scrollbar-none">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto py-3 space-y-3.5 sm:space-y-4 pr-1 text-foreground scrollbar-none">
             {/* Target Court Banner / Custom Select */}
             {defaultCourtId ? (
               <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
+                  <MapPin className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" />
                   <div>
-                    <div className="text-xs font-extrabold text-amber-300">{courtName}</div>
-                    <div className="text-[10px] text-slate-400 font-medium">{selectedCourt?.surface || "Indoor · Premium Hard"}</div>
+                    <div className="text-xs font-extrabold text-amber-600 dark:text-amber-300">{courtName}</div>
+                    <div className="text-[10px] text-muted-foreground font-medium">{selectedCourt?.surface || "Indoor · Premium Hard"}</div>
                   </div>
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
                   Target Court
                 </span>
               </div>
             ) : (
               <div className="relative">
-                <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1.5 text-slate-400">
+                <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
                   Target Court
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsCourtDropdownOpen(!isCourtDropdownOpen)}
-                  className="w-full px-3.5 py-2.5 sm:py-3 rounded-2xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.08] text-xs sm:text-sm text-white font-semibold flex items-center justify-between transition-all"
+                  className="w-full px-3.5 py-2.5 sm:py-3 rounded-2xl border border-border bg-surface-interactive hover:bg-surface-interactive/80 text-xs sm:text-sm text-foreground font-semibold flex items-center justify-between transition-all cursor-pointer"
                 >
                   <span>{courtName}</span>
-                  <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", isCourtDropdownOpen && "rotate-180")} />
+                  <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isCourtDropdownOpen && "rotate-180")} />
                 </button>
 
                 <AnimatePresence>
@@ -288,7 +290,7 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      className="absolute left-0 right-0 top-full mt-2 z-50 p-2 bg-[#0E1B38] border border-white/15 rounded-2xl shadow-2xl space-y-1"
+                      className="absolute left-0 right-0 top-full mt-2 z-50 p-2 bg-surface-overlay border border-border rounded-2xl shadow-2xl space-y-1"
                     >
                       {ownerCourts.map((c) => {
                         const isOccupied = Boolean(c.currentBooking);
@@ -303,16 +305,16 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                               setIsCourtDropdownOpen(false);
                             }}
                             className={cn(
-                              "w-full px-3.5 py-2.5 rounded-xl text-xs font-bold text-left transition-all flex items-center justify-between",
+                              "w-full px-3.5 py-2.5 rounded-xl text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer",
                               isOccupied
-                                ? "opacity-40 cursor-not-allowed text-slate-500"
+                                ? "opacity-40 cursor-not-allowed text-muted-foreground"
                                 : String(c.id) === String(courtId)
-                                ? "bg-amber-500/20 text-amber-300"
-                                : "text-slate-300 hover:bg-white/5"
+                                ? "bg-amber-500/20 text-amber-600 dark:text-amber-300"
+                                : "text-foreground hover:bg-surface-interactive"
                             )}
                           >
                             <span>{c.name} ({c.surface}){isOccupied ? " — Occupied" : ""}</span>
-                            {String(c.id) === String(courtId) && <Check className="w-4 h-4 text-amber-400" />}
+                            {String(c.id) === String(courtId) && <Check className="w-4 h-4 text-amber-500" />}
                           </button>
                         );
                       })}
@@ -322,22 +324,20 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
               </div>
             )}
 
-
-
             {/* Session Date with Custom Calendar Popover */}
             <div className="space-y-1.5">
-              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 Session Date
               </label>
 
               {/* Mode Switcher Pill */}
-              <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.05] border border-white/10">
+              <div className="flex gap-2 p-1 rounded-2xl bg-surface-interactive border border-border">
                 <button
                   type="button"
                   onClick={() => setDateMode("specific")}
                   className={cn(
-                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2",
-                    dateMode === "specific" ? "bg-amber-500 text-slate-950 shadow-md" : "text-slate-400 hover:text-white"
+                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                    dateMode === "specific" ? "bg-amber-500 text-white font-bold shadow-md" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
@@ -350,8 +350,8 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                     setIsCalendarOpen(false);
                   }}
                   className={cn(
-                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2",
-                    dateMode === "everyday" ? "bg-amber-500 text-slate-950 shadow-md" : "text-slate-400 hover:text-white"
+                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                    dateMode === "everyday" ? "bg-amber-500 text-white font-bold shadow-md" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Repeat className="w-3.5 h-3.5" />
@@ -361,20 +361,18 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
 
               {dateMode === "specific" && (
                 <div className="relative pt-0.5">
-                  {/* Custom Calendar Trigger Button (Zero Native Browser Pickers) */}
                   <button
                     type="button"
                     onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                    className="w-full px-3.5 py-2.5 sm:py-3 rounded-2xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.08] text-xs text-amber-300 font-extrabold flex items-center justify-between transition-all"
+                    className="w-full px-3.5 py-2.5 sm:py-3 rounded-2xl border border-border bg-surface-interactive hover:bg-surface-interactive/80 text-xs text-amber-600 dark:text-amber-300 font-extrabold flex items-center justify-between transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4 text-amber-400" />
+                      <CalendarIcon className="w-4 h-4 text-amber-500" />
                       <span>{formattedDisplayDate}</span>
                     </div>
-                    <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", isCalendarOpen && "rotate-180")} />
+                    <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isCalendarOpen && "rotate-180")} />
                   </button>
 
-                  {/* 100% Custom Framer Motion Calendar Popover */}
                   <AnimatePresence>
                     {isCalendarOpen && (
                       <motion.div
@@ -382,26 +380,26 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -6 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute left-0 right-0 top-full mt-2 z-50 p-4 bg-[#0A1428] border border-amber-500/30 rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.95)] backdrop-blur-2xl space-y-3"
+                        className="absolute left-0 right-0 top-full mt-2 z-50 p-4 bg-surface-overlay border border-amber-500/30 rounded-3xl shadow-2xl backdrop-blur-2xl space-y-3"
                       >
                         {/* Calendar Month Header */}
-                        <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                        <div className="flex items-center justify-between pb-1 border-b border-border">
                           <button
                             type="button"
                             onClick={handlePrevMonth}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-amber-400 hover:bg-white/10 transition-colors"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-amber-500 hover:bg-surface-interactive transition-colors cursor-pointer"
                           >
                             <ChevronLeft className="w-4 h-4" />
                           </button>
 
-                          <div className="text-xs font-black text-white tracking-wide">
+                          <div className="text-xs font-black text-foreground tracking-wide">
                             {MONTH_NAMES[viewMonth]} {viewYear}
                           </div>
 
                           <button
                             type="button"
                             onClick={handleNextMonth}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-amber-400 hover:bg-white/10 transition-colors"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-amber-500 hover:bg-surface-interactive transition-colors cursor-pointer"
                           >
                             <ChevronRight className="w-4 h-4" />
                           </button>
@@ -412,35 +410,35 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                           <button
                             type="button"
                             onClick={() => setQuickDate(0)}
-                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 transition-colors shrink-0"
+                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-surface-interactive hover:bg-amber-500/20 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-300 transition-colors shrink-0 cursor-pointer"
                           >
                             Today
                           </button>
                           <button
                             type="button"
                             onClick={() => setQuickDate(1)}
-                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 transition-colors shrink-0"
+                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-surface-interactive hover:bg-amber-500/20 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-300 transition-colors shrink-0 cursor-pointer"
                           >
                             Tomorrow
                           </button>
                           <button
                             type="button"
                             onClick={() => setQuickDayOfWeek(6)}
-                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 transition-colors shrink-0"
+                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-surface-interactive hover:bg-amber-500/20 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-300 transition-colors shrink-0 cursor-pointer"
                           >
                             Saturday
                           </button>
                           <button
                             type="button"
                             onClick={() => setQuickDayOfWeek(0)}
-                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 transition-colors shrink-0"
+                            className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-surface-interactive hover:bg-amber-500/20 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-300 transition-colors shrink-0 cursor-pointer"
                           >
                             Sunday
                           </button>
                         </div>
 
                         {/* Weekday Names Header */}
-                        <div className="grid grid-cols-7 text-center text-[10px] font-extrabold uppercase text-amber-400/70 pb-1">
+                        <div className="grid grid-cols-7 text-center text-[10px] font-extrabold uppercase text-amber-500/80 pb-1">
                           {WEEKDAY_NAMES.map((w) => (
                             <div key={w}>{w}</div>
                           ))}
@@ -452,7 +450,7 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                           {Array.from({ length: firstDayOfMonth }).map((_, idx) => {
                             const prevDayNum = daysInPrevMonth - firstDayOfMonth + idx + 1;
                             return (
-                              <div key={`prev-${idx}`} className="h-8 flex items-center justify-center text-slate-600 text-[10px] font-medium">
+                              <div key={`prev-${idx}`} className="h-8 flex items-center justify-center text-muted-foreground/40 text-[10px] font-medium">
                                 {prevDayNum}
                               </div>
                             );
@@ -479,11 +477,11 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                                   setIsCalendarOpen(false);
                                 }}
                                 className={cn(
-                                  "h-8 w-8 mx-auto rounded-full text-xs font-bold transition-all flex items-center justify-center",
-                                  isPast && "text-slate-600 opacity-40 cursor-not-allowed",
-                                  !isPast && !isSelected && !isToday && "text-slate-200 hover:bg-white/10 hover:text-amber-300",
-                                  isToday && !isSelected && "border border-amber-400/50 text-amber-300 font-extrabold",
-                                  isSelected && "bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-black shadow-[0_0_16px_rgba(245,158,11,0.5)] scale-105"
+                                  "h-8 w-8 mx-auto rounded-full text-xs font-bold transition-all flex items-center justify-center cursor-pointer",
+                                  isPast && "text-muted-foreground/40 opacity-40 cursor-not-allowed",
+                                  !isPast && !isSelected && !isToday && "text-foreground hover:bg-surface-interactive hover:text-amber-500",
+                                  isToday && !isSelected && "border border-amber-500/50 text-amber-500 font-extrabold",
+                                  isSelected && "bg-gradient-to-r from-amber-500 to-amber-400 text-white font-bold shadow-md scale-105"
                                 )}
                               >
                                 {dayNum}
@@ -500,27 +498,27 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
 
             {/* Custom Start Time & End Time Range Selectors */}
             <div>
-              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1.5 text-slate-400">
+              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
                 Time Slot Range
               </label>
 
               <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
                 {/* Start Time Dropdown */}
                 <div className="relative">
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1">Start Time</label>
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-1">Start Time</label>
                   <button
                     type="button"
                     onClick={() => {
                       setIsStartTimeOpen(!isStartTimeOpen);
                       setIsEndTimeOpen(false);
                     }}
-                    className="w-full px-3 py-2.5 sm:py-3 rounded-2xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.08] text-xs text-white font-bold flex items-center justify-between transition-all"
+                    className="w-full px-3 py-2.5 sm:py-3 rounded-2xl border border-border bg-surface-interactive hover:bg-surface-interactive/80 text-xs text-foreground font-bold flex items-center justify-between transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-1.5 truncate">
-                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                       <span className="truncate">{startTime}</span>
                     </div>
-                    <ChevronDown className={cn("w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform", isStartTimeOpen && "rotate-180")} />
+                    <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform", isStartTimeOpen && "rotate-180")} />
                   </button>
 
                   <AnimatePresence>
@@ -529,7 +527,7 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
-                        className="absolute left-0 right-0 top-full mt-2 z-50 p-2 bg-[#0E1B38] border border-white/15 rounded-2xl shadow-2xl max-h-48 overflow-y-auto space-y-1 scrollbar-thin"
+                        className="absolute left-0 right-0 top-full mt-2 z-50 p-2 bg-surface-overlay border border-border rounded-2xl shadow-2xl max-h-48 overflow-y-auto space-y-1 scrollbar-thin"
                       >
                         {HOURLY_TIMES.map((t) => (
                           <button
@@ -540,12 +538,12 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                               setIsStartTimeOpen(false);
                             }}
                             className={cn(
-                              "w-full px-3 py-2 rounded-xl text-xs font-bold text-left transition-all flex items-center justify-between",
-                              startTime === t ? "bg-amber-500/20 text-amber-300" : "text-slate-300 hover:bg-white/5"
+                              "w-full px-3 py-2 rounded-xl text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer",
+                              startTime === t ? "bg-amber-500/20 text-amber-600 dark:text-amber-300" : "text-foreground hover:bg-surface-interactive"
                             )}
                           >
                             <span>{t}</span>
-                            {startTime === t && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                            {startTime === t && <Check className="w-3.5 h-3.5 text-amber-500" />}
                           </button>
                         ))}
                       </motion.div>
@@ -555,20 +553,20 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
 
                 {/* End Time Dropdown */}
                 <div className="relative">
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1">End Time</label>
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-1">End Time</label>
                   <button
                     type="button"
                     onClick={() => {
                       setIsEndTimeOpen(!isEndTimeOpen);
                       setIsStartTimeOpen(false);
                     }}
-                    className="w-full px-3 py-2.5 sm:py-3 rounded-2xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.08] text-xs text-white font-bold flex items-center justify-between transition-all"
+                    className="w-full px-3 py-2.5 sm:py-3 rounded-2xl border border-border bg-surface-interactive hover:bg-surface-interactive/80 text-xs text-foreground font-bold flex items-center justify-between transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-1.5 truncate">
-                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                       <span className="truncate">{endTime}</span>
                     </div>
-                    <ChevronDown className={cn("w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform", isEndTimeOpen && "rotate-180")} />
+                    <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform", isEndTimeOpen && "rotate-180")} />
                   </button>
 
                   <AnimatePresence>
@@ -577,7 +575,7 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
-                        className="absolute left-0 right-0 top-full mt-2 z-50 p-2 bg-[#0E1B38] border border-white/15 rounded-2xl shadow-2xl max-h-48 overflow-y-auto space-y-1 scrollbar-thin"
+                        className="absolute left-0 right-0 top-full mt-2 z-50 p-2 bg-surface-overlay border border-border rounded-2xl shadow-2xl max-h-48 overflow-y-auto space-y-1 scrollbar-thin"
                       >
                         {HOURLY_TIMES.map((t) => (
                           <button
@@ -588,12 +586,12 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                               setIsEndTimeOpen(false);
                             }}
                             className={cn(
-                              "w-full px-3 py-2 rounded-xl text-xs font-bold text-left transition-all flex items-center justify-between",
-                              endTime === t ? "bg-amber-500/20 text-amber-300" : "text-slate-300 hover:bg-white/5"
+                              "w-full px-3 py-2 rounded-xl text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer",
+                              endTime === t ? "bg-amber-500/20 text-amber-600 dark:text-amber-300" : "text-foreground hover:bg-surface-interactive"
                             )}
                           >
                             <span>{t}</span>
-                            {endTime === t && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                            {endTime === t && <Check className="w-3.5 h-3.5 text-amber-500" />}
                           </button>
                         ))}
                       </motion.div>
@@ -605,17 +603,17 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
 
             {/* Player Capacity & Price */}
             <div className="space-y-2 pt-0.5">
-              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 Player Capacity & Limit
               </label>
 
-              <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.05] border border-white/10">
+              <div className="flex gap-2 p-1 rounded-2xl bg-surface-interactive border border-border">
                 <button
                   type="button"
                   onClick={() => setIsUnlimited(false)}
                   className={cn(
-                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2",
-                    !isUnlimited ? "bg-amber-500 text-slate-950 shadow-md" : "text-slate-400 hover:text-white"
+                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                    !isUnlimited ? "bg-amber-500 text-white font-bold shadow-md" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Users className="w-3.5 h-3.5" />
@@ -625,8 +623,8 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                   type="button"
                   onClick={() => setIsUnlimited(true)}
                   className={cn(
-                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2",
-                    isUnlimited ? "bg-amber-500 text-slate-950 shadow-md" : "text-slate-400 hover:text-white"
+                    "flex-1 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                    isUnlimited ? "bg-amber-500 text-white font-bold shadow-md" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <span>Unlimited Players</span>
@@ -643,10 +641,10 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
                       max={200}
                       value={maxPlayersInput}
                       onChange={(e) => setMaxPlayersInput(e.target.value)}
-                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-2xl border border-white/15 bg-white/[0.05] text-xs sm:text-sm text-white font-bold focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-2xl border border-border bg-surface-interactive text-xs sm:text-sm text-foreground font-bold focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       placeholder="Enter max players (e.g. 20)"
                     />
-                    <span className="text-xs font-bold text-slate-400 shrink-0 pr-2">Max Players</span>
+                    <span className="text-xs font-bold text-muted-foreground shrink-0 pr-2">Max Players</span>
                   </div>
                 </div>
               )}
@@ -654,16 +652,16 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
 
             {/* Price per Player */}
             <div>
-              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1.5 text-slate-400">
+              <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
                 Price (₱ / player)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-extrabold text-amber-400">₱</span>
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-extrabold text-amber-500">₱</span>
                 <input
                   type="number"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full pl-8 pr-4 py-2.5 sm:py-3 rounded-2xl border border-white/15 bg-white/[0.05] text-xs sm:text-sm text-white font-semibold focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full pl-8 pr-4 py-2.5 sm:py-3 rounded-2xl border border-border bg-surface-interactive text-xs sm:text-sm text-foreground font-semibold focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="250"
                   min={0}
                   required
@@ -672,24 +670,25 @@ export function CreateOpenPlayModal({ isOpen, onClose, onSuccess, defaultCourtId
             </div>
 
             {/* Submit Button */}
-            <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-3 shrink-0 bg-[#0C172E]">
+            <div className="pt-3 border-t border-border flex items-center justify-end gap-3 shrink-0 bg-surface-overlay">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-full text-xs font-bold text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                className="px-4 py-2.5 rounded-full text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-surface-interactive transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs shadow-[0_4px_24px_rgba(245,158,11,0.4)] transition-all active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 sm:py-3 rounded-full bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs shadow-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
               >
-                <Flame className="w-4 h-4 fill-slate-950" />
+                <Flame className="w-4 h-4 fill-white" />
                 <span>{isSubmitting ? "Creating..." : "Host Open Play"}</span>
               </button>
             </div>
           </form>
+          </FocusTrap>
         </motion.div>
       </div>
     </AnimatePresence>

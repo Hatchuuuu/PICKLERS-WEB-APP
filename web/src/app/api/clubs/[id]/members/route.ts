@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
+import { getCache, setCache, generateCacheKey } from '@/lib/cacheUtils';
 
 async function createClient() {
   const cookieStore = await cookies();
@@ -31,6 +32,34 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Create a normalized cache key based on club ID and user ID (for authorization check)
+    const cacheKey = generateCacheKey('club-members', `${clubId}-${user.id}`);
+
+    // 1. Check HEURISTIC CACHE FIRST (medium TTL: 5 minutes for club membership data)
+    const cachedHeuristic = await getCache<any>(cacheKey);
+    if (cachedHeuristic !== null) {
+      return NextResponse.json({
+        data: cachedHeuristic.data,
+        cacheInfo: {
+          source: 'heuristic',
+          timestamp: cachedHeuristic.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // 2. Try to get from API cache (shorter TTL: 1 minute)
+    const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+    if (cachedAPI !== null) {
+      return NextResponse.json({
+        data: cachedAPI.data,
+        cacheInfo: {
+          source: 'api',
+          timestamp: cachedAPI.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // If not in cache, proceed with the original logic
     // Check if user is a member of the club
     const { data: membership, error: memError } = await supabase
       .from('club_members')
@@ -41,6 +70,19 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     if (memError && memError.code !== 'PGRST116') throw memError;
     if (!membership) {
+      // Try to return cached data on error (fallback to stale cache) for auth error
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          data: cachedData.data,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.timestamp,
+            error: 'Using cached data due to authorization error'
+          }
+        }, { status: 200 });
+      }
+
       return NextResponse.json({ error: 'Forbidden: not a member of this club' }, { status: 403 });
     }
 
@@ -60,10 +102,59 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       `)
       .eq('club_id', clubId);
 
-    if (error) throw error;
+    if (error) {
+      // Try to return cached data on error (fallback to stale cache)
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          data: cachedData.data,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
 
-    return NextResponse.json(data);
+      throw error;
+    }
+
+    const responseData = {
+      data: data,
+      cacheInfo: { source: 'api', timestamp: new Date().toISOString() }
+    };
+
+    // Store in heuristic cache (TTL: 5 minutes = 300 seconds)
+    await setCache(cacheKey, responseData, 300);
+
+    // Store in API cache (TTL: 1 minute = 60 seconds)
+    await setCache(`${cacheKey}:api`, responseData, 60);
+
+    return NextResponse.json(responseData);
   } catch (error: any) {
+    // Try to return cached data on error (fallback to stale cache)
+    try {
+      const { id: clubId } = await params;
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const cacheKey = generateCacheKey('club-members', `${clubId}-${user.id}`);
+        const cachedData = await getCache<any>(cacheKey);
+        if (cachedData !== null) {
+          return NextResponse.json({
+            data: cachedData.data,
+            cacheInfo: {
+              source: 'fallback',
+              timestamp: cachedData.timestamp,
+              error: 'Using cached data due to error'
+            }
+          }, { status: 200 });
+        }
+      }
+    } catch (cacheError) {
+      console.error('[CLUB_ID_MEMBERS_ROUTE] Cache fallback error:', cacheError);
+    }
+
     return NextResponse.json(
       { error: error.message || 'Failed to fetch members' },
       { status: 500 }

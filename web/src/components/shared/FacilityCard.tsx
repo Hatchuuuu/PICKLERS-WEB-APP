@@ -1,21 +1,30 @@
 import { memo, useState, useRef } from "react";
-import { motion, useInView } from "motion/react";
+import { motion } from "motion/react";
 import {
   MapPin, Star, Clock, Heart, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Facility } from "@/types";
+import Image from "next/image";
 
-function FacilityCardInner({ f, onFav, onViewCourts }: { f: Facility & { favorited?: boolean }; onFav: () => void; onViewCourts?: () => void }) {
+// A-011 FIX: The previous code called useInView but discarded the return value:
+// `useInView(ref, { once: true, margin: "-50px" });` — the hook attached a
+// scroll listener that produced no visible effect. Removed entirely.
+function FacilityCardInner({ f, onFav, onViewCourts }: {
+  f: Facility & { favorited?: boolean; min_price?: number; max_price?: number }; // A-012 FIX: proper type
+  onFav: () => void;
+  onViewCourts?: () => void;
+}) {
   const [pop, setPop] = useState(false);
   const ref = useRef(null);
-  useInView(ref, { once: true, margin: "-50px" });
 
   // Deterministic mock density
   // densityColor removed
 
-  const minPrice = (f as any).min_price ?? f.price;
-  const maxPrice = (f as any).max_price ?? f.price;
+  // A-012 FIX: min_price/max_price are now typed on the extended prop interface
+  // above — no unsafe `as any` cast needed.
+  const minPrice = f.min_price ?? f.price;
+  const maxPrice = f.max_price ?? f.price;
 
   function handleFav(e: React.MouseEvent) {
     e.stopPropagation();
@@ -33,7 +42,12 @@ function FacilityCardInner({ f, onFav, onViewCourts }: { f: Facility & { favorit
 
       {/* Flush Edge-to-Edge Image */}
       <div className="relative overflow-hidden h-[175px] w-full shrink-0">
-        <img src={f.image} alt={f.name} className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.05]" />
+        <Image
+          src={f.image}
+          alt={f.name}
+          layout="fill"
+          className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.05]"
+        />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
 
@@ -106,16 +120,17 @@ function FacilityCardInner({ f, onFav, onViewCourts }: { f: Facility & { favorit
   );
 }
 
-// Custom comparison function for React.memo that ignores function props
-function areEqual(prevProps: any, nextProps: any) {
-  // Compare the facility object (assuming it's stable or we want to re-render if it changes)
-  // For now, we'll do a shallow check on the facility id and other primitive properties
+// A-013 FIX: The previous comparator checked `prevProps.favorited` which is
+// a top-level prop that doesn't exist — it's always `undefined`. The favorite
+// state lives inside `prevProps.f.favorited`. The memo never detected heart
+// button state changes from the parent.
+function areEqual(
+  prevProps: { f: Facility & { favorited?: boolean }; onFav: () => void; onViewCourts?: () => void },
+  nextProps: { f: Facility & { favorited?: boolean }; onFav: () => void; onViewCourts?: () => void }
+) {
   if (prevProps.f.id !== nextProps.f.id) return false;
-  if (prevProps.favorited !== nextProps.favorited) return false;
-
-  // We're not comparing the function props as they may be recreated
-  // In a real optimization, these should be wrapped in useCallback in the parent
-
+  if (prevProps.f.favorited !== nextProps.f.favorited) return false; // ← check inside f
+  if (prevProps.f.rating !== nextProps.f.rating) return false;
   return true;
 }
 

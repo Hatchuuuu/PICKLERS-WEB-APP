@@ -13,71 +13,78 @@ export function TermsOfServiceModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+          {/* Subtle Dim Backdrop — Keeps App Visible */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[130]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50 z-0"
           />
+
+          {/* Elevated Modal Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: "-45%", x: "-50%" }}
-            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
-            exit={{ opacity: 0, scale: 0.95, y: "-45%", x: "-50%" }}
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="fixed top-1/2 left-1/2 w-[calc(100%-2rem)] max-w-xl max-h-[85vh] bg-background/95 dark:bg-[#0d1527]/95 backdrop-blur-2xl rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.7)] z-[140] border border-white/20 dark:border-white/[0.15] flex flex-col overflow-hidden"
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+            className="relative w-full max-w-xl max-h-[82vh] bg-surface-overlay dark:bg-[#13223F] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-10 border border-border dark:border-white/12 flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="p-4 px-6 border-b border-border-subtle dark:border-white/[0.1] flex justify-between items-center bg-surface-interactive/30 dark:bg-white/[0.04] shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                  <FileCheck className="w-4 h-4 stroke-[2.5]" />
+            <div className="p-5 px-6 border-b border-border dark:border-white/10 flex justify-between items-center bg-surface-interactive/40 dark:bg-white/[0.03] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-500 dark:text-cyan-400 shadow-sm">
+                  <FileCheck className="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-foreground" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>Terms of Service (EULA)</h3>
-                  <p className="text-[11px] font-bold text-muted-foreground">Standard End User License Agreement</p>
+                  <h3 className="text-base font-bold text-foreground tracking-tight" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
+                    Terms of Service (EULA)
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium">Standard End User License Agreement</p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-black/20 dark:bg-white/10 hover:bg-black/30 dark:hover:bg-white/20 active:scale-90 transition-all text-foreground flex items-center justify-center"
+                aria-label="Close terms modal"
+                className="w-8 h-8 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 dark:bg-white/10 dark:hover:bg-white/20 border border-border dark:border-white/10 active:scale-90 transition-all text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
-            {/* Body */}
-            <div className="p-6 pb-8 overflow-y-auto space-y-6 text-sm leading-relaxed hide-scrollbar">
-              <section className="space-y-2">
-                <h4 className="font-extrabold text-foreground text-sm sm:text-base flex items-center gap-2" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
-                  <Scale className="w-4 h-4 text-cyan-400" /> 1. Acceptance of Terms
+            {/* Scrollable Body with Clean Custom Scrollbar */}
+            <div className="p-6 overflow-y-auto space-y-5 text-sm leading-relaxed flex-1 min-h-0 pb-10 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.3)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-500/40 dark:[&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full">
+              <section className="p-4 rounded-2xl bg-surface-interactive/40 dark:bg-white/[0.03] border border-border dark:border-white/8 space-y-2">
+                <h4 className="font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-cyan-500" /> 1. Acceptance of Terms
                 </h4>
                 <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed">
                   By downloading, installing, or using the PICKLERS application, you agree to be bound by these Terms of Service. If you do not agree to these terms, please discontinue app usage.
                 </p>
               </section>
 
-              <section className="space-y-2">
-                <h4 className="font-extrabold text-foreground text-sm sm:text-base flex items-center gap-2" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
-                  <AlertCircle className="w-4 h-4 text-emerald-400" /> 2. Court Bookings & Cancellations
+              <section className="p-4 rounded-2xl bg-surface-interactive/40 dark:bg-white/[0.03] border border-border dark:border-white/8 space-y-2">
+                <h4 className="font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-emerald-500" /> 2. Court Bookings & Cancellations
                 </h4>
                 <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed">
                   Court reservations are processed according to individual court facility policies. Digital court passes generated by PICKLERS must be presented upon entry. Refunds are governed by facility cancellation rules.
                 </p>
               </section>
 
-              <section className="space-y-2">
-                <h4 className="font-extrabold text-foreground text-sm sm:text-base flex items-center gap-2" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
-                  <ShieldAlert className="w-4 h-4 text-amber-400" /> 3. Code of Conduct & Community Guidelines
+              <section className="p-4 rounded-2xl bg-surface-interactive/40 dark:bg-white/[0.03] border border-border dark:border-white/8 space-y-2">
+                <h4 className="font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-500" /> 3. Code of Conduct & Community Guidelines
                 </h4>
                 <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed">
                   Users agree to treat fellow players, court owners, and community members with sportsmanship and respect. Harassment, objectionable content, abusive language, or fraudulent bookings will result in immediate account suspension.
                 </p>
               </section>
 
-              <section className="space-y-2">
-                <h4 className="font-extrabold text-foreground text-sm sm:text-base flex items-center gap-2" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
+              <section className="p-4 rounded-2xl bg-surface-interactive/40 dark:bg-white/[0.03] border border-border dark:border-white/8 space-y-2">
+                <h4 className="font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
                   4. Limitation of Liability
                 </h4>
                 <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed">
@@ -86,18 +93,18 @@ export function TermsOfServiceModal({
               </section>
             </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-border-subtle dark:border-white/[0.1] bg-surface-interactive/40 dark:bg-white/[0.03] backdrop-blur-md shrink-0">
+            {/* Fixed Footer */}
+            <div className="p-4 px-6 border-t border-border dark:border-white/10 bg-surface-interactive/40 dark:bg-white/[0.03] shrink-0">
               <button
+                type="button"
                 onClick={onClose}
-                className="w-full py-3 rounded-xl font-extrabold text-xs sm:text-sm text-slate-950 bg-emerald-500 hover:bg-emerald-400 border border-emerald-400/40 shadow-[0_0_20px_rgba(0,217,139,0.3)] active:scale-[0.98] transition-all cursor-pointer tracking-wider uppercase"
-                style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
+                className="w-full py-3.5 rounded-2xl font-bold text-xs sm:text-sm text-white bg-emerald-500 hover:bg-emerald-400 border border-emerald-400/40 shadow-lg active:scale-[0.98] transition-all cursor-pointer tracking-wider uppercase"
               >
                 Accept & Agree
               </button>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

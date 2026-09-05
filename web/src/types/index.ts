@@ -145,10 +145,13 @@ export type CommunityPlayer = {
   silver: number;
   bronze: number;
   online: boolean;
-  like_count: number;
-  i_liked: boolean;
   follower_count?: number;
   following_count?: number;
+  i_follow?: boolean;
+  /** @deprecated use follower_count */
+  like_count?: number;
+  /** @deprecated use i_follow */
+  i_liked?: boolean;
 };
 
 export type FeedPost = {
@@ -159,9 +162,11 @@ export type FeedPost = {
   author_level?: string;
   content: string | null;
   image_url: string | null;
+  post_type?: "text" | "match_result" | "challenge" | "highlight";
   like_count: number;
   comment_count: number;
   i_liked: boolean;
+  is_flagged?: boolean;
   created_at: string;
   recent_comments?: FeedComment[];
 };

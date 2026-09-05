@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Camera, ScanLine, Search, CheckCircle2, MapPin, CalendarDays, Clock, User, ShieldCheck, Zap, Sparkles, RefreshCw } from "lucide-react";
+import { X, Camera, ScanLine, Search, CheckCircle2, MapPin, CalendarDays, Clock, User, ShieldCheck, Zap, Sparkles, RefreshCw, AlertCircle } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { Avatar } from "@/components/ui/Avatar";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
+import { FocusTrap } from "@/components/a11y/FocusTrap";
 
 interface ScannedPass {
   id: string;
@@ -69,18 +70,26 @@ interface CourtPassScannerModalProps {
   onCheckIn?: (pass: ScannedPass) => void;
 }
 
+// PKL-TKT-XXXX#### pattern validation. Refuses anything that doesn't look
+// like a real ticket reference so the scanner cannot be used to "verify"
+// arbitrary strings (F-580). The DB lookup is still authoritative — the
+// pattern check just saves a round trip on obviously bad input.
+const TICKET_REF_PATTERN = /^(PKL-TKT-)?[A-Z0-9-]{4,32}$/i;
+
 export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassScannerModalProps) {
   const { showToast } = useToast();
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy.supabase.co",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-key"
-  );
-  
+  // F-895: use the project singleton from @/lib/supabase. The previous
+  // version created a fresh `createClient(...)` on every render, which
+  // created multiple WebSocket connections and leaked a dummy key when env
+  // vars were missing. The singleton is the one true client for the
+  // browser session.
+  // supabase is imported above as the named export from @/lib/supabase.
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [scanState, setScanState] = useState<"scanning" | "scanned" | "error">("scanning");
+  const [scanState, setScanState] = useState<"scanning" | "scanned" | "error" | "not_found">("scanning");
   const [searchRef, setSearchRef] = useState("");
   const [activePass, setActivePass] = useState<ScannedPass | null>(null);
   const [flashlight, setFlashlight] = useState(false);
@@ -234,58 +243,60 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
     setIsProcessing(true);
 
     try {
-      // 1. Check Demo Local Passes First
-      const foundDemo = DEMO_PASSES.find(p => p.ref.toUpperCase() === cleanRef || p.id === cleanRef.toLowerCase());
-      if (foundDemo) {
-        setTimeout(() => {
-          setActivePass(foundDemo);
-          setScanState("scanned");
-          setIsProcessing(false);
-        }, 500);
+      // 1. Check Demo Local Passes First (only in development).
+      if (process.env.NODE_ENV !== 'production') {
+        const foundDemo = DEMO_PASSES.find(p => p.ref.toUpperCase() === cleanRef || p.id === cleanRef.toLowerCase());
+        if (foundDemo) {
+          setTimeout(() => {
+            setActivePass(foundDemo);
+            setScanState("scanned");
+            setIsProcessing(false);
+          }, 500);
+          return;
+        }
+      }
+
+      // 2. Pattern check — refuse obviously invalid refs before a DB round trip.
+      if (!TICKET_REF_PATTERN.test(cleanRef)) {
+        setScanState("not_found");
+        setActivePass(null);
+        showToast(`"${cleanRef}" is not a valid court pass format`, "error");
+        setIsProcessing(false);
         return;
       }
 
-      // 2. Query Production Supabase Bookings Database
+      // 3. Query Production Supabase Bookings Database.
       const { data: dbBooking, error } = await supabase
         .from("bookings")
-        .select("*, courts(name), facilities(name)")
+        .select("id, status, court_name, date, time, price, user_id, player_profiles(name, avatar_url)")
         .or(`reference_number.eq.${cleanRef},id.eq.${cleanRef}`)
         .maybeSingle();
 
       if (dbBooking && !error) {
+        const profile = (dbBooking as any).player_profiles;
         const pass: ScannedPass = {
           id: dbBooking.id,
-          ref: dbBooking.reference_number || cleanRef,
-          bookerName: dbBooking.user_name || dbBooking.player_name || "Carlos Reyes",
-          bookerAvatar: dbBooking.user_avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-          court: dbBooking.courts?.name || dbBooking.court_name || "Championship Court 1",
-          facility: dbBooking.facilities?.name || "BGC Pickleball Hub",
-          date: dbBooking.booking_date || "Today",
-          time: `${dbBooking.start_time || "6:00 PM"} - ${dbBooking.end_time || "8:00 PM"}`,
+          ref: cleanRef,
+          bookerName: profile?.name || "Verified Player",
+          bookerAvatar: profile?.avatar_url,
+          court: dbBooking.court_name,
+          facility: "Picklers Facility",
+          date: dbBooking.date || "Today",
+          time: dbBooking.time || "",
           status: dbBooking.status === "checked_in" ? "checked_in" : "verified",
-          price: dbBooking.total_amount || 900,
-          paymentMethod: dbBooking.payment_method || "Pickle Credits"
+          price: dbBooking.price || 0,
+          paymentMethod: "Pickle Credits",
         };
 
         setActivePass(pass);
         setScanState("scanned");
       } else {
-        // Create dynamic pass for any entered ref
-        const customPass: ScannedPass = {
-          id: `custom-${Date.now()}`,
-          ref: cleanRef,
-          bookerName: "Carlos Reyes",
-          bookerAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-          court: "Championship Court 1",
-          facility: "BGC Pickleball Hub",
-          date: "Today",
-          time: "6:00 PM - 8:00 PM",
-          status: "verified",
-          price: 900,
-          paymentMethod: "Pickle Credits"
-        };
-        setActivePass(customPass);
-        setScanState("scanned");
+        // F-580: do NOT fabricate a verified pass for an unknown ref. The
+        // previous version returned a hardcoded "Carlos Reyes / Championship
+        // Court 1" pass for any string, which is identity fraud.
+        setActivePass(null);
+        setScanState("not_found");
+        showToast(`No booking found for "${cleanRef}"`, "error");
       }
     } catch (e) {
       setScanState("error");
@@ -314,14 +325,18 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <FocusTrap
+          onEscape={onClose}
+          ariaLabel="Court pass scanner"
+          className="fixed inset-0 z-[600] flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+        >
         {/* Backdrop */}
         <motion.div
           key="scanner-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/85 backdrop-blur-xl z-0"
+          className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50 z-0"
           onClick={(e) => {
             e.stopPropagation();
             onClose();
@@ -337,10 +352,10 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
           className="relative w-full max-w-[460px] sm:max-w-[480px] max-h-[90vh] z-10 my-auto"
         >
-          <div className="bg-background/90 dark:bg-[#0b1324]/95 backdrop-blur-2xl border border-white/20 dark:border-white/[0.15] rounded-[28px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.6)] flex flex-col">
-            
+          <div className="bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-[28px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex flex-col">
+
             {/* Modal Header */}
-            <div className="px-5 py-3.5 border-b border-border dark:border-white/[0.1] flex items-center justify-between bg-surface-interactive/30 dark:bg-white/[0.04] backdrop-blur-md shrink-0">
+            <div className="px-5 py-3.5 border-b border-border flex items-center justify-between bg-surface-interactive/30 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                   <Camera className="w-3.5 h-3.5 text-emerald-400" />
@@ -363,12 +378,12 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
 
             {/* Modal Body */}
             <div className="p-5 flex flex-col items-center text-center overflow-y-auto max-h-[calc(90vh-56px)]">
-              
+
               {scanState === "scanning" ? (
                 <>
                   {/* Camera Viewfinder View */}
                   <div className="relative w-full aspect-square max-w-[280px] sm:max-w-[320px] rounded-2xl overflow-hidden bg-black border border-white/20 shadow-inner mb-4 flex items-center justify-center">
-                    
+
                     {/* Production WebRTC Video Stream */}
                     {cameraActive && !useSimulatedCamera && (
                       <video
@@ -385,7 +400,7 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
                       <div className="absolute inset-0 bg-slate-950 overflow-hidden flex flex-col items-center justify-center z-10">
                         {/* Live Camera Grid Background */}
                         <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
-                        
+
                         {/* Camera Status HUD */}
                         <div className="absolute top-2 left-3 flex items-center gap-1.5 z-20">
                           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -400,7 +415,7 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Viewfinder Target Reticle */}
                     <div className="absolute inset-6 border-2 border-emerald-500/40 rounded-xl pointer-events-none flex flex-col justify-between p-2 z-20">
                       <div className="flex justify-between">
@@ -480,45 +495,73 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
                     </div>
                   </form>
 
-                  {/* Quick Demo Passes */}
-                  <div className="w-full">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      <span>Quick Scan Demo Pass:</span>
-                    </div>
+                  {/* Quick Demo Passes (dev only) */}
+                  {process.env.NODE_ENV !== 'production' && (
+                    <div className="w-full">
+                      <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>Quick Scan Demo Pass:</span>
+                      </div>
 
-                    <div className="space-y-2">
-                      {DEMO_PASSES.map((pass) => (
-                        <button
-                          key={pass.id}
-                          type="button"
-                          onClick={() => handleScannedCode(pass.ref)}
-                          className="w-full p-2.5 rounded-xl bg-surface-interactive/30 dark:bg-white/[0.03] border border-border/30 dark:border-white/[0.08] hover:border-emerald-500/40 flex items-center justify-between text-left transition-all group cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 text-[10px] shrink-0">
-                              #{pass.id.toUpperCase()}
-                            </div>
-                            <div className="truncate">
-                              <div className="text-xs font-bold text-foreground group-hover:text-emerald-400 transition-colors truncate">
-                                {pass.bookerName}
+                      <div className="space-y-2">
+                        {DEMO_PASSES.map((pass) => (
+                          <button
+                            key={pass.id}
+                            type="button"
+                            onClick={() => handleScannedCode(pass.ref)}
+                            className="w-full p-2.5 rounded-xl bg-surface-interactive/30 dark:bg-white/[0.03] border border-border/30 dark:border-white/[0.08] hover:border-emerald-500/40 flex items-center justify-between text-left transition-all group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 text-[10px] shrink-0">
+                                #{pass.id.toUpperCase()}
                               </div>
-                              <div className="text-[10px] text-muted-foreground truncate">
-                                {pass.court}
+                              <div className="truncate">
+                                <div className="text-xs font-bold text-foreground group-hover:text-emerald-400 transition-colors truncate">
+                                  {pass.bookerName}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground truncate">
+                                  {pass.court}
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          <span className="text-[10px] font-mono font-bold text-muted-foreground px-2 py-0.5 rounded bg-black/20 dark:bg-white/5 shrink-0">
-                            {pass.ref.slice(-8)}
-                          </span>
-                        </button>
-                      ))}
+                            <span className="text-[10px] font-mono font-bold text-muted-foreground px-2 py-0.5 rounded bg-black/20 dark:bg-white/5 shrink-0">
+                              {pass.ref.slice(-8)}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
+              ) : scanState === "not_found" ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="w-full flex flex-col items-center"
+                >
+                  <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3">
+                    <AlertCircle className="w-7 h-7 text-amber-400 stroke-[2.2]" />
+                  </div>
+                  <div className="px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold text-[11px] uppercase tracking-wider mb-4">
+                    Pass Not Found
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-5 max-w-[300px]">
+                    We could not find a booking matching that reference. The pass may have been cancelled, expired, or never existed. Do not let the holder on the court.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScanState("scanning");
+                      setSearchRef("");
+                    }}
+                    className="py-3 px-6 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs transition-all active:scale-95 cursor-pointer shadow-md"
+                  >
+                    Scan Another Pass
+                  </button>
+                </motion.div>
               ) : (
-                /* VERIFIED PASS DETAILS CARD — EXACT PIC 2 REDESIGN */
+                /* VERIFIED PASS DETAILS CARD */
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -542,7 +585,7 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
                       <span>Booker Information</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Avatar name={activePass?.bookerName || "Carlos Reyes"} size={40} avatarUrl={activePass?.bookerAvatar} />
+                      <Avatar name={activePass?.bookerName || "Player"} size={40} avatarUrl={activePass?.bookerAvatar} />
                       <div className="truncate">
                         <div className="text-sm font-black text-foreground truncate">{activePass?.bookerName}</div>
                         <div className="text-[11px] font-mono text-muted-foreground font-semibold truncate">{activePass?.ref}</div>
@@ -592,7 +635,7 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
                     <button
                       type="button"
                       onClick={() => setScanState("scanning")}
-                      className="py-3 rounded-full bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-200 font-extrabold text-xs transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-3 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border text-foreground font-bold text-xs transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
                       Scan Next
                     </button>
@@ -600,7 +643,7 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
                     <button
                       type="button"
                       onClick={handleConfirmCheckIn}
-                      className="py-3 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-400 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                      className="py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-md"
                     >
                       <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
                       <span>Check-In & Focus</span>
@@ -611,7 +654,7 @@ export function CourtPassScannerModal({ isOpen, onClose, onCheckIn }: CourtPassS
             </div>
           </div>
         </motion.div>
-      </div>
+      </FocusTrap>
       )}
     </AnimatePresence>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Check } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import type { Promotion } from "@/types/admin";
 
 interface PromoFormData {
   code: string;
@@ -17,30 +18,51 @@ interface PromoFormData {
 }
 
 interface PromoFormProps {
+  initialData?: Promotion | null;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export function PromoForm({ onSuccess, onCancel }: PromoFormProps) {
+export function PromoForm({ initialData, onSuccess, onCancel }: PromoFormProps) {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = Boolean(initialData);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<PromoFormData>({
+  const formattedInitialExpiry = initialData?.expires_at
+    ? new Date(initialData.expires_at).toISOString().split("T")[0]
+    : "";
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<PromoFormData>({
     defaultValues: {
-      code: "",
-      description: "",
-      discount_type: "percentage",
-      discount_value: 15,
-      min_booking_amount: 0,
-      applicable_to: "all",
+      code: initialData?.code || "",
+      description: initialData?.description || "",
+      discount_type: initialData?.discount_type || "percentage",
+      discount_value: initialData?.discount_value || 15,
+      min_booking_amount: initialData?.min_booking_amount || 0,
+      max_uses: initialData?.max_uses || undefined,
+      applicable_to: initialData?.applicable_to || "all",
+      expires_at: formattedInitialExpiry,
     },
   });
+
+  const discountType = watch("discount_type");
 
   const onSubmit = async (data: PromoFormData) => {
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/admin/promotions", {
-        method: "POST",
+      const url = isEditMode && initialData
+        ? `/api/admin/promotions/${initialData.id}`
+        : "/api/admin/promotions";
+      
+      const method = isEditMode ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
@@ -49,14 +71,19 @@ export function PromoForm({ onSuccess, onCancel }: PromoFormProps) {
       });
 
       if (res.ok) {
-        showToast(`Promo code "${data.code.toUpperCase()}" created successfully!`, "success");
+        showToast(
+          isEditMode
+            ? `Promo code "${data.code.toUpperCase()}" updated!`
+            : `Promo code "${data.code.toUpperCase()}" created successfully!`,
+          "success"
+        );
         onSuccess();
       } else {
         const err = await res.json();
-        showToast(err.error || "Failed to create promo code", "error");
+        showToast(err.error || "Failed to save promo code", "error");
       }
-    } catch (e: any) {
-      showToast(e.message || "Submission failed", "error");
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Submission failed", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -115,9 +142,19 @@ export function PromoForm({ onSuccess, onCancel }: PromoFormProps) {
           <input
             type="number"
             step="0.01"
-            {...register("discount_value", { required: true, min: 1 })}
+            {...register("discount_value", {
+              required: "Discount value is required",
+              min: { value: 1, message: "Must be at least 1" },
+              validate: (val) =>
+                discountType !== "percentage" || val <= 100 || "Percentage cannot exceed 100%",
+            })}
             className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-raised text-sm font-bold text-foreground focus:outline-none"
           />
+          {errors.discount_value && (
+            <span className="text-xs text-rose-400 font-semibold">
+              {errors.discount_value.message}
+            </span>
+          )}
         </div>
       </div>
 
@@ -174,7 +211,14 @@ export function PromoForm({ onSuccess, onCancel }: PromoFormProps) {
           disabled={isSubmitting}
           className="flex-1 py-3 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
         >
-          {isSubmitting ? <span>Creating...</span> : <><Check className="w-4 h-4" /><span>Create Code</span></>}
+          {isSubmitting ? (
+            <span>{isEditMode ? "Saving…" : "Creating…"}</span>
+          ) : (
+            <>
+              <Check className="w-4 h-4" />
+              <span>{isEditMode ? "Save Changes" : "Create Code"}</span>
+            </>
+          )}
         </button>
       </div>
     </form>

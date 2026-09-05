@@ -34,21 +34,17 @@ export function VerificationGateModal({ isOpen, onClose, featureLabel }: Verific
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[600] bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-[610] flex items-center justify-center p-4 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="w-full max-w-md overflow-hidden bg-background pointer-events-auto rounded-3xl"
-              style={{
-                boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
-                border: "1px solid var(--border-subtle)",
-              }}
+              className="w-full max-w-md overflow-hidden bg-surface-overlay dark:bg-[#13223F] pointer-events-auto rounded-3xl border border-border dark:border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.5)]"
             >
               {/* Header Illustration Area */}
               <div className="relative h-32 bg-gradient-to-br from-amber-500/10 to-orange-500/10 flex items-center justify-center overflow-hidden">
@@ -61,6 +57,7 @@ export function VerificationGateModal({ isOpen, onClose, featureLabel }: Verific
                 {/* Close Button */}
                 <button
                   onClick={onClose}
+                  aria-label="Close modal"
                   className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 text-ink-primary transition-colors"
                 >
                   <X className="w-4 h-4" />

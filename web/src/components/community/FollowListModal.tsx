@@ -28,7 +28,7 @@ export default function FollowListModal({
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     DEMO_COMMUNITY_PLAYERS.forEach((p) => {
-      initial[p.id] = p.i_liked;
+      initial[p.id] = Boolean(p.i_follow ?? p.i_liked);
     });
     return initial;
   });
@@ -66,7 +66,7 @@ export default function FollowListModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[150]"
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50 z-[600]"
       />
       <motion.div
         key="follow-list-modal"
@@ -74,11 +74,11 @@ export default function FollowListModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", stiffness: 350, damping: 32 }}
-        className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[440px] md:mx-auto h-[80vh] md:h-[580px] bg-background/95 dark:bg-[#0d1527]/95 backdrop-blur-2xl rounded-t-[32px] md:rounded-[28px] shadow-[0_25px_70px_rgba(0,0,0,0.8)] z-[160] border border-white/20 dark:border-white/[0.15] flex flex-col overflow-hidden"
+        className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[440px] md:mx-auto h-[82dvh] h-[82svh] max-h-[85dvh] md:h-[580px] bg-surface-overlay dark:bg-[#13223F] rounded-t-[32px] md:rounded-[28px] shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-[610] border border-border dark:border-white/12 flex flex-col overflow-hidden"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-surface-interactive/30 dark:bg-white/[0.04] backdrop-blur-md z-10 p-4 px-5 border-b border-border/40 dark:border-white/[0.1] flex justify-between items-center shrink-0">
-          <div className="w-12 h-1 bg-white/20 rounded-full absolute left-1/2 -translate-x-1/2 top-2" />
+        <div className="sticky top-0 bg-surface-interactive/30 backdrop-blur-md z-10 p-4 px-5 border-b border-border flex justify-between items-center shrink-0">
+          <div className="w-12 h-1 bg-muted-foreground/30 rounded-full absolute left-1/2 -translate-x-1/2 top-2 md:hidden" />
           <h3
             className="text-base font-extrabold text-foreground tracking-tight"
             style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
@@ -87,19 +87,20 @@ export default function FollowListModal({
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-black/20 dark:bg-white/15 hover:bg-black/40 dark:hover:bg-white/30 active:scale-90 transition-all text-foreground flex items-center justify-center shrink-0"
+            aria-label="Close modal"
+            className="w-8 h-8 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-90 transition-all text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer"
           >
             <X className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex p-1.5 mx-5 mt-4 rounded-xl bg-surface-interactive/40 dark:bg-white/[0.04] border border-border/40 dark:border-white/[0.08] shrink-0">
+        <div className="flex p-1.5 mx-5 mt-4 rounded-xl bg-surface-interactive border border-border shrink-0">
           <button
             onClick={() => setActiveTab("followers")}
-            className={`flex-1 py-2 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === "followers"
-                ? "bg-emerald-500 text-slate-950 shadow-[0_2px_10px_rgba(0,217,139,0.3)]"
+                ? "bg-emerald-500 text-white shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -110,9 +111,9 @@ export default function FollowListModal({
           </button>
           <button
             onClick={() => setActiveTab("following")}
-            className={`flex-1 py-2 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === "following"
-                ? "bg-emerald-500 text-slate-950 shadow-[0_2px_10px_rgba(0,217,139,0.3)]"
+                ? "bg-emerald-500 text-white shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -132,12 +133,12 @@ export default function FollowListModal({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search ${activeTab}...`}
-              className="w-full h-10 pl-10 pr-4 rounded-xl text-xs font-semibold outline-none transition-shadow bg-surface-interactive/30 dark:bg-white/[0.04] border border-border/40 dark:border-white/[0.1] text-foreground focus:border-emerald-500/50"
+              className="w-full h-10 pl-10 pr-4 rounded-xl text-xs font-semibold outline-none transition-shadow bg-surface-interactive border border-border text-foreground focus:border-emerald-500/50"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center bg-white/10 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center bg-surface-interactive text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <X className="w-2.5 h-2.5" />
               </button>
@@ -146,10 +147,10 @@ export default function FollowListModal({
         </div>
 
         {/* Player List Scroll Container */}
-        <div className="flex-1 overflow-y-auto px-5 py-2 space-y-2.5 hide-scrollbar">
+        <div className="flex-1 overflow-y-auto px-5 py-2 pb-[max(env(safe-area-inset-bottom,20px),1.5rem)] space-y-2.5 hide-scrollbar">
           {filteredList.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-surface-interactive/40 dark:bg-white/[0.04] border border-white/10 flex items-center justify-center mb-3 text-muted-foreground">
+              <div className="w-12 h-12 rounded-2xl bg-surface-interactive border border-border flex items-center justify-center mb-3 text-muted-foreground">
                 <Heart className="w-6 h-6 stroke-[1.5]" />
               </div>
               <p className="text-xs font-bold text-foreground">No {activeTab} found</p>
@@ -170,18 +171,18 @@ export default function FollowListModal({
                     onClose();
                     onSelectPlayer?.(p.id);
                   }}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-surface-interactive/30 dark:bg-white/[0.03] border border-border/40 dark:border-white/[0.08] hover:border-emerald-500/40 hover:bg-white/[0.05] transition-all cursor-pointer group"
+                  className="flex items-center justify-between p-3 rounded-2xl bg-surface-interactive/40 border border-border hover:border-emerald-500/40 hover:bg-surface-interactive transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar name={p.name} size={42} online={p.online} avatarUrl={p.avatar_url} />
                     <div className="flex flex-col min-w-0">
                       <span
-                        className="text-xs sm:text-sm font-black text-foreground truncate group-hover:text-emerald-400 transition-colors"
+                        className="text-xs sm:text-sm font-black text-foreground truncate group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors"
                         style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
                       >
                         {p.name}
                       </span>
-                      <span className="text-[10.5px] font-extrabold text-emerald-400">
+                      <span className="text-[10.5px] font-extrabold text-emerald-500 dark:text-emerald-400">
                         {formatSkillLevel(p.level)}
                       </span>
                     </div>
@@ -190,10 +191,10 @@ export default function FollowListModal({
                   <motion.button
                     whileTap={{ scale: 0.92 }}
                     onClick={(e) => toggleFollow(e, p.id)}
-                    className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold flex items-center gap-1.5 transition-all shrink-0 border ${
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold flex items-center gap-1.5 transition-all shrink-0 border cursor-pointer ${
                       isFollowing
-                        ? "bg-white/10 dark:bg-white/10 text-foreground border-white/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30"
-                        : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_0_12px_rgba(0,217,139,0.3)]"
+                        ? "bg-surface-interactive text-foreground border-border hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30"
+                        : "bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-400 shadow-sm"
                     }`}
                   >
                     {isFollowing ? (

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 
 import { supabase } from "@/lib/supabase";
 import { useToast } from "./ToastContext";
+
+import { checkIsPrivilegedEmail } from "@/types/permissions";
 
 export type UserRole = "player" | "owner" | "demo" | "admin" | "dev";
 
@@ -18,6 +20,10 @@ export interface User {
   role: UserRole;
   isAdmin?: boolean;
   adminRole?: string;
+  admin_role?: string;
+  devRole?: string;
+  dev_role?: string;
+  console_access?: string[];
   isDemo?: boolean;
   verificationStatus: VerificationStatus;
   facilitySetupComplete?: boolean;
@@ -33,7 +39,6 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (userData: Omit<User, "id" | "verificationStatus">) => Promise<void>;
   logout: () => Promise<void>;
   submitVerification: () => void;
   verifyAccount: () => void; // Admin/Dev override
@@ -46,30 +51,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
-
-
+  const isInitializingRef = useRef(false);
 
   const destroySession = () => {
-    // We removed local storage token
-    // We removed local storage data
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("picklers_oauth_intent");
+      sessionStorage.removeItem("picklers_session");
+    }
   };
 
   useEffect(() => {
     async function initSession() {
-      // Capture hash synchronously before any awaits, in case the URL changes (e.g. AuthCallbackPage redirects)
+      if (isInitializingRef.current) return;
+      isInitializingRef.current = true;
       const hasOAuthHash = typeof window !== "undefined" && window.location.hash.includes("access_token=");
       
-      setIsLoading(true); // FIX: Ensure loading state is active while processing session changes
+      setIsLoading(true);
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
 
-        if (session && session.user) {
-          const email = session.user.email;
-          const name = session.user.user_metadata?.full_name || email?.split('@')[0] || "Player";
+        if (authUser && !authErr) {
+          const email = authUser.email;
+          const name = authUser.user_metadata?.full_name || email?.split('@')[0] || "Player";
 
           const intent = sessionStorage.getItem("picklers_oauth_intent");
           if (intent === "signup") {
-            const createdAt = new Date(session.user.created_at).getTime();
+            const createdAt = new Date(authUser.created_at).getTime();
             if (Date.now() - createdAt > 60000) {
               showToast("This account is already connected to an existing account");
             }
@@ -81,24 +88,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           let profile: any = null;
           const { data: mainProfile, error: profileErr } = await supabase
             .from('player_profiles')
-            .select('role, verification_status, avatar_url, is_demo, facility_setup_complete, is_admin, admin_role')
-            .eq('id', session.user.id)
+            .select('role, verification_status, avatar_url, is_demo, facility_setup_complete, is_admin, admin_role, dev_role, console_access')
+            .eq('id', authUser.id)
             .maybeSingle();
 
           if (profileErr) {
             const { data: fallbackProfile } = await supabase
               .from('player_profiles')
               .select('role, verification_status, avatar_url, is_demo, facility_setup_complete')
-              .eq('id', session.user.id)
+              .eq('id', authUser.id)
               .maybeSingle();
             profile = fallbackProfile;
           } else {
             profile = mainProfile;
           }
 
-          const isDemoUser = Boolean(profile?.is_demo) || profile?.role === 'demo' || (email ? email.includes('demo') : false);
-          const isDevUser = profile?.role === 'dev';
-          const isAdminUser = Boolean(profile?.is_admin) || profile?.role === 'admin' || isDevUser;
+          const consoleAccess: string[] = Array.isArray(profile?.console_access) && profile.console_access.length > 0
+            ? profile.console_access
+            : [];
+
+          const isPrivilegedEmail = checkIsPrivilegedEmail(email);
+
+          const isDemoUser = Boolean(profile?.is_demo) || profile?.role === 'demo';
+          const isDevUser = isPrivilegedEmail || profile?.role === 'dev' || Boolean(profile?.dev_role) || consoleAccess.includes('dev');
+          const isAdminUser = isPrivilegedEmail || Boolean(profile?.is_admin) || profile?.role === 'admin' || Boolean(profile?.admin_role) || isDevUser || consoleAccess.includes('admin');
 
           if (isDevUser)                      assignedRole = "dev";
           else if (isAdminUser)               assignedRole = "admin";
@@ -109,34 +122,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             dbVerificationStatus = profile.verification_status as VerificationStatus;
           }
 
+          const effectiveConsoleAccess = consoleAccess.length > 0
+            ? consoleAccess
+            : (isAdminUser || isDevUser ? ['player', 'admin', 'dev'] : ['player']);
+
           const userObj: User = {
-            id: session.user.id,
+            id: authUser.id,
             name: name,
             email: email,
-            phone: session.user.phone,
-            avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
+            phone: authUser.phone,
+            avatarUrl: profile?.avatar_url || authUser.user_metadata?.avatar_url || undefined,
             role: assignedRole,
             isAdmin: isAdminUser,
             adminRole: profile?.admin_role ?? undefined,
+            admin_role: profile?.admin_role ?? undefined,
+            devRole: profile?.dev_role ?? undefined,
+            dev_role: profile?.dev_role ?? undefined,
+            console_access: effectiveConsoleAccess,
             isDemo: isDemoUser,
             facilitySetupComplete: profile?.facility_setup_complete ?? false,
-            verificationStatus: ((assignedRole === "owner" || assignedRole === "admin" || assignedRole === "demo" || isDemoUser)
+            verificationStatus: ((assignedRole === "owner" || assignedRole === "admin" || assignedRole === "dev" || assignedRole === "demo" || isDemoUser || isDevUser || isAdminUser || isPrivilegedEmail)
               ? "verified"
               : dbVerificationStatus) as VerificationStatus
           };
 
           setUser(userObj);
           setIsLoading(false);
+          isInitializingRef.current = false;
           return;
         }
 
       } catch (err) {
         console.warn("Supabase auth session check offline fallback:", err);
+      } finally {
+        isInitializingRef.current = false;
       }
 
-      // 3. Do not stop loading if we started processing with an OAuth redirect hash
       if (hasOAuthHash) {
-        // OAuth hash detected on mount, keeping AuthContext in loading state until session is processed...
         return; 
       }
 
@@ -144,7 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     initSession();
 
-    // Listen for future OAuth redirects dynamically
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
         initSession();
@@ -157,20 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (userData: Omit<User, "id" | "verificationStatus">) => {
-    // In the real flow, the login function in AuthContext is bypassed because useAuthForm
-    // talks directly to supabase.auth.signInWithPassword. But for compatibility:
-    const userObj: User = {
-      id: "pending-auth",
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      role: userData.role,
-      verificationStatus: "unverified"
-    };
-    setUser(userObj);
-  };
-
+  
   const logout = async () => {
     setUser(null);
     destroySession();
@@ -187,10 +195,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const verifyAccount = async () => {
-    if (user) {
+    if (user && checkIsPrivilegedEmail(user.email)) {
       const verifiedUser = { ...user, verificationStatus: "verified" as VerificationStatus };
       setUser(verifiedUser);
-      await supabase.from('player_profiles').update({ verification_status: 'verified' }).eq('id', user.id);
     }
   };
 
@@ -218,7 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, submitVerification, verifyAccount, updateUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, logout, submitVerification, verifyAccount, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

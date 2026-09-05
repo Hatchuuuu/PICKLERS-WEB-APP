@@ -141,7 +141,7 @@ export default function TrophyHistoryModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[150]"
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50 z-[600]"
       />
       <motion.div
         key="trophy-modal-content"
@@ -149,13 +149,13 @@ export default function TrophyHistoryModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", stiffness: 350, damping: 32 }}
-        className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[460px] md:mx-auto h-[80vh] md:h-[600px] bg-background/95 dark:bg-[#0d1527]/95 backdrop-blur-2xl rounded-t-[32px] md:rounded-[28px] shadow-[0_25px_70px_rgba(0,0,0,0.8)] z-[160] border border-white/20 dark:border-white/[0.15] flex flex-col overflow-hidden"
+        className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[460px] md:mx-auto h-[82dvh] h-[82svh] max-h-[85dvh] md:h-[600px] bg-surface-overlay dark:bg-[#13223F] rounded-t-[32px] md:rounded-[28px] shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-[610] border border-border dark:border-white/12 flex flex-col overflow-hidden"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-surface-interactive/30 dark:bg-white/[0.04] backdrop-blur-md z-10 p-4 px-5 border-b border-border/40 dark:border-white/[0.1] flex justify-between items-center shrink-0">
-          <div className="w-12 h-1 bg-white/20 rounded-full absolute left-1/2 -translate-x-1/2 top-2" />
+        <div className="sticky top-0 bg-surface-interactive/30 backdrop-blur-md z-10 p-4 px-5 border-b border-border flex justify-between items-center shrink-0">
+          <div className="w-12 h-1 bg-muted-foreground/30 rounded-full absolute left-1/2 -translate-x-1/2 top-2 md:hidden" />
           <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]" />
+            <Trophy className="w-4 h-4 text-amber-500 dark:text-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]" />
             <h3
               className="text-base font-extrabold text-foreground tracking-tight"
               style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}
@@ -165,19 +165,20 @@ export default function TrophyHistoryModal({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-black/20 dark:bg-white/15 hover:bg-black/40 dark:hover:bg-white/30 active:scale-90 transition-all text-foreground flex items-center justify-center shrink-0"
+            aria-label="Close modal"
+            className="w-8 h-8 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border active:scale-90 transition-all text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer"
           >
             <X className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex p-1.5 mx-5 mt-4 rounded-xl bg-surface-interactive/40 dark:bg-white/[0.04] border border-border/40 dark:border-white/[0.08] shrink-0">
+        <div className="flex p-1.5 mx-5 mt-4 rounded-xl bg-surface-interactive border border-border shrink-0">
           <button
             onClick={() => setActiveFilter("all")}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1 ${
+            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeFilter === "all"
-                ? "bg-emerald-500 text-slate-950 shadow-[0_2px_10px_rgba(0,217,139,0.3)]"
+                ? "bg-emerald-500 text-white shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -188,9 +189,9 @@ export default function TrophyHistoryModal({
           </button>
           <button
             onClick={() => setActiveFilter("gold")}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1 ${
+            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeFilter === "gold"
-                ? "bg-amber-400 text-slate-950 shadow-[0_2px_10px_rgba(251,191,36,0.4)]"
+                ? "bg-amber-500 text-white shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -201,9 +202,9 @@ export default function TrophyHistoryModal({
           </button>
           <button
             onClick={() => setActiveFilter("silver")}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1 ${
+            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeFilter === "silver"
-                ? "bg-slate-200 text-slate-950 shadow-[0_2px_10px_rgba(226,232,240,0.4)]"
+                ? "bg-slate-200 text-slate-900 shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -228,7 +229,7 @@ export default function TrophyHistoryModal({
         </div>
 
         {/* Trophy History Scroll Container */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 hide-scrollbar">
+        <div className="flex-1 overflow-y-auto px-5 py-4 pb-[max(env(safe-area-inset-bottom,20px),1.5rem)] space-y-3 hide-scrollbar">
           {filteredTrophies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-14 h-14 rounded-2xl bg-surface-interactive/40 dark:bg-white/[0.04] border border-white/10 flex items-center justify-center mb-3 text-muted-foreground">

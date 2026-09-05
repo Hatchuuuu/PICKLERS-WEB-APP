@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserStore } from "@/store/useUserStore";
+import { useReducedMotion } from "./useReducedMotion";
 
 export const authSchema = z.object({
   view: z.enum(["auth", "forgot-password", "verify-code", "verify-phone", "reset-password"]),
@@ -79,19 +80,54 @@ export function useAuthForm() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+  const prefersReducedMotion = useReducedMotion();
+
   const [otpCode, setOtpCode] = useState<string>("");
   const [countdown, setCountdown] = useState(0);
 
+  const mapSupabaseError = (message: string): string => {
+    // Common Supabase auth error messages mapped to user-friendly messages
+    // Also includes known good user messages to preserve them
+    const errorMap: Record<string, string> = {
+      // Supabase error mappings
+      "Invalid login credentials": "We couldn't verify those credentials. Please try again or click 'Forgot Password' to reset your access.",
+      "Email not confirmed": "Please check your email to confirm your account before signing in.",
+      "User does not exist": "We couldn't find an account with that email. Please check your email address or sign up for a new account.",
+      "Password should be at least 6 characters": "Password must be at least 6 characters long.",
+      "Too many requests": "Too many attempts. Please wait a moment before trying again.",
+      "Unable to exchange external code": "Google Sign-In is currently disabled. The administrator needs to configure the Google OAuth credentials in Supabase.",
+      "OAuth provider not enabled": "This sign-in method is not currently available.",
+      "Saltsum verification failed": "We couldn't verify your request. Please try again.",
+      "Email invalid": "Please enter a valid email address.",
+      "Phone number invalid": "Please enter a valid 10-digit mobile number.",
+      "User already exists": "An account with this email already exists. Please sign in instead.",
+      "Phone number already exists": "An account with this phone number already exists. Please sign in instead.",
+      "Confirm new password": "Passwords do not match.",
+      "Password reset token is invalid or has expired": "The password reset link has expired. Please request a new password reset link.",
+
+      // Known good user messages to preserve (map to self)
+      "Please enter the 6-digit code.": "Please enter the 6-digit code.",
+      "Please check your email to confirm your account before signing in.": "Please check your email to confirm your account before signing in.",
+      "We couldn't verify those credentials. Please try again or click 'Forgot Password' to reset your access.": "We couldn't verify those credentials. Please try again or click 'Forgot Password' to reset your access.",
+      "Too many attempts. Please wait a moment.": "Too many attempts. Please wait a moment.",
+      "Account created securely. Please check your email to verify your account before logging in.": "Account created securely. Please check your email to verify your account before logging in.",
+      "Google Sign-In is currently disabled. The administrator needs to configure the Google OAuth credentials in Supabase.": "Google Sign-In is currently disabled. The administrator needs to configure the Google OAuth credentials in Supabase.",
+      "Sign in timed out. Please try again.": "Sign in timed out. Please try again."
+    };
+
+    // Return mapped message if exists, otherwise return generic message for unknown errors
+    return errorMap[message] || "An unexpected error occurred. Please try again.";
+  };
+
   useEffect(() => {
-    const stored = sessionStorage.getItem("picklers_otp_cooldown");
+    const stored = localStorage.getItem("picklers_otp_cooldown");
     if (stored) {
       const targetTime = parseInt(stored, 10);
       const remaining = Math.max(0, Math.ceil((targetTime - Date.now()) / 1000));
       if (remaining > 0) {
         setCountdown(remaining);
       } else {
-        sessionStorage.removeItem("picklers_otp_cooldown");
+        localStorage.removeItem("picklers_otp_cooldown");
       }
     }
   }, []);
@@ -101,7 +137,7 @@ export function useAuthForm() {
     if (countdown > 0) {
       timer = setTimeout(() => {
         setCountdown(countdown - 1);
-        if (countdown - 1 <= 0) sessionStorage.removeItem("picklers_otp_cooldown");
+        if (countdown - 1 <= 0) localStorage.removeItem("picklers_otp_cooldown");
       }, 1000);
     }
     return () => clearTimeout(timer);
@@ -146,24 +182,46 @@ export function useAuthForm() {
 
   const handleSuccessRedirect = () => {
     setTimeout(async () => {
-      const adminState = useUserStore.getState().isAdmin;
-      const isInternalRedirect = redirect && redirect.startsWith('/') && !redirect.startsWith('//');
-      if (isInternalRedirect) router.push(redirect);
-      else if (adminState) router.push("/app/admin");
-      else if (intent === "owner") router.push("/app/owner");
-      else if (intent === "book") router.push("/app");
-      else if (intent === "open-play") router.push("/app/explore");
-      else router.push("/app");
-    }, 800);
+      const userStore = useUserStore.getState();
+      await userStore.fetchUserStatus();
+      const currentState = useUserStore.getState();
+
+      const isInternalRedirect = redirect && redirect.startsWith('/') && !redirect.startsWith('//') && redirect !== '/app';
+
+      if (isInternalRedirect) {
+        router.push(redirect);
+      } else if (currentState.isDev) {
+        // Direct developer routing (Case 3 & Case 4)
+        router.push("/app/dev");
+      } else if (currentState.isAdmin) {
+        // Direct admin routing
+        router.push("/app/admin");
+      } else if (intent === "owner") {
+        router.push("/app/owner");
+      } else if (intent === "book") {
+        router.push("/app");
+      } else if (intent === "open-play") {
+        router.push("/app/explore");
+      } else {
+        router.push("/app");
+      }
+    }, 600);
   };
 
 
   const shakeError = (msg: unknown) => {
-    let finalMsg = typeof msg === "string" ? msg : "An unexpected error occurred.";
-    if (finalMsg === "{}" || !finalMsg) finalMsg = "An unexpected error occurred. Please try again.";
-    setAuthError(finalMsg);
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 400);
+    let errorMessage = typeof msg === "string" ? msg : "An unexpected error occurred.";
+    if (errorMessage === "{}" || !errorMessage) errorMessage = "An unexpected error occurred. Please try again.";
+
+    // Map Supabase errors to user-friendly messages
+    const finalMessage = mapSupabaseError(errorMessage);
+
+    setAuthError(finalMessage);
+    // Only trigger shaking animation if user has not indicated a preference for reduced motion
+    if (!prefersReducedMotion) {
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 400);
+    }
   };
 
   const checkRateLimit = async () => {
@@ -204,7 +262,7 @@ export function useAuthForm() {
     if (error) return shakeError(error.message);
 
     const newTarget = Date.now() + 60000;
-    sessionStorage.setItem("picklers_otp_cooldown", newTarget.toString());
+    localStorage.setItem("picklers_otp_cooldown", newTarget.toString());
     setCountdown(60);
     form.setValue("view", "verify-code");
   };
@@ -283,29 +341,44 @@ export function useAuthForm() {
         } else {
             form.setValue("view", "verify-phone");
             const newTarget = Date.now() + 60000;
-            sessionStorage.setItem("picklers_otp_cooldown", newTarget.toString());
+            localStorage.setItem("picklers_otp_cooldown", newTarget.toString());
             setCountdown(60);
         }
         form.clearErrors();
         return;
       }
     } else {
-      const { error: signInError } = await supabase.auth.signInWithPassword(
-        data.authMethod === "email"
-          ? { email: data.email!.trim(), password: data.password! }
-          : { phone: `+63${data.phone!.replace(/\D/g, '')}`, password: data.password! }
-      );
-      error = signInError;
+        setLoading(true);
+        if (!(await checkRateLimit())) return;
+        let error = null;
+        let responseData = null;
+
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword(
+          data.authMethod === "email"
+            ? { email: data.email!.trim(), password: data.password! }
+            : { phone: `+63${data.phone!.replace(/\D/g, '')}`, password: data.password! }
+        );
+        error = signInError;
+        responseData = signInData;
+
+        if (!error && responseData && data.authMethod === "email") {
+            // Check email confirmation for email sign-in
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+            if (userError) {
+                error = userError;
+            } else if (!userData.user?.email_confirmed_at) {
+                // Sign out and show error
+                await supabase.auth.signOut();
+                shakeError("Please check your email to confirm your account before signing in.");
+                setLoading(false);
+                return;
+            }
+        }
     }
 
     if (error) {
       setLoading(false);
-      if (error.message === "Invalid login credentials") {
-        shakeError("We couldn't verify those credentials. Please try again or click 'Forgot Password' to reset your access.");
-      } else {
-        const errMsg = (error.message && error.message !== "{}") ? error.message : "An unexpected error occurred. Please try again.";
-        shakeError(errMsg);
-      }
+      shakeError(error.message);
       return;
     }
 

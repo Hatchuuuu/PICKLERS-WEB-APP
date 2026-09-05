@@ -9,9 +9,9 @@
   --surface-overlay: #FFFFFF;
   --surface-interactive: #F1F5F9;
 
-  --ink-primary: #334155;
-  --ink-secondary: #64748B;
-  --ink-muted: #94A3B8;
+  --ink-primary: #0F172A;
+  --ink-secondary: #334155;
+  --ink-muted: #64748B;
   --ink-inverse: #FFFFFF;
 
   --accent-primary: #00D98B;
@@ -31,6 +31,36 @@
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.03), 0 2px 4px rgba(15, 23, 42, 0.02);
   --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.04), 0 8px 16px rgba(15, 23, 42, 0.03), 0 2px 6px rgba(15, 23, 42, 0.02);
   --shadow-glow: 0 0 24px rgba(0, 217, 139, 0.25);
+
+  /* =========================================
+     GLOBAL SPATIAL & Z-INDEX LAYERING TOKENS
+     ========================================= */
+  --z-base: 0;
+  --z-sticky-header: 100;
+  --z-bottom-nav: 200;
+  --z-floating-action: 300;
+  --z-dropdown: 400;
+  --z-drawer: 500;
+  --z-modal-backdrop: 600;
+  --z-modal: 610;
+  --z-toast: 700;
+  --z-critical-alert: 800;
+
+  /* Layout Heights & Safe Areas */
+  --header-height: 56px;
+  --bottom-nav-height: 64px;
+
+  /* =========================================
+     NAV-CHROME SURFACE TOKENS (P1.5)
+     Used by the owner/dev side rails and
+     mobile sticky/bottom nav. Light mode
+     needs a near-white surface; dark mode
+     uses the deeper navy used in the
+     immersive surfaces (chat, courts, etc).
+     ========================================= */
+  --surface-nav: #F1F5F9;          /* matches --surface-interactive */
+  --surface-nav-elevated: #FFFFFF; /* matches --surface-overlay */
+  --surface-nav-deep: #0A1424;     /* chat/drawer deep navy (dark-mode immersive) */
 }
 
 .dark {
@@ -42,9 +72,9 @@
   --surface-overlay: #162849;
   --surface-interactive: #1C3258;
 
-  --ink-primary: #E8ECF0;
-  --ink-secondary: #8B99A8;
-  --ink-muted: #556270;
+  --ink-primary: #F8FAFC;
+  --ink-secondary: #94A3B8;
+  --ink-muted: #64748B;
   --ink-inverse: #0A1628;
 
   --accent-primary: #00D98B;
@@ -64,6 +94,11 @@
   --shadow-md: 0 4px 12px rgba(10, 22, 40, 0.30), 0 1px 3px rgba(10, 22, 40, 0.18);
   --shadow-lg: 0 12px 40px rgba(10, 22, 40, 0.40), 0 4px 12px rgba(10, 22, 40, 0.22);
   --shadow-glow: 0 0 24px rgba(0, 217, 139, 0.18);
+
+  /* P1.5 — nav chrome surfaces in dark mode */
+  --surface-nav: #0A1628;
+  --surface-nav-elevated: #0C172E;
+  --surface-nav-deep: #070F1E;
 }
 
 :root,
@@ -170,6 +205,11 @@
   --color-accent-success: var(--accent-success);
   --color-accent-warning: var(--accent-warning);
 
+  /* P1.5 — nav chrome surface tokens */
+  --color-surface-nav: var(--surface-nav);
+  --color-surface-nav-elevated: var(--surface-nav-elevated);
+  --color-surface-nav-deep: var(--surface-nav-deep);
+
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
@@ -180,6 +220,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  }
+
+  .dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
 
   body {
@@ -198,23 +244,31 @@
     box-shadow: var(--shadow-glow);
   }
 
-  /* Premium Scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* Universal Premium WebKit Scrollbars */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
 
-  ::-webkit-scrollbar-track {
+  *::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  ::-webkit-scrollbar-thumb {
-    background: var(--surface-interactive);
-    border-radius: var(--radius-full);
+  *::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 9999px;
   }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--ink-secondary);
+  .dark *::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
   }
 
   html {

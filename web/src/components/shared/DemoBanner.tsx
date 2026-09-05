@@ -25,14 +25,14 @@ export function DemoBanner() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9, filter: "blur(10px)" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="fixed bottom-20 md:bottom-24 left-0 right-0 z-[110] flex justify-center pointer-events-none px-4"
+            className="fixed bottom-[calc(64px+env(safe-area-inset-bottom,12px))] md:bottom-8 left-0 right-0 z-[300] flex justify-center pointer-events-none px-4"
           >
             <div className="pointer-events-auto flex items-center p-1.5 rounded-full bg-black/90 dark:bg-[#0A0A0A]/90 backdrop-blur-2xl border border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.6)]">
 
               {/* Clickable Info Area */}
               <button
                 onClick={() => setShowInfoModal(true)}
-                className="flex items-center gap-2.5 pl-1.5 pr-3 hover:opacity-80 transition-opacity active:scale-95"
+                className="flex items-center gap-2.5 pl-1.5 pr-3 hover:opacity-80 transition-opacity active:scale-95 cursor-pointer"
               >
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 text-white/90">
                   <Info className="w-3.5 h-3.5" />
@@ -45,7 +45,7 @@ export function DemoBanner() {
               {/* Dismiss Button */}
               <button
                 onClick={() => setIsDismissed(true)}
-                className="flex items-center justify-center w-7 h-7 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors active:scale-95 shrink-0"
+                className="flex items-center justify-center w-7 h-7 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors active:scale-95 shrink-0 cursor-pointer"
                 aria-label="Dismiss banner"
               >
                 <X className="w-3.5 h-3.5" />
@@ -55,7 +55,7 @@ export function DemoBanner() {
         )}
       </AnimatePresence>
 
-      {/* Interactive Apple WWDC / VisionOS Grade Glass Guide Modal */}
+      {/* Interactive Showcase Guide Modal */}
       <AnimatePresence>
         {showInfoModal && (
           <motion.div
@@ -64,10 +64,10 @@ export function DemoBanner() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[150] flex flex-col justify-center items-center p-4 pb-[max(1rem,env(safe-area-inset-bottom,16px))] overflow-hidden"
+            className="fixed inset-0 z-[600] flex flex-col justify-center items-center p-4 pb-[max(1rem,env(safe-area-inset-bottom,16px))] overflow-hidden"
           >
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
               onClick={() => setShowInfoModal(false)}
             />
             <motion.div
@@ -76,82 +76,85 @@ export function DemoBanner() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-md max-h-[85vh] overflow-y-auto scrollbar-none rounded-[28px] border border-white/10 bg-[#121214]/95 shadow-[0_24px_80px_rgba(0,0,0,0.8)] backdrop-blur-3xl p-7 text-white z-10"
+              className="relative w-full max-w-md max-h-[85vh] overflow-y-auto scrollbar-none rounded-3xl border border-border dark:border-white/12 bg-surface-overlay dark:bg-[#13223F] shadow-[0_25px_60px_rgba(0,0,0,0.5)] p-6 sm:p-7 text-foreground z-[610]"
             >
               <div className="flex items-center justify-between mb-5 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-white shadow-inner">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400 shadow-sm">
                     <Compass className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold tracking-tight text-white">
+                    <h3 className="text-base font-bold tracking-tight text-foreground">
                       Picklers Showcase
                     </h3>
-                    <p className="text-xs text-white/60">
+                    <p className="text-xs text-muted-foreground">
                       Full-access exploration account
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowInfoModal(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Close modal"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <p className="text-xs leading-relaxed text-white/80 mb-6 font-normal">
+              <p className="text-xs leading-relaxed text-muted-foreground mb-6 font-normal">
                 You are currently exploring Picklers using our showcase demo account. We pre-loaded this workspace with Philippine pickleball facilities, tournaments, and match activity so you can experience the complete application seamlessly.
               </p>
 
               <div className="space-y-2.5 mb-7">
-                <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
-                  <div className="p-2 rounded-xl bg-white/10 text-white shrink-0">
+                <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-surface-interactive border border-border">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 shrink-0">
                     <Repeat className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">
+                    <div className="text-xs font-semibold text-foreground">
                       Player & Owner Switching
                     </div>
-                    <div className="text-[11.5px] text-white/60 leading-normal mt-0.5">
+                    <div className="text-[11.5px] text-muted-foreground leading-normal mt-0.5">
                       Use the sidebar switcher to move between the Player Dashboard and Court Owner Management Portal.
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
-                  <div className="p-2 rounded-xl bg-white/10 text-white shrink-0">
+                <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-surface-interactive border border-border">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 shrink-0">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">
+                    <div className="text-xs font-semibold text-foreground">
                       Philippine Courts & Tournaments
                     </div>
-                    <div className="text-[11.5px] text-white/60 leading-normal mt-0.5">
+                    <div className="text-[11.5px] text-muted-foreground leading-normal mt-0.5">
                       Explore Metro Manila and Cebu facilities, test match scoring, and inspect live tournament brackets.
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
-                  <div className="p-2 rounded-xl bg-white/10 text-white shrink-0">
+                <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-surface-interactive border border-border">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 shrink-0">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">
+                    <div className="text-xs font-semibold text-foreground">
                       Sandbox Protected
                     </div>
-                    <div className="text-[11.5px] text-white/60 leading-normal mt-0.5">
+                    <div className="text-[11.5px] text-muted-foreground leading-normal mt-0.5">
                       Real court reservations and live tournament creations are disabled in showcase mode to preserve sample data.
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3 pt-5 border-t border-white/10 shrink-0 sticky bottom-0 bg-[#121214] pb-2">
+              {/* A-019 FIX: sticky footer dark:bg must match the modal container dark:bg-[#13223F].
+                  Previously `bg-surface-overlay` caused a lighter tint seam visible in dark mode. */}
+              <div className="flex items-center justify-between gap-3 pt-5 border-t border-border shrink-0 sticky bottom-0 bg-surface-overlay dark:bg-[#13223F] pb-1">
                 <button
                   onClick={() => setShowInfoModal(false)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-surface-interactive transition-colors cursor-pointer"
                 >
                   Continue Exploring
                 </button>
@@ -161,7 +164,7 @@ export function DemoBanner() {
                     await logout();
                     router.push("/auth?tab=signup");
                   }}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold bg-white text-slate-950 hover:bg-white/90 shadow-sm transition-all"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-400 shadow-md transition-all cursor-pointer"
                 >
                   <span>Create Free Account</span>
                   <ArrowRight className="w-3.5 h-3.5" />

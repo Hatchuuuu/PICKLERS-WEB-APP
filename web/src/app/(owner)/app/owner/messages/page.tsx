@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "motion/react";
 import { Search, MessageSquare, Send, ChevronLeft, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useOwnerConversations,
+  useSendOwnerMessage,
+  useMarkConversationRead,
+  type Conversation,
+} from "@/hooks/useOwnerConversations";
 
 interface DemoConversation {
   id: string;
+  otherUserId?: string;
   name: string;
   avatar: string;
   role: string;
@@ -84,7 +92,21 @@ const INITIAL_CONVERSATIONS: DemoConversation[] = [
 ];
 
 export default function OwnerMessagesPage() {
-  const [conversations, setConversations] = useState<DemoConversation[]>(INITIAL_CONVERSATIONS);
+  const { user } = useAuth();
+  const isDemo = user?.isDemo || user?.role === "demo";
+  const { data: liveConversations = [] } = useOwnerConversations();
+  const sendMutation = useSendOwnerMessage();
+  const markRead = useMarkConversationRead();
+
+  // P1.1: prefer real conversations over the demo seed. The demo seed is
+  // only used for explicitly-demo accounts with zero real data, so a real
+  // owner never sees the fabricated Alex Johnson / Coach Carlos threads.
+  const conversations: Conversation[] = useMemo(() => {
+    if (liveConversations.length > 0) return liveConversations;
+    if (isDemo) return INITIAL_CONVERSATIONS as unknown as Conversation[];
+    return [];
+  }, [liveConversations, isDemo]);
+
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [inputMsg, setInputMsg] = useState("");
@@ -92,10 +114,10 @@ export default function OwnerMessagesPage() {
 
   // Auto select first conversation on desktop viewports, keep null on mobile so inbox list shows first
   useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth >= 768) {
-      setActiveConvId("conv-1");
+    if (typeof window !== "undefined" && window.innerWidth >= 768 && conversations.length > 0) {
+      setActiveConvId((cur) => cur ?? conversations[0].id);
     }
-  }, []);
+  }, [conversations]);
 
   const activeConv = conversations.find(c => c.id === activeConvId);
 
@@ -115,66 +137,83 @@ export default function OwnerMessagesPage() {
     if (e) e.preventDefault();
     if (!inputMsg.trim() || !activeConvId) return;
 
-    const timeNow = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const newMsg = {
-      id: `msg-${Date.now()}`,
-      sender: "me" as const,
-      text: inputMsg.trim(),
-      time: timeNow
-    };
+    const conv = conversations.find(c => c.id === activeConvId);
+    if (!conv) return;
 
-    setConversations(prev =>
-      prev.map(c => {
-        if (c.id === activeConvId) {
-          return {
-            ...c,
-            lastMessage: `You: ${inputMsg.trim()}`,
-            lastTime: timeNow,
-            messages: [...c.messages, newMsg]
-          };
-        }
-        return c;
-      })
+    // P1.1: demo convs have no otherUserId (the seed uses "conv-1" etc).
+    // When sending against a demo conversation, surface a clear notice
+    // instead of silently swallowing the input.
+    if (isDemo && liveConversations.length === 0) {
+      showLocalToast("Demo mode — sign in as a real owner to send messages.");
+      setInputMsg("");
+      return;
+    }
+
+    sendMutation.mutate(
+      { toUserId: conv.otherUserId ?? conv.id, content: inputMsg.trim() },
+      {
+        onSuccess: () => setInputMsg(""),
+        onError: (err) => {
+          console.error("[owner/messages] send failed", err);
+          showLocalToast(err instanceof Error ? err.message : "Failed to send");
+        },
+      }
     );
-
-    setInputMsg("");
   }
 
   function handleSelectConv(id: string) {
     setActiveConvId(id);
-    // Clear unread badge
-    setConversations(prev =>
-      prev.map(c => (c.id === id ? { ...c, unread: 0 } : c))
-    );
+    const conv = conversations.find(c => c.id === id);
+    if (conv?.otherUserId && conv.unread > 0) {
+      markRead.mutate(conv.otherUserId);
+    }
+  }
+
+  // Lightweight inline toast — the page doesn't have access to the global
+  // toast context cleanly from inside the hook, so we keep it local.
+  const [localToast, setLocalToast] = useState<string | null>(null);
+  function showLocalToast(msg: string) {
+    setLocalToast(msg);
+    window.setTimeout(() => setLocalToast(null), 3000);
   }
 
   return (
     <div className="w-full flex-1 flex flex-col h-[calc(100dvh-64px)] md:h-screen">
+      {/* Local toast for demo-mode send attempts and similar inline notices. */}
+      {localToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-4 right-4 z-[300] px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold shadow-lg backdrop-blur-md"
+        >
+          {localToast}
+        </div>
+      )}
       {/* Main Messaging Container */}
-      <div className="w-full flex-1 bg-[#070F1E] rounded-none border-0 overflow-hidden grid grid-cols-1 md:grid-cols-12 relative">
-        
+      <div className="w-full flex-1 bg-background dark:bg-surface-nav-deep rounded-none border-0 overflow-hidden grid grid-cols-1 md:grid-cols-12 relative">
+
         {/* Left Sidebar: Conversations Inbox List */}
         <div className={cn(
-          "md:col-span-4 lg:col-span-4 border-r border-white/10 flex flex-col h-full bg-[#0B1528]",
+          "md:col-span-4 lg:col-span-4 border-r border-border dark:border-white/10 flex flex-col h-full bg-surface-raised dark:bg-surface-nav-elevated",
           activeConvId ? "hidden md:flex" : "flex"
         )}>
           {/* Search Header */}
-          <div className="p-4 pt-5 sm:pt-6 border-b border-white/10 shrink-0">
+          <div className="p-4 pt-5 sm:pt-6 border-b border-border dark:border-white/10 shrink-0">
             <div className="mb-4">
-              <h1 className="text-[26px] min-[390px]:text-[28px] md:text-[32px] font-extrabold tracking-tight leading-none mb-1.5 text-white">
+              <h1 className="text-[26px] min-[390px]:text-[28px] md:text-[32px] font-extrabold tracking-tight leading-none mb-1.5 text-ink-primary dark:text-white">
                 Messages
               </h1>
-              <p className="text-[13px] font-medium text-slate-400 leading-relaxed">
+              <p className="text-[13px] font-medium text-ink-muted leading-relaxed">
                 Manage and track all your conversations.
               </p>
             </div>
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search messages..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm bg-[#111D30] border border-white/10 text-white outline-none focus:border-emerald-500 transition-all placeholder:text-slate-500"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm bg-surface-interactive dark:bg-[#111D30] border border-border dark:border-white/10 text-ink-primary outline-none focus:border-emerald-500 transition-all placeholder:text-ink-muted"
               />
             </div>
           </div>
@@ -182,7 +221,7 @@ export default function OwnerMessagesPage() {
           {/* Conversation Cards List */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1 hide-scrollbar">
             {filteredConversations.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 text-xs">
+              <div className="text-center py-12 text-ink-muted text-xs">
                 No messages found
               </div>
             ) : (
@@ -196,17 +235,17 @@ export default function OwnerMessagesPage() {
                       "w-full p-3 rounded-xl text-left transition-all flex items-start gap-3 relative group cursor-pointer",
                       isActive
                         ? "bg-emerald-500/15 border border-emerald-500/30"
-                        : "hover:bg-white/[0.04] border border-transparent"
+                        : "hover:bg-surface-interactive dark:hover:bg-white/[0.04] border border-transparent"
                     )}
                   >
                     <div className="relative shrink-0">
                       <img
                         src={conv.avatar}
                         alt={conv.name}
-                        className="w-10 h-10 rounded-full object-cover border border-white/15"
+                        className="w-10 h-10 rounded-full object-cover border border-border dark:border-white/15"
                       />
                       {conv.online && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#00D98B] border-2 border-[#0B1528]" />
+                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#00D98B] border-2 border-surface-raised dark:border-[#0B1528]" />
                       )}
                     </div>
 
@@ -214,25 +253,25 @@ export default function OwnerMessagesPage() {
                       <div className="flex items-center justify-between gap-1 mb-0.5">
                         <span className={cn(
                           "text-xs sm:text-sm font-bold truncate",
-                          isActive ? "text-[#00D98B]" : "text-white"
+                          isActive ? "text-[#00D98B]" : "text-ink-primary dark:text-white"
                         )}>
                           {conv.name}
                         </span>
-                        <span className="text-[10px] text-slate-400 shrink-0">{conv.lastTime}</span>
+                        <span className="text-[10px] text-ink-muted shrink-0">{conv.lastTime}</span>
                       </div>
-                      <p className="text-[11px] text-slate-400 truncate leading-tight mb-1">
+                      <p className="text-[11px] text-ink-muted truncate leading-tight mb-1">
                         {conv.role}
                       </p>
                       <p className={cn(
                         "text-xs truncate leading-snug",
-                        conv.unread > 0 ? "font-bold text-white" : "text-slate-400"
+                        conv.unread > 0 ? "font-bold text-ink-primary" : "text-ink-muted"
                       )}>
                         {conv.lastMessage}
                       </p>
                     </div>
 
                     {conv.unread > 0 && (
-                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#00D98B] text-slate-950 font-black text-[10px] flex items-center justify-center shadow-[0_0_10px_rgba(0,217,139,0.5)]">
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-emerald-500 text-white font-bold text-[10px] flex items-center justify-center shadow-sm">
                         {conv.unread}
                       </span>
                     )}
@@ -313,7 +352,7 @@ export default function OwnerMessagesPage() {
                           "max-w-[85%] sm:max-w-[70%] px-4 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm",
                           isMe
                             ? "bg-[#00D98B] text-[#091522] font-semibold rounded-tr-xs shadow-[0_2px_12px_rgba(0,217,139,0.25)]"
-                            : "bg-[#132238] border border-white/5 text-slate-100 font-normal rounded-tl-xs"
+                            : "bg-[#132238] border border-white/5 text-ink-primary font-normal rounded-tl-xs"
                         )}>
                           <p>{msg.text}</p>
                         </div>
@@ -351,10 +390,10 @@ export default function OwnerMessagesPage() {
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400 bg-[#070F1E]">
-              <MessageSquare className="w-12 h-12 mb-3 text-slate-600" />
-              <p className="text-sm font-semibold text-white">Select a conversation</p>
-              <p className="text-xs text-slate-400 mt-1">Choose a message from the left to start chatting.</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground bg-[#070F1E]">
+              <MessageSquare className="w-12 h-12 mb-3 text-muted-foreground/60" />
+              <p className="text-sm font-semibold text-foreground">Select a conversation</p>
+              <p className="text-xs text-muted-foreground mt-1">Choose a message from the left to start chatting.</p>
             </div>
           )}
         </div>

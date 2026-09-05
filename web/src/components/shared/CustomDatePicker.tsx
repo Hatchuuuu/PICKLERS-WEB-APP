@@ -48,7 +48,7 @@ export function CustomDatePicker({
         <PopoverPrimitive.Content
           align="start"
           sideOffset={8}
-          className="z-[9999] w-[280px] sm:w-[300px] p-4 bg-[#0C172E] border border-white/20 rounded-[24px] shadow-[0_25px_70px_rgba(0,0,0,0.95)] outline-none"
+          className="z-[400] w-[280px] sm:w-[300px] p-4 bg-[#0C172E] border border-white/20 rounded-[24px] shadow-[0_25px_70px_rgba(0,0,0,0.95)] outline-none"
         >
           <DayPicker
             mode="single"

@@ -1,29 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { requireAdmin } from '../../_lib/requireAdmin';
 import { sendAdminEmail } from '../../_lib/sendAdminEmail';
+import { createAdminSupabase } from '../../_lib/createAdminSupabase';
+import { getCache, setCache, generateCacheKey } from '@/lib/cacheUtils';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
+    const supabase = await createAdminSupabase();
 
     const authCheck = await requireAdmin(supabase);
     if (authCheck instanceof NextResponse) return authCheck;
@@ -31,25 +17,110 @@ export async function GET(
     const resolvedParams = await Promise.resolve(params);
     const applicationId = resolvedParams.id;
 
-    const { data, error } = await supabase
+    // Create a normalized cache key based on application ID
+    const cacheKey = generateCacheKey('admin-application', applicationId);
+
+    // 1. Check HEURISTIC CACHE FIRST (longest TTL: 1 hour for applications - rarely change after submission)
+    const cachedHeuristic = await getCache<any>(cacheKey);
+    if (cachedHeuristic !== null) {
+      return NextResponse.json({
+        data: cachedHeuristic.data,
+        cacheInfo: {
+          source: 'heuristic',
+          timestamp: cachedHeuristic.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // 2. Try to get from API cache (shorter TTL: 10 minutes)
+    const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+    if (cachedAPI !== null) {
+      return NextResponse.json({
+        data: cachedAPI.data,
+        cacheInfo: {
+          source: 'api',
+          timestamp: cachedAPI.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // If not in cache, proceed with database query
+    const { data: appData, error } = await supabase
       .from('owner_applications')
-      .select(`
-        *,
-        applicant:player_profiles!user_id (
-          id,
-          name,
-          avatar_url
-        )
-      `)
+      .select('*')
       .eq('id', applicationId)
       .single();
 
-    if (error || !data) {
+    if (error || !appData) {
+      // Try to return cached data on error (fallback to stale cache)
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          data: cachedData.data,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
+
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ data }, { status: 200 });
+    let applicantProfile = null;
+    if (appData.user_id) {
+      try {
+        const { data: profile } = await supabase
+          .from('player_profiles')
+          .select('id, name, avatar_url')
+          .eq('id', appData.user_id)
+          .maybeSingle();
+
+        applicantProfile = profile;
+      } catch {
+        // Fallback gracefully
+      }
+    }
+
+    const enriched = {
+      ...appData,
+      applicant: applicantProfile || { id: appData.user_id, name: appData.business_name || 'Applicant' },
+    };
+
+    const responseData = {
+      data: enriched,
+      cacheInfo: { source: 'api', timestamp: new Date().toISOString() }
+    };
+
+    // Store in heuristic cache (TTL: 1 hour = 3600 seconds)
+    await setCache(cacheKey, responseData, 3600);
+
+    // Store in API cache (TTL: 10 minutes = 600 seconds)
+    await setCache(`${cacheKey}:api`, responseData, 600);
+
+    return NextResponse.json(responseData, { status: 200 });
   } catch (err: any) {
+    // Try to return cached data on error (fallback to stale cache)
+    try {
+      const resolvedParams = await Promise.resolve(params);
+      const applicationId = resolvedParams.id;
+      const cacheKey = generateCacheKey('admin-application', applicationId);
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          data: cachedData.data,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
+    } catch (cacheError) {
+      console.error('[API/admin/applications/[id]] Cache fallback error:', cacheError);
+    }
+
     console.error('[API/admin/applications/[id]] GET Error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -60,21 +131,7 @@ export async function PATCH(
   { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
+    const supabase = await createAdminSupabase();
 
     const authCheck = await requireAdmin(supabase);
     if (authCheck instanceof NextResponse) return authCheck;
@@ -83,9 +140,9 @@ export async function PATCH(
     const resolvedParams = await Promise.resolve(params);
     const applicationId = resolvedParams.id;
     const body = await request.json();
-    const { action, rejection_reason, revision_request_note } = body;
+    const { action, rejection_reason, revision_request_note, internal_notes } = body;
 
-    if (!['approve', 'reject', 'request_revision'].includes(action)) {
+    if (!['approve', 'reject', 'request_revision', 'save_notes'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
     }
 
@@ -98,6 +155,27 @@ export async function PATCH(
 
     if (fetchErr || !appData) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+
+    // Direct note saving without status modification
+    if (action === 'save_notes') {
+      const { error: noteErr } = await supabase
+        .from('owner_applications')
+        .update({
+          internal_notes: internal_notes || '',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', applicationId);
+
+      if (noteErr) {
+        return NextResponse.json({ error: noteErr.message }, { status: 500 });
+      }
+
+      return NextResponse.json({ success: true, message: 'Internal review notes saved' }, { status: 200 });
+    }
+
+    if (['approved', 'rejected'].includes(appData.status)) {
+      return NextResponse.json({ error: `Conflict: Application has already been reviewed (${appData.status})` }, { status: 409 });
     }
 
     let newStatus: string;
@@ -114,7 +192,7 @@ export async function PATCH(
       auditAction = 'REQUEST_REVISION';
     }
 
-    // 2. Update owner_applications record
+    // 2. Update owner_applications record with optimistic concurrency check
     const updatePayload: Record<string, unknown> = {
       status: newStatus,
       reviewed_by: adminId,
@@ -122,11 +200,13 @@ export async function PATCH(
     };
     if (rejection_reason) updatePayload.rejection_reason = rejection_reason;
     if (revision_request_note) updatePayload.revision_request_note = revision_request_note;
+    if (internal_notes !== undefined) updatePayload.internal_notes = internal_notes;
 
     const { error: updateErr } = await supabase
       .from('owner_applications')
       .update(updatePayload)
-      .eq('id', applicationId);
+      .eq('id', applicationId)
+      .eq('status', appData.status);
 
     if (updateErr) {
       console.error('[API/admin/applications/[id]] Update error:', updateErr);

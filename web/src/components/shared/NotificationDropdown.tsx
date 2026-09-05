@@ -23,12 +23,12 @@ export function NotificationDropdown({ onClose: _onClose, className }: { onClose
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={cn("absolute w-[340px] max-w-[calc(100vw-30px)] rounded-2xl shadow-[0_16px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.8)] overflow-hidden z-[9999] border bg-white/95 dark:bg-[#0B132B]/98 backdrop-blur-[60px] saturate-[1.2] border-border dark:border-white/[0.12] ring-1 ring-black/5 dark:ring-white/5", className)}>
+      className={cn("absolute w-[340px] max-w-[calc(100vw-30px)] rounded-2xl shadow-2xl overflow-hidden z-[400] border bg-surface-overlay border-border", className)}>
 
-      <div className="px-5 py-4 flex items-center justify-between border-b border-border dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.02]">
-        <h3 className="text-[17px] font-black text-foreground dark:text-white tracking-wide" >Notifications</h3>
+      <div className="px-5 py-4 flex items-center justify-between border-b border-border bg-surface-interactive/30">
+        <h3 className="text-base font-bold text-foreground tracking-wide">Notifications</h3>
         {notifications.some(n => !n.read) && (
-          <button onClick={markAllNotificationsRead} className="text-[12px] font-bold text-[#0BCE83] hover:text-[#0ea86f] transition-all flex items-center gap-1.5 active:scale-95 px-2.5 py-1 rounded-full bg-[#0BCE83]/10 hover:bg-[#0BCE83]/20">
+          <button onClick={markAllNotificationsRead} className="text-[12px] font-bold text-emerald-500 hover:text-emerald-400 transition-all flex items-center gap-1.5 active:scale-95 px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer">
             <Check className="w-3.5 h-3.5" strokeWidth={3} /> Mark read
           </button>
         )}

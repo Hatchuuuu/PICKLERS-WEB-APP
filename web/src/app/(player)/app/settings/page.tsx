@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 
 import {
   ChevronRight, User, Phone, Bell, Smartphone, Users,
-  ShieldCheck, BadgeCheck, ShieldAlert, Compass,
-  LogOut, KeyRound
+  ShieldCheck, BadgeCheck, ShieldAlert,
+  LogOut, KeyRound, Code2, LayoutDashboard
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useUserStore } from "@/store/useUserStore";
 import { AvatarUpload } from "@/components/shared/AvatarUpload";
 import { VerificationGate } from "@/components/shared/VerificationGate";
 import { motion, AnimatePresence } from "motion/react";
@@ -29,6 +30,8 @@ import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModa
 import { TermsOfServiceModal } from "@/components/shared/modals/TermsOfServiceModal";
 import { SupportContactModal } from "@/components/shared/modals/SupportContactModal";
 import { ShieldCheck as LegalShield, LifeBuoy, FileText, MessageSquare } from "lucide-react";
+
+import { hasConsoleAccess } from "@/types/permissions";
 
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (e: React.MouseEvent) => void, disabled?: boolean }) {
   return (
@@ -55,6 +58,23 @@ export default function PlayerSettingsTab() {
   const router = useRouter();
   const { user, logout, verifyAccount, updateUser } = useAuth();
   const { showToast } = useToast();
+  const { isAdmin: storeIsAdmin, isDev: storeIsDev, consoleAccess } = useUserStore();
+
+  const userProfile = {
+    id: user?.id,
+    email: user?.email,
+    role: storeIsDev ? 'dev' : user?.role,
+    is_admin: user?.isAdmin || storeIsAdmin,
+    admin_role: user?.adminRole || user?.admin_role,
+    dev_role: user?.devRole || user?.dev_role,
+    console_access: (user?.console_access && user.console_access.length > 0) ? user.console_access : consoleAccess,
+  };
+
+  const hasAdmin = hasConsoleAccess(userProfile, 'admin');
+  const hasDev = hasConsoleAccess(userProfile, 'dev');
+
+  const hasOwner = user?.role === "owner" || user?.role === "demo";
+  const hasAnyConsole = hasAdmin || hasDev || hasOwner;
 
   // Fallback defaults if user metadata is not yet populated
   const [profile, setProfile] = useState({
@@ -271,126 +291,49 @@ export default function PlayerSettingsTab() {
         <AvatarUpload />
       </motion.div>
 
-      {(user?.isAdmin || user?.role === "admin" || user?.role === "dev") && (
-        <motion.div variants={itemVariants} className="mb-6">
-          <div
-            onClick={() => router.push("/app/admin")}
-            className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent border border-emerald-500/40 shadow-lg active:scale-[0.98] transition-transform group"
-          >
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[16px] font-bold text-foreground mb-0.5 flex items-center gap-2">
-                  <span>Admin Console Active</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500 text-white">
-                    {user?.role === "dev" ? "Dev" : "Admin"}
-                  </span>
-                </div>
-                <div className="text-[14px] text-foreground/60 font-medium">
-                  Tap to launch Admin & System Operations Hub
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {(user?.isDemo || user?.role === "demo") ? (
-        <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
-          <WalletPill />
-          <div onClick={() => router.push("/app/owner")} className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20 active:scale-[0.98] transition-transform">
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
-                <Compass className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[16px] font-bold text-foreground mb-0.5">Demo Mode Active</div>
-                <div className="text-[14px] text-foreground/60 font-medium">Tap to switch to Court Owner Dashboard</div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-foreground/30" />
-            </div>
-          </div>
-          <div onClick={() => router.push("/app/owner-application")}
-            className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-cyan-500/20 text-cyan-500 shadow-inner">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[16px] font-bold text-foreground mb-0.5">Own a court?</div>
-                <div className="text-[14px] text-foreground/60 font-medium">Apply to list your facility</div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-foreground/30" />
-            </div>
-          </div>
-        </motion.div>
-      ) : (user?.role === "owner" || user?.verificationStatus === "verified") ? (
-        <div className="flex flex-col gap-4 mb-8">
-          <WalletPill />
-          {(user?.role === "owner" && !user?.facilitySetupComplete) && (
-            <div className="rounded-[20px] p-5 relative overflow-hidden group cursor-pointer"
-              onClick={() => setShowSetup(true)}
-              style={{ background: "var(--surface-raised)", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", boxShadow: "0 4px 12px rgba(16,185,129,0.3)" }}>
-                  <ShieldCheck className="w-7 h-7 text-foreground" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[17px] font-bold text-foreground mb-0.5">Finish Facility Setup</div>
-                  <div className="text-[13px] text-foreground/50">Tap to complete your onboarding</div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-foreground/30" />
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
-          <WalletPill />
-          
-          <VerificationGate onVerifiedClick={() => { }}>
-            {(() => {
-              const vStatus = (user?.verificationStatus as string) || "unverified";
-              const isVerified = vStatus === "verified";
-              const isPending = vStatus === "pending";
-              return (
-                <div className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
-                  <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
-                      {isVerified ? (
-                        <BadgeCheck className="w-6 h-6" />
-                      ) : isPending ? (
-                        <ShieldAlert className="w-6 h-6 animate-pulse text-amber-500" />
-                      ) : (
-                        <ShieldAlert className="w-6 h-6" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-[16px] font-bold text-foreground mb-0.5">
-                        {isVerified ? "Identity Verified" :
-                          isPending ? "Verification Pending" :
-                            "Verify Identity"}
-                      </div>
-                      <div className="text-[14px] text-foreground/60 font-medium">
-                        {isVerified ? "Your account is trusted & secure" :
-                          isPending ? "We are reviewing your ID" :
-                            "Verify now to unlock all player features"}
-                      </div>
-                    </div>
-                    {!isVerified && !isPending && (
-                      <ChevronRight className="w-5 h-5 text-foreground/30" />
+      {/* Wallet & Verification Gate */}
+      <motion.div variants={itemVariants} className="flex flex-col gap-4 mb-8">
+        <WalletPill />
+        
+        <VerificationGate onVerifiedClick={() => { }}>
+          {(() => {
+            const vStatus = (user?.verificationStatus as string) || "unverified";
+            const isVerified = vStatus === "verified";
+            const isPending = vStatus === "pending";
+            return (
+              <div className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-[#10B981]/10 to-teal-500/5 border border-[#10B981]/20">
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 bg-[#10B981]/20 text-[#10B981] shadow-inner">
+                    {isVerified ? (
+                      <BadgeCheck className="w-6 h-6" />
+                    ) : isPending ? (
+                      <ShieldAlert className="w-6 h-6 animate-pulse text-amber-500" />
+                    ) : (
+                      <ShieldAlert className="w-6 h-6" />
                     )}
                   </div>
+                  <div className="flex-1">
+                    <div className="text-[16px] font-bold text-foreground mb-0.5">
+                      {isVerified ? "Identity Verified" :
+                        isPending ? "Verification Pending" :
+                          "Verify Identity"}
+                    </div>
+                    <div className="text-[14px] text-foreground/60 font-medium">
+                      {isVerified ? "Your account is trusted & secure" :
+                        isPending ? "We are reviewing your ID" :
+                          "Verify now to unlock all player features"}
+                    </div>
+                  </div>
+                  {!isVerified && !isPending && (
+                    <ChevronRight className="w-5 h-5 text-foreground/30" />
+                  )}
                 </div>
-              );
-            })()}
-          </VerificationGate>
+              </div>
+            );
+          })()}
+        </VerificationGate>
 
+        {!hasOwner && (
           <div onClick={() => router.push("/app/owner-application")}
             className="rounded-[16px] p-4 cursor-pointer relative overflow-hidden group active:scale-[0.98] transition-transform bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
             <div className="flex items-center gap-4 relative z-10">
@@ -404,10 +347,67 @@ export default function PlayerSettingsTab() {
               <ChevronRight className="w-5 h-5 text-foreground/30" />
             </div>
           </div>
-        </motion.div>
-      )}
+        )}
+      </motion.div>
 
       <motion.div variants={containerVariants} initial="hidden" animate="show">
+        
+        {/* Console Switcher Section (Admin / Dev / Owner) */}
+        {hasAnyConsole && (
+          <SettingsGroup title="CONSOLE & WORKSPACE SWITCHER">
+            {hasAdmin && (
+              <SettingsRow
+                icon={ShieldCheck}
+                iconBg="bg-emerald-500/10"
+                iconColor="text-emerald-500 dark:text-emerald-400"
+                label="Admin Console"
+                subtitle="Manage users, bookings, facilities & payouts"
+                onClick={() => router.push("/app/admin")}
+                rightContent={
+                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    ADMIN
+                  </span>
+                }
+              />
+            )}
+
+            {hasDev && (
+              <SettingsRow
+                icon={Code2}
+                iconBg="bg-cyan-500/10"
+                iconColor="text-cyan-500 dark:text-cyan-400"
+                label="Developer Control Center"
+                subtitle="Threat radar, IDS honeypots, health & audit"
+                onClick={() => router.push("/app/dev")}
+                rightContent={
+                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    DEV
+                  </span>
+                }
+              />
+            )}
+
+            {hasOwner && (
+              <SettingsRow
+                icon={LayoutDashboard}
+                iconBg="bg-amber-500/10"
+                iconColor="text-amber-500 dark:text-amber-400"
+                label={user?.role === "demo" ? "Switch to Owner View" : "Facility Owner Portal"}
+                subtitle="Manage courts, open play, tournaments & revenue"
+                hasBorder={false}
+                onClick={() => router.push("/app/owner")}
+                rightContent={
+                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    OWNER
+                  </span>
+                }
+              />
+            )}
+          </SettingsGroup>
+        )}
         
         {/* Account & Profile Section */}
         <SettingsGroup title="ACCOUNT & IDENTITY">

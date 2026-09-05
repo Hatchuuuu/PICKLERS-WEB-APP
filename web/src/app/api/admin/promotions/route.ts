@@ -1,41 +1,109 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { requireAdmin } from '../_lib/requireAdmin';
+import { createAdminSupabase } from '../_lib/createAdminSupabase';
+import { getCache, setCache, generateCacheKey } from '@/lib/cacheUtils';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
+    const supabase = await createAdminSupabase();
 
     const authCheck = await requireAdmin(supabase);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    const { data, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search')?.trim();
+
+    // Create a normalized cache key based on search parameter
+    const cacheKey = generateCacheKey('admin-promotions', search ?? 'all');
+
+    // 1. Check HEURISTIC CACHE FIRST (longest TTL: 1 hour for promotions data)
+    const cachedHeuristic = await getCache<any>(cacheKey);
+    if (cachedHeuristic !== null) {
+      return NextResponse.json({
+        data: cachedHeuristic.data,
+        cacheInfo: {
+          source: 'heuristic',
+          timestamp: cachedHeuristic.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // 2. Try to get from API cache (shorter TTL: 10 minutes)
+    const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+    if (cachedAPI !== null) {
+      return NextResponse.json({
+        data: cachedAPI.data,
+        cacheInfo: {
+          source: 'api',
+          timestamp: cachedAPI.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // If not in cache, proceed with database query
+    let query = supabase
       .from('promotions')
       .select('*')
       .order('created_at', { ascending: false });
 
+    if (search) {
+      query = query.or(`code.ilike.%${search}%,description.ilike.%${search}%`);
+    }
+
+    const { data, error } = await query;
+
     if (error) {
+      // Try to return cached data on error (fallback to stale cache)
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          data: cachedData.data,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
+
       console.error('[API/admin/promotions] GET error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data: data || [] }, { status: 200 });
-  } catch (err: any) {
+    const responseData = {
+      data: data || [],
+      cacheInfo: { source: 'api', timestamp: new Date().toISOString() }
+    };
+
+    // Store in heuristic cache (TTL: 1 hour = 3600 seconds)
+    await setCache(cacheKey, responseData, 3600);
+
+    // Store in API cache (TTL: 10 minutes = 600 seconds)
+    await setCache(`${cacheKey}:api`, responseData, 600);
+
+    return NextResponse.json(responseData, { status: 200 });
+  } catch (err: unknown) {
+    // Try to return cached data on error
+    try {
+      const { searchParams } = new URL(request.url);
+      const search = searchParams.get('search')?.trim();
+      const cacheKey = generateCacheKey('admin-promotions', search ?? 'all');
+
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          data: cachedData.data,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
+    } catch (cacheError) {
+      console.error('[API/admin/promotions] Cache fallback error:', cacheError);
+    }
+
     console.error('[API/admin/promotions] GET Exception:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -43,21 +111,7 @@ export async function GET(_request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
+    const supabase = await createAdminSupabase();
 
     const authCheck = await requireAdmin(supabase);
     if (authCheck instanceof NextResponse) return authCheck;
@@ -120,7 +174,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, data: promoData }, { status: 201 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[API/admin/promotions] POST Exception:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

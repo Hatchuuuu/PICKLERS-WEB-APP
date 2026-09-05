@@ -55,12 +55,12 @@ export function ManageTeamsModal({ isOpen, onClose, tournamentId }: { isOpen: bo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-background rounded-xl shadow-2xl border border-border w-full max-w-2xl overflow-hidden flex flex-col h-[80vh]">
-        <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-muted/30">
-            <h2 className="text-xl font-bold tracking-tight">Manage Players & Teams</h2>
-            <button onClick={onClose} className="p-1 rounded-full hover:bg-muted transition-colors">
-                <X className="w-5 h-5 text-muted-foreground" />
+    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/40 backdrop-blur-[2px] dark:bg-black/50 p-4" onClick={onClose}>
+      <div className="bg-surface-overlay dark:bg-[#13223F] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] border border-border dark:border-white/12 w-full max-w-2xl overflow-hidden flex flex-col h-[80vh]" onClick={e => e.stopPropagation()}>
+        <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface-interactive/30">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Manage Players & Teams</h2>
+            <button onClick={onClose} aria-label="Close modal" className="p-2 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-colors text-muted-foreground hover:text-foreground cursor-pointer">
+                <X className="w-5 h-5" />
             </button>
         </div>
         
@@ -76,10 +76,10 @@ export function ManageTeamsModal({ isOpen, onClose, tournamentId }: { isOpen: bo
                     const results = searchResults[team.id] || [];
 
                     return (
-                        <div key={team.id} className="p-4 rounded-lg border border-border bg-card shadow-sm flex flex-col gap-3 relative">
+                        <div key={team.id} className="p-4 rounded-xl border border-border bg-surface-interactive/40 shadow-sm flex flex-col gap-3 relative">
                             <div className="flex justify-between items-center">
                                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{team.name}</span>
-                                {isAssigned && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                                {isAssigned && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                             </div>
 
                             <div className="relative">
@@ -89,29 +89,29 @@ export function ManageTeamsModal({ isOpen, onClose, tournamentId }: { isOpen: bo
                                 <input
                                     type="text"
                                     placeholder={isAssigned ? "Reassign player..." : "Search players..."}
-                                    className="w-full bg-muted border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus:ring-primary/50"
+                                    className="w-full bg-surface-interactive border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus:ring-emerald-500/50"
                                     value={query}
                                     onChange={e => setSearchQuery(prev => ({ ...prev, [team.id]: e.target.value }))}
                                 />
                             </div>
 
                             {query.length > 1 && results.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-surface-overlay border border-border rounded-xl shadow-2xl z-20 max-h-48 overflow-y-auto">
                                     {results.map((p: SearchProfile) => (
                                         <button 
                                             key={p.id}
                                             onClick={() => handleAssign(team.id, p)}
-                                            className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors flex justify-between items-center border-b border-border last:border-0"
+                                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-surface-interactive transition-colors flex justify-between items-center border-b border-border last:border-0 cursor-pointer text-foreground"
                                         >
                                             <span className="font-semibold">{p.name || p.email}</span>
-                                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">DPR {p.dpr || 'N/A'}</span>
+                                            <span className="text-xs bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">DPR {p.dpr || 'N/A'}</span>
                                         </button>
                                     ))}
                                 </div>
                             )}
 
                             {query.length > 1 && results.length === 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-10 p-4 text-sm text-center text-muted-foreground">
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-surface-overlay border border-border rounded-xl shadow-2xl z-20 p-4 text-sm text-center text-muted-foreground">
                                     No players found.
                                 </div>
                             )}
@@ -121,10 +121,10 @@ export function ManageTeamsModal({ isOpen, onClose, tournamentId }: { isOpen: bo
             </div>
         </div>
 
-        <div className="px-6 py-4 bg-muted/30 border-t border-border flex justify-end">
+        <div className="px-6 py-4 bg-surface-overlay border-t border-border flex justify-end">
             <button 
                 onClick={onClose}
-                className="px-5 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-md shadow-md hover:opacity-90 transition-all"
+                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
             >
                 Done
             </button>

@@ -34,10 +34,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Rate Limiting via Upstash Redis using User ID (safeguarded)
+    // Max 3 checkout attempts per minute per user to prevent spamming Paymongo
     let requestCount = 1;
     try {
-      if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      // A-003 FIX: redis is now typed as Redis | null
+      if (redis) {
         const rateLimitKey = `ratelimit:checkout:${user.id}`;
         requestCount = await redis.incr(rateLimitKey);
         if (requestCount === 1) {
@@ -79,16 +80,23 @@ export async function POST(request: NextRequest) {
     }
 
     const amountInCentavos = Math.round(amount * 100);
-    const secretKey =
-      process.env.NODE_ENV === "production"
-        ? process.env.PAYMONGO_LIVE_SECRET_KEY
-        : process.env.PAYMONGO_TEST_SECRET_KEY;
+    // A-009 FIX: Vercel sets NODE_ENV='production' on ALL deployments, including
+    // preview branches. Checking NODE_ENV alone is therefore insufficient and would
+    // cause live PayMongo charges on preview/staging builds.
+    // We additionally gate on VERCEL_ENV === 'production' (only set on the actual
+    // production deployment). For non-Vercel envs, NODE_ENV remains the decider.
+    const isRealProduction =
+      process.env.NODE_ENV === 'production' &&
+      (process.env.VERCEL_ENV === 'production' || !process.env.VERCEL_ENV);
+
+    const secretKey = isRealProduction
+      ? process.env.PAYMONGO_LIVE_SECRET_KEY
+      : process.env.PAYMONGO_TEST_SECRET_KEY;
 
     if (!secretKey) {
-      const expectedVar =
-        process.env.NODE_ENV === "production"
-          ? "PAYMONGO_LIVE_SECRET_KEY"
-          : "PAYMONGO_TEST_SECRET_KEY";
+      const expectedVar = isRealProduction
+        ? 'PAYMONGO_LIVE_SECRET_KEY'
+        : 'PAYMONGO_TEST_SECRET_KEY';
       console.error(`Missing ${expectedVar}`);
       return NextResponse.json({ error: "Payment gateway misconfigured." }, { status: 500 });
     }

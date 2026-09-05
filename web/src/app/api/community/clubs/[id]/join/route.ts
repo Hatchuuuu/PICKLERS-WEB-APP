@@ -22,13 +22,13 @@ async function makeSupabase() {
 
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   const supabase = await makeSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const clubId = params.id;
+  const { id: clubId } = await params;
 
   const { data: existing } = await supabase
     .from("club_members")

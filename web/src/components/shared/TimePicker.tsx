@@ -112,20 +112,20 @@ export function TimePicker({
   const modal = mounted ? createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="absolute inset-0 bg-[#080D1C]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
           />
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 10 }} 
             animate={{ opacity: 1, scale: 1, y: 0 }} 
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="relative w-full max-w-[320px] rounded-2xl overflow-hidden shadow-2xl flex flex-col bg-[#0A1124] border border-white/10"
+            className="relative w-full max-w-[320px] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex flex-col bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 z-[610]"
           >
             <div className="flex-1 py-8 flex justify-center items-center relative">
               <div 
@@ -146,7 +146,7 @@ export function TimePicker({
                     >
                       <span className={cn(
                         "text-[18px] font-bold transition-all duration-200 z-10",
-                        isActive ? "text-white" : "text-white/30"
+                        isActive ? "text-white" : "text-muted-foreground"
                       )}>
                         {timeStr}
                       </span>
@@ -165,10 +165,10 @@ export function TimePicker({
             </div>
 
             {/* Footer Save Button */}
-            <div className="p-4 border-t border-white/5">
+            <div className="p-4 border-t border-border bg-surface-interactive/30">
               <button 
                 onClick={handleSave}
-                className="w-full py-3.5 rounded-xl font-bold text-[15px] bg-emerald-500 hover:bg-emerald-400 text-[#080D1C] shadow-[0_4px_16px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl font-bold text-sm bg-emerald-500 hover:bg-emerald-400 text-white shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Check className="w-5 h-5 stroke-2" />
                 Save Time

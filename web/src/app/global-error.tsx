@@ -58,13 +58,13 @@ export default function GlobalError({
             <div className="flex gap-3">
               <button
                 onClick={() => reset()}
-                className="inline-flex items-center justify-center h-10 px-6 rounded-lg text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+                className="inline-flex items-center justify-center h-11 px-6 rounded-xl text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-400 shadow-md transition-colors cursor-pointer"
               >
                 Try again
               </button>
               <a
                 href="/"
-                className="inline-flex items-center justify-center h-10 px-6 rounded-lg text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 transition-colors"
+                className="inline-flex items-center justify-center h-11 px-6 rounded-xl text-sm font-semibold border border-border bg-surface-interactive text-foreground hover:bg-surface-interactive/80 transition-colors cursor-pointer"
               >
                 Back to Home
               </a>

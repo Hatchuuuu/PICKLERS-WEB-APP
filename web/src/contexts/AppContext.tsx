@@ -145,8 +145,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
            setBookings(isDemo ? DEMO_BOOKINGS : []);
         }
 
-        // Fetch Real Players
-        const { data: dbPlayers, error: pError } = await supabase.from('player_profiles').select('id, name, avatar_url, level, gold_medals, silver_medals, bronze_medals, online');
+        // Fetch Real Players (Limited to 50 top players to prevent high-payload memory overhead)
+        const { data: dbPlayers, error: pError } = await supabase.from('player_profiles').select('id, name, avatar_url, level, gold_medals, silver_medals, bronze_medals, online').limit(50);
         if (dbPlayers && !pError && mounted) {
            const mappedPlayers: PlayerProfile[] = dbPlayers.map((p: Record<string, unknown>) => ({
              id: String(p.id),
@@ -191,9 +191,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     fetchCoreData();
 
-    // Subscribe to booking changes - update bookings targetedly without re-fetching all core data
-    const bookingSub = supabase.channel('bookings_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, async () => {
+    // Subscribe to booking changes with server-side user_id filter
+    const channelName = `bookings_changes_${user?.id || 'anon'}`;
+    const filterOption = user?.id ? { event: '*', schema: 'public', table: 'bookings', filter: `user_id=eq.${user.id}` } : { event: '*', schema: 'public', table: 'bookings' };
+    const bookingSub = supabase.channel(channelName)
+      .on('postgres_changes' as any, filterOption as any, async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session && mounted) {
           const { data: dbBookings, error: bError } = await supabase.from('bookings').select('*, facilities(name)').eq('user_id', session.user.id);
@@ -227,7 +229,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       mounted = false;
       supabase.removeChannel(bookingSub); 
     };
-  }, [isDemo]);
+  }, [user?.id, isDemo]);
 
   const markAllNotificationsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));

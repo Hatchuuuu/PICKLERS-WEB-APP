@@ -21,21 +21,33 @@ export default function OwnerTournaments() {
   const router = useRouter();
   const { user } = useAuth();
 
-  // For visual prototyping we'll use the store, but override the status logic 
+  // For visual prototyping we'll use the store, but override the status logic
   // slightly to map to 'upcoming', 'ongoing', 'completed'
   const storeTournaments = useTournamentStore(state => state.tournaments);
-  
+
+  // P1.6: Guard the DEMO seed so it cannot clobber user data. Without this guard,
+  // deleting the only tournament brings the demo set back on the next render
+  // (length === 0 re-fires the effect). We seed at most once per browser session
+  // and only when (a) the user is a demo user, (b) the store is empty, and
+  // (c) we haven't already seeded this session. sessionStorage (not localStorage)
+  // so a real sign-in later in the same browser doesn't trip the guard — only an
+  // in-session revisit does.
   useEffect(() => {
-    if ((user?.isDemo || user?.role === "demo") && storeTournaments.length === 0) {
-      useTournamentStore.setState({ tournaments: DEMO_TOURNAMENTS as any });
-      DEMO_TOURNAMENTS.forEach(t => {
-        const mock = seedDemoBracketData(t.id, (t as any).format || (t.id === 'tourney_2' ? 'double' : 'single'), (t as any).teams || 8);
-        useTournamentStore.setState(state => ({
-          teams: [...state.teams.filter(st => st.tournament_id !== t.id), ...mock.teams],
-          matches: [...state.matches.filter(sm => sm.tournament_id !== t.id), ...mock.matches]
-        }));
-      });
-    }
+    if (typeof window === "undefined") return;
+    const isDemo = user?.isDemo || user?.role === "demo";
+    if (!isDemo) return;
+    if (storeTournaments.length > 0) return;
+    if (sessionStorage.getItem("picklers.demoTournamentsSeeded") === "1") return;
+
+    useTournamentStore.setState({ tournaments: DEMO_TOURNAMENTS as any });
+    DEMO_TOURNAMENTS.forEach(t => {
+      const mock = seedDemoBracketData(t.id, (t as any).format || (t.id === 'tourney_2' ? 'double' : 'single'), (t as any).teams || 8);
+      useTournamentStore.setState(state => ({
+        teams: [...state.teams.filter(st => st.tournament_id !== t.id), ...mock.teams],
+        matches: [...state.matches.filter(sm => sm.tournament_id !== t.id), ...mock.matches]
+      }));
+    });
+    sessionStorage.setItem("picklers.demoTournamentsSeeded", "1");
   }, [user, storeTournaments.length]);
   // Map our new tabs to store status if needed, or just mock it.
   // The prompt asks for: 'upcoming', 'ongoing', 'completed'
@@ -94,11 +106,11 @@ export default function OwnerTournaments() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="col-span-full py-24 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center text-center"
+              className="col-span-full py-24 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center"
             >
-              <Trophy className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white">No {tab} tournaments</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
+              <Trophy className="w-16 h-16 text-muted-foreground/40 mb-4" />
+              <h3 className="text-lg font-medium text-foreground">No {tab} tournaments</h3>
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                 Get started by creating a new tournament to see it listed here.
               </p>
             </motion.div>
@@ -151,7 +163,7 @@ export default function OwnerTournaments() {
                         e.stopPropagation();
                         router.push(`/app/owner/tournaments/${t.id}`);
                       }}
-                      className="w-full py-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 font-bold text-sm tracking-wide border border-emerald-500/20 hover:bg-emerald-500 hover:text-black transition-all flex items-center justify-center gap-2 group/btn active:scale-[0.97]"
+                      className="w-full py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 font-bold text-sm tracking-wide border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-2 group/btn active:scale-[0.97] cursor-pointer"
                     >
                       Manage Brackets
                       <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
@@ -167,7 +179,7 @@ export default function OwnerTournaments() {
       {/* Floating Create Button */}
       <button
         onClick={() => setIsDrawerOpen(true)}
-        className="fixed bottom-[calc(110px+env(safe-area-inset-bottom,0px))] right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-full text-white font-semibold text-sm shadow-2xl active:scale-[0.97] z-[30] transition-all"
+        className="fixed bottom-[calc(76px+env(safe-area-inset-bottom,12px))] right-6 md:bottom-8 md:right-8 flex items-center gap-2 px-5 py-3 rounded-full text-white font-semibold text-sm shadow-2xl active:scale-[0.97] z-[300] transition-all cursor-pointer"
         style={{
           background: "var(--accent-success)",
           boxShadow: "0 8px 32px rgba(0,217,139,0.4)",

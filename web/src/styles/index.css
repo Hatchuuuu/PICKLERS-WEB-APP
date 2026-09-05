@@ -1,6 +1,19 @@
 
 @import './tailwind.css';
 @import './theme.css';
+@import 'leaflet/dist/leaflet.css';
+
+/* Leaflet Dark Mode Map Styling (Scoped strictly to dark mode) */
+.dark .leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+.dark .leaflet-container {
+  background-color: #020617 !important;
+}
+.leaflet-container {
+  font-family: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;

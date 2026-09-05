@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
+import { getCache, setCache, generateCacheKey } from '@/lib/cacheUtils';
 
 async function createClient() {
   const cookieStore = await cookies();
@@ -39,12 +40,41 @@ const tournamentSchema = z.object({
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const tournamentId = params.id;
+    const resolvedParams = await params;
+    const tournamentId = resolvedParams.id;
 
+    // Create a normalized cache key based on tournament ID
+    const cacheKey = generateCacheKey('tournament-details', tournamentId);
+
+    // 1. Check HEURISTIC CACHE FIRST (longest TTL: 1 hour)
+    const cachedHeuristic = await getCache<any>(cacheKey);
+    if (cachedHeuristic !== null) {
+      return NextResponse.json({
+        data: cachedHeuristic.data,
+        cacheInfo: {
+          source: 'heuristic',
+          timestamp: cachedHeuristic.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // 2. Try to get from API cache (shorter TTL: 10 minutes)
+    const cachedAPI = await getCache<any>(`${cacheKey}:api`);
+    if (cachedAPI !== null) {
+      return NextResponse.json({
+        data: cachedAPI.data,
+        cacheInfo: {
+          source: 'api',
+          timestamp: cachedAPI.timestamp
+        }
+      }, { status: 200 });
+    }
+
+    // If not in cache, proceed with database query
     const { data: tournament, error } = await supabase
       .from('tournaments')
       .select('*')
@@ -56,9 +86,42 @@ export async function GET(
       return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
     }
 
-    return NextResponse.json(tournament);
+    const responseData = {
+      data: tournament,
+      cacheInfo: { source: 'api', timestamp: new Date().toISOString() }
+    };
+
+    // Store in heuristic cache (TTL: 1 hour = 3600 seconds)
+    await setCache(cacheKey, responseData, 3600);
+
+    // Store in API cache (TTL: 10 minutes = 600 seconds)
+    await setCache(`${cacheKey}:api`, responseData, 600);
+
+    return NextResponse.json(responseData, { status: 200 });
   } catch (error: any) {
     console.error('[TOURNAMENT_ID_GET]', error);
+
+    // Try to return cached data on error (fallback to stale cache)
+    try {
+      const resolvedParams = await params;
+      const tournamentId = resolvedParams.id;
+      const cacheKey = generateCacheKey('tournament-details', tournamentId);
+
+      const cachedData = await getCache<any>(cacheKey);
+      if (cachedData !== null) {
+        return NextResponse.json({
+          data: cachedData.data,
+          cacheInfo: {
+            source: 'fallback',
+            timestamp: cachedData.timestamp,
+            error: 'Using cached data due to error'
+          }
+        }, { status: 200 });
+      }
+    } catch (cacheError) {
+      console.error('[TOURNAMENT_ID_GET] Cache fallback error:', cacheError);
+    }
+
     return NextResponse.json(
       { error: error.message || 'Failed to fetch tournament' },
       { status: 500 }
@@ -68,11 +131,12 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const tournamentId = params.id;
+    const resolvedParams = await params;
+    const tournamentId = resolvedParams.id;
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -171,11 +235,12 @@ export async function PUT(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const tournamentId = params.id;
+    const resolvedParams = await params;
+    const tournamentId = resolvedParams.id;
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

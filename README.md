@@ -112,6 +112,7 @@ npm run cap:ios
 
 ## 📄 Documentation Index
 
+- 📚 [DOCUMENTATION.md](DOCUMENTATION.md) — **Complete project documentation (start here)**
 - 📘 [PRODUCT_SPEC.md](file:///c:/Users/Nitro/Desktop/PICKLERS%20WEB%20APP/PRODUCT_SPEC.md) — Product requirements and features
 - 🎨 [DESIGN_SYSTEM.md](file:///c:/Users/Nitro/Desktop/PICKLERS%20WEB%20APP/DESIGN_SYSTEM.md) — Design tokens, brand identity, and Tailwind rules
 - 💻 [TECH_STACK_WEB.md](file:///c:/Users/Nitro/Desktop/PICKLERS%20WEB%20APP/TECH_STACK_WEB.md) — Web architecture details

@@ -186,10 +186,21 @@ describe('BookingsTab - Cancellation Logic', () => {
 
   // Test the actual cancellation flow integration
   describe('Booking cancellation integration', () => {
-    test('should call setBookings with cancelled status when cancelling booking', () => {
+    beforeEach(() => {
+      vi.useRealTimers();
+    });
+
+    test('should call setBookings with cancelled status when cancelling booking', async () => {
       const setBookingsMock = vi.fn();
       const setJoinedMatchesMock = vi.fn();
       const showToastMock = vi.fn();
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          result: { refunded: true, refund_amount: 500 }
+        })
+      });
 
       // Mock the context values
       vi.mocked(useApp).mockReturnValue({
@@ -234,14 +245,13 @@ describe('BookingsTab - Cancellation Logic', () => {
         cancelButton.click();
       });
 
-      // Find and click the confirm cancel button inside the modal
-      const cancelButtons = screen.getAllByRole('button', { name: 'Cancel' });
-      const confirmCancelButton = cancelButtons[cancelButtons.length - 1];
-      expect(confirmCancelButton).toBeInTheDocument();
+      // Find and click the confirm button inside the modal
+      const confirmButton = screen.getByRole('button', { name: 'Yes' });
+      expect(confirmButton).toBeInTheDocument();
 
       // Click confirm cancel
-      act(() => {
-        confirmCancelButton.click();
+      await act(async () => {
+        confirmButton.click();
       });
 
       // Expect setBookings to be called with updated booking status
@@ -254,10 +264,17 @@ describe('BookingsTab - Cancellation Logic', () => {
       );
     });
 
-    test('should show warning toast when cancelling within 24 hours', () => {
+    test('should show warning toast when cancelling within 24 hours', async () => {
       const setBookingsMock = vi.fn();
       const setJoinedMatchesMock = vi.fn();
       const showToastMock = vi.fn();
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          result: { refunded: false, refund_amount: 0 }
+        })
+      });
 
       // Mock the context values
       vi.mocked(useApp).mockReturnValue({
@@ -302,14 +319,13 @@ describe('BookingsTab - Cancellation Logic', () => {
         cancelButton.click();
       });
 
-      // Find and click the confirm cancel button inside the modal
-      const cancelButtons = screen.getAllByRole('button', { name: 'Cancel' });
-      const confirmCancelButton = cancelButtons[cancelButtons.length - 1];
-      expect(confirmCancelButton).toBeInTheDocument();
+      // Find and click the confirm button inside the modal
+      const confirmButton = screen.getByRole('button', { name: 'Yes' });
+      expect(confirmButton).toBeInTheDocument();
 
       // Click confirm cancel
-      act(() => {
-        confirmCancelButton.click();
+      await act(async () => {
+        confirmButton.click();
       });
 
       // Expect setBookings to be called with updated booking status

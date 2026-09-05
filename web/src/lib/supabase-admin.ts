@@ -1,25 +1,21 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let _client: SupabaseClient | null = null;
-let _initError: Error | null = null;
 
 function getSupabaseAdmin(): SupabaseClient {
   if (_client) return _client;
-  if (_initError) throw _initError;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl) {
-    _initError = new Error("NEXT_PUBLIC_SUPABASE_URL is not set. Admin operations unavailable.");
-    throw _initError;
+    throw new Error("[FATAL] NEXT_PUBLIC_SUPABASE_URL is not set. Admin operations unavailable.");
   }
-  if (!supabaseServiceKey) {
-    _initError = new Error("SUPABASE_SERVICE_ROLE_KEY is not set. Admin operations unavailable.");
-    throw _initError;
+  if (!serviceRoleKey || serviceRoleKey === 'your-service-role-key-here' || serviceRoleKey.trim() === '') {
+    throw new Error("[FATAL] SUPABASE_SERVICE_ROLE_KEY is not set or invalid. Privileged admin operations require a valid service role key.");
   }
 
-  _client = createClient(supabaseUrl, supabaseServiceKey, {
+  _client = createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

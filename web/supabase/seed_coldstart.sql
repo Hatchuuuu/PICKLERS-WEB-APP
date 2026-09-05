@@ -113,8 +113,8 @@ BEGIN
   SELECT id, 'Court 2', 'Hard', 'Indoor', 180, 'available', false, true
   FROM public.facilities WHERE is_seed = true AND is_demo = false;
 
-  INSERT INTO public.courts (facility_id, name, surface, type, price, status, is_demo, is_seed)
-  SELECT id, 'Court 3', 'Clay', 'Outdoor', 140, 'occupied', false, true
+  INSERT INTO public.courts (facility_id, name, surface, type, price, status, occupied_from, occupied_until, occupied_by, is_demo, is_seed)
+  SELECT id, 'Court 3', 'Clay', 'Outdoor', 140, 'occupied', '09:00 AM', '11:00 AM', 'Marco V.', false, true
   FROM public.facilities WHERE is_seed = true AND is_demo = false;
 
   -- ---------------------------------------------------------------

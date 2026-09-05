@@ -296,19 +296,19 @@ export default function PlayTab() {
       {/* Filter Bottom Sheet */}
       <AnimatePresence>
         {isFilterOpen && (
-          <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="fixed inset-0 z-[600] flex flex-col justify-end">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsFilterOpen(false)}
-              className="absolute inset-0 bg-surface-base/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
             />
             <motion.div
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl mx-auto rounded-t-[32px] border-t shadow-2xl dark:shadow-[0_-8px_40px_rgba(0,0,0,0.4)] pb-safe bg-surface-base/95 border-border dark:bg-[#121923]/95 dark:border-white/[0.08] backdrop-blur-2xl"
+              className="relative w-full max-w-2xl mx-auto rounded-t-3xl border-t border-border dark:border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.5)] pb-safe bg-surface-overlay dark:bg-[#13223F] z-[610]"
             >
               <div className="p-6">
-                <div className="w-12 h-1.5 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 mx-auto mb-6" />
+                <div className="w-12 h-1.5 rounded-full bg-border hover:bg-muted-foreground/40 mx-auto mb-6" />
 
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-[22px] font-black text-foreground tracking-tight" >Filter & Sort</h2>
@@ -316,7 +316,7 @@ export default function PlayTab() {
                     <motion.button
                       onClick={() => { setFilterType("All"); setFilterSort("Recommended"); }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-sm font-bold text-accent-primary transition-colors hover:text-foreground"
+                      className="text-sm font-bold text-emerald-500 hover:text-emerald-400 transition-colors cursor-pointer"
                     >
                       Reset All
                     </motion.button>
@@ -325,20 +325,20 @@ export default function PlayTab() {
 
                 {/* Court Type */}
                 <div className="mb-8">
-                  <h3 className="text-[14px] font-bold text-foreground/60 mb-3 uppercase tracking-wider">Court Type</h3>
-                  <div className="flex gap-2 relative bg-surface-interactive/80 p-1.5 rounded-[20px]">
+                  <h3 className="text-[14px] font-bold text-muted-foreground mb-3 uppercase tracking-wider">Court Type</h3>
+                  <div className="flex gap-2 relative bg-surface-interactive p-1.5 rounded-2xl border border-border">
                     {(["All", "Indoor", "Outdoor"] as const).map(type => (
                       <motion.button
                         key={type}
                         onClick={() => setFilterType(type)}
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        className={`relative flex-1 py-3 rounded-[14px] text-[15px] font-bold transition-colors ${filterType === type ? "text-foreground" : "text-foreground hover:text-foreground/80"}`}
+                        className={`relative flex-1 py-3 rounded-xl text-[15px] font-bold transition-colors cursor-pointer ${filterType === type ? "text-white" : "text-foreground hover:text-foreground/80"}`}
                       >
                         {filterType === type && (
                           <motion.div
                             layoutId="courtTypePill"
-                            className="absolute inset-0 bg-accent-primary rounded-[14px] shadow-[0_4px_12px_rgba(0,217,139,0.3)]"
+                            className="absolute inset-0 bg-emerald-500 rounded-xl shadow-md"
                             style={{ zIndex: 0 }}
                           />
                         )}
@@ -350,7 +350,7 @@ export default function PlayTab() {
 
                 {/* Sort By */}
                 <div className="mb-8">
-                  <h3 className="text-[14px] font-bold text-foreground/60 mb-3 uppercase tracking-wider">Sort By</h3>
+                  <h3 className="text-[14px] font-bold text-muted-foreground mb-3 uppercase tracking-wider">Sort By</h3>
                   <div className="flex flex-col gap-2">
                     {(["Recommended", "Price (Low to High)", "Rating (High to Low)"] as const).map(sort => (
                       <motion.button
@@ -358,18 +358,11 @@ export default function PlayTab() {
                         onClick={() => setFilterSort(sort)}
                         whileTap={{ scale: 0.97 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        className={`relative flex items-center justify-between p-4 rounded-[16px] text-[15px] font-bold transition-all border border-solid ${filterSort === sort ? "border-transparent text-accent-primary" : "bg-transparent border-border text-foreground hover:bg-surface-interactive/80"}`}
+                        className={`relative flex items-center justify-between p-4 rounded-xl text-[15px] font-bold transition-all border border-solid cursor-pointer ${filterSort === sort ? "border-emerald-500 text-emerald-500 dark:text-emerald-400 bg-emerald-500/10" : "bg-surface-interactive border-border text-foreground hover:bg-surface-interactive/80"}`}
                       >
-                        {filterSort === sort && (
-                          <motion.div
-                            layoutId="sortPill"
-                            className="absolute inset-0 bg-accent-primary/10 border border-accent-primary rounded-[16px]"
-                            style={{ zIndex: 0 }}
-                          />
-                        )}
                         <span className="relative z-10">{sort}</span>
                         {filterSort === sort && (
-                          <div className="relative z-10 w-2.5 h-2.5 rounded-full bg-accent-primary shadow-[0_0_8px_rgba(0,217,139,0.8)]" />
+                          <div className="relative z-10 w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm" />
                         )}
                       </motion.button>
                     ))}
@@ -379,8 +372,7 @@ export default function PlayTab() {
                 <motion.button
                   onClick={() => setIsFilterOpen(false)}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full py-4 rounded-[18px] text-foreground text-[16px] font-black shadow-[0_0_24px_rgba(0,217,139,0.2)] transition-shadow hover:shadow-[0_0_32px_rgba(0,217,139,0.4)]"
-                  style={{ background: "var(--accent-primary)" }}
+                  className="w-full py-4 rounded-xl text-white text-[16px] font-black bg-emerald-500 hover:bg-emerald-400 shadow-md transition-all cursor-pointer"
                 >
                   Show Results
                 </motion.button>

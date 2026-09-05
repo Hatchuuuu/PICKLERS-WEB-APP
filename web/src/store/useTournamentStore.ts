@@ -28,10 +28,10 @@ interface TournamentState {
   addTournament: (tournamentId: string, name: string, format: string, numTeams: number, options?: { date?: string; prize?: string; playType?: string; scoringFormat?: ScoringFormat; playoffSize?: number; customTeamNames?: string[]; teamsData?: {name: string, p1?: string, p2?: string}[] }) => Promise<void>;
   updateTeam: (teamId: string, name: string, playerId?: string) => Promise<void>;
   submitScore: (matchId: string, games: Game[], scoringFormat?: ScoringFormat) => Promise<void>;
-  undoMatchResult: (matchId: string) => void;
+  undoMatchResult: (matchId: string) => Promise<void>;
   getMatch: (matchId: string) => Match | undefined;
   getTeam: (teamId: string | null) => Team | undefined;
-  advanceToPlayoffs: (tournamentId: string, topTeamIds: string[]) => void;
+  advanceToPlayoffs: (tournamentId: string, topTeamIds: string[]) => Promise<void>;
 }
 
 export const useTournamentStore = create<TournamentState>((set, get) => ({
@@ -60,7 +60,8 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
   },
 
   addTournament: async (tournamentId: string, name: string, format: string, numTeams: number, options: { date?: string; prize?: string; playType?: string; scoringFormat?: ScoringFormat; playoffSize?: number; customTeamNames?: string[]; teamsData?: {name: string, p1?: string, p2?: string}[] } = {}) => {
-    const teams = Array.from({ length: numTeams }, (_, i) => {
+    const validNumTeams = Math.max(2, Math.min(256, numTeams || 4));
+    const teams = Array.from({ length: validNumTeams }, (_, i) => {
       const customName = options.customTeamNames?.[i];
       return {
           id: `team_${i + 1}_${tournamentId}`,
@@ -90,7 +91,7 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
           id: tournamentId,
           name: name || "New Tournament",
           format,
-          teams_count: numTeams,
+          teams_count: validNumTeams,
           status: "active",
           date: options.date || null,
           prize: options.prize || null,
@@ -107,8 +108,8 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
             format, 
             division: "Open", 
             date: options.date || new Date().toLocaleDateString(), 
-            teams: numTeams, 
-            maxTeams: numTeams, 
+            teams: validNumTeams, 
+            maxTeams: validNumTeams, 
             status: "active", 
             prize: options.prize || "TBD",
             play_type: options.playType || "doubles",
@@ -118,35 +119,37 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
       }
 
       set(state => {
-        // Remove any existing matches/teams for this tournament if we are regenerating
-        const filteredTeams = state.teams.filter(t => t.tournament_id !== tournamentId);
-        const filteredMatches = state.matches.filter(m => m.tournament_id !== tournamentId);
+        const otherMatches = state.matches.filter(m => m.tournament_id !== tournamentId);
+        const otherTeams = state.teams.filter(t => t.tournament_id !== tournamentId);
         return {
-          teams: [...filteredTeams, ...teams],
-          matches: [...filteredMatches, ...newMatches]
-        }
+          matches: [...otherMatches, ...newMatches],
+          teams: [...otherTeams, ...teams]
+        };
       });
-    } catch (e) {
-      console.warn("Could not save tournament to Supabase:", e);
-      throw e;
+    } catch (e: unknown) {
+      console.warn("Supabase createTournament failed, keeping local state:", e);
+      // Fallback local memory state
+      set(state => ({
+        matches: [...state.matches.filter(m => m.tournament_id !== tournamentId), ...newMatches],
+        teams: [...state.teams.filter(t => t.tournament_id !== tournamentId), ...teams]
+      }));
     }
   },
 
   updateTeam: async (teamId: string, name: string, playerId?: string) => {
+    set(state => ({
+      teams: state.teams.map(t => t.id === teamId ? { ...t, name, player_id: playerId } : t)
+    }));
     try {
       await TournamentAPI.updateTeam(teamId, name, playerId);
-      set(state => ({
-          teams: state.teams.map(t => t.id === teamId ? { ...t, name, player_id: playerId } : t)
-      }));
-    } catch (e) {
+    } catch (e: unknown) {
       console.warn("Supabase updateTeam failed:", e);
-      throw e;
     }
   },
 
   submitScore: async (matchId: string, games: Game[], formatOverride?: ScoringFormat) => {
-    const { matches, tournaments } = get();
     try {
+      const { matches, tournaments } = get();
       const matchToUpdate = matches.find(m => m.id === matchId);
       const tournament = tournaments.find(t => t.id === matchToUpdate?.tournament_id);
       const scoringFormat = (formatOverride || tournament?.scoring_format || 'BEST_OF_3_TO_11') as ScoringFormat;
@@ -169,38 +172,48 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
   },
 
 
-  undoMatchResult: (matchId: string) => {
+  undoMatchResult: async (matchId: string) => {
+      const changedMatches: Match[] = [];
       set(state => {
-          const newMatches = [...state.matches];
-          const matchIndex = newMatches.findIndex(m => m.id === matchId);
+          const matchIndex = state.matches.findIndex(m => m.id === matchId);
           if (matchIndex === -1) return state;
 
-          const match = newMatches[matchIndex];
+          const match = state.matches[matchIndex];
           if (match.status !== 'COMPLETED') return state;
 
           const oldWinner = match.winner_id;
 
-          // Revert current match
-          newMatches[matchIndex] = {
+          // Revert current match immutably
+          const revertedMatch: Match = {
               ...match,
               status: 'PENDING',
               winner_id: null,
               loser_id: null
           };
+          changedMatches.push(revertedMatch);
 
-          // Remove winner from next match if they are there
-          if (match.next_match_winner_goes_to && oldWinner) {
-              const nextIndex = newMatches.findIndex(m => m.id === match.next_match_winner_goes_to);
-              if (nextIndex !== -1) {
-                  const nextMatch = { ...newMatches[nextIndex] };
-                  if (nextMatch.team1_id === oldWinner) nextMatch.team1_id = null;
-                  if (nextMatch.team2_id === oldWinner) nextMatch.team2_id = null;
-                  newMatches[nextIndex] = nextMatch;
-              }
-          }
+          const newMatches = state.matches.map((m, idx) => {
+            if (idx === matchIndex) return revertedMatch;
+            if (match.next_match_winner_goes_to && m.id === match.next_match_winner_goes_to && oldWinner) {
+              const nextMatch: Match = { ...m };
+              if (nextMatch.team1_id === oldWinner) nextMatch.team1_id = null;
+              if (nextMatch.team2_id === oldWinner) nextMatch.team2_id = null;
+              changedMatches.push(nextMatch);
+              return nextMatch;
+            }
+            return m;
+          });
 
           return { matches: newMatches };
       });
+
+      if (changedMatches.length > 0) {
+        try {
+          await TournamentAPI.undoMatch(matchId, changedMatches);
+        } catch (err) {
+          console.warn("Failed to sync undoMatchResult to database:", err);
+        }
+      }
   },
 
   getMatch: (matchId: string) => get().matches.find(m => m.id === matchId),
@@ -209,24 +222,56 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
     return get().teams.find(t => t.id === teamId);
   },
 
-  advanceToPlayoffs: (tournamentId: string, topTeamIds: string[]) => {
+  advanceToPlayoffs: async (tournamentId: string, topTeamIds: string[]) => {
+      const changedMatches: Match[] = [];
       set(state => {
-          const newMatches = [...state.matches];
-          
+          if (topTeamIds.length < 4) return state;
+
           // Find the round 101 playoff matches for this tournament
-          const playoffR1 = newMatches.filter(m => m.tournament_id === tournamentId && m.bracket_type === 'PLAYOFF' && m.round_number === 101).sort((a, b) => (a.match_sequence || 0) - (b.match_sequence || 0));
+          const playoffR1 = state.matches
+            .filter(m => m.tournament_id === tournamentId && m.bracket_type === 'PLAYOFF' && m.round_number === 101)
+            .sort((a, b) => (a.match_sequence || 0) - (b.match_sequence || 0));
           
-          if (playoffR1.length === 2 && topTeamIds.length >= 4) {
+          if (playoffR1.length === 2) {
               // Match 1: Seed 1 vs Seed 4
-              playoffR1[0].team1_id = topTeamIds[0];
-              playoffR1[0].team2_id = topTeamIds[3];
-              
+              const updatedM1: Match = {
+                ...playoffR1[0],
+                team1_id: topTeamIds[0],
+                team2_id: topTeamIds[3]
+              };
               // Match 2: Seed 2 vs Seed 3
-              playoffR1[1].team1_id = topTeamIds[1];
-              playoffR1[1].team2_id = topTeamIds[2];
+              const updatedM2: Match = {
+                ...playoffR1[1],
+                team1_id: topTeamIds[1],
+                team2_id: topTeamIds[2]
+              };
+              changedMatches.push(updatedM1, updatedM2);
+
+              const newMatches = state.matches.map(m => {
+                if (m.id === updatedM1.id) return updatedM1;
+                if (m.id === updatedM2.id) return updatedM2;
+                return m;
+              });
+
+              return { matches: newMatches };
           }
 
-          return { matches: newMatches };
+          return state;
       });
+
+      if (changedMatches.length > 0) {
+        try {
+          await Promise.all(
+            changedMatches.map(m =>
+              TournamentAPI.updateMatch(m.id, {
+                team1_id: m.team1_id,
+                team2_id: m.team2_id
+              })
+            )
+          );
+        } catch (err) {
+          console.warn("Failed to sync advanceToPlayoffs to database:", err);
+        }
+      }
   }
 }));

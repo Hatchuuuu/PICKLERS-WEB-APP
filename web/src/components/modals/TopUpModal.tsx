@@ -7,6 +7,7 @@ import { useWalletStore } from "@/store/useWalletStore";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePaymongo } from "@/hooks/usePaymongo";
+import { FocusTrap } from "@/components/a11y/FocusTrap";
 
 const AMOUNTS = [500, 1000, 2000, 5000];
 
@@ -33,13 +34,13 @@ export function TopUpModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4">
+      <div className="fixed inset-0 z-[600] flex items-end md:items-center justify-center p-0 md:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
           onClick={() => !isLoading && setTopUpModalOpen(false)}
         />
 
@@ -49,10 +50,11 @@ export function TopUpModal() {
           animate={{ y: 0, scale: 1, opacity: 1 }}
           exit={{ y: "100%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="relative w-full max-w-md bg-background md:rounded-[24px] rounded-t-[24px] rounded-b-none overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-border flex flex-col"
+          className="relative w-full max-w-md bg-surface-overlay dark:bg-[#13223F] md:rounded-[28px] rounded-t-[28px] rounded-b-none overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.5)] border border-border dark:border-white/12 flex flex-col"
         >
+          <FocusTrap onEscape={() => setTopUpModalOpen(false)} ariaLabel="Top up wallet credits">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-b from-white/[0.02] to-transparent">
+          <div className="flex items-center justify-between p-6 border-b border-border bg-surface-interactive/30">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-[14px] bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
                 <Wallet className="w-6 h-6 text-emerald-500" strokeWidth={2.5} />
@@ -64,7 +66,8 @@ export function TopUpModal() {
             </div>
             <button
               onClick={() => setTopUpModalOpen(false)}
-              className="w-8 h-8 rounded-full bg-surface-interactive flex items-center justify-center text-foreground/50 hover:text-foreground transition-colors"
+              aria-label="Close modal"
+              className="w-8 h-8 rounded-full bg-surface-interactive border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -73,7 +76,7 @@ export function TopUpModal() {
           <div className="p-5 flex flex-col gap-6">
             {/* Amount Selection */}
             <div>
-              <h3 className="text-sm font-medium tracking-tight mb-3 px-1">
+              <h3 className="text-sm font-bold text-foreground tracking-tight mb-3 px-1">
                 Select Amount
               </h3>
               <div className="grid grid-cols-2 gap-3 mb-3">
@@ -84,8 +87,8 @@ export function TopUpModal() {
                       key={amt}
                       onClick={() => setSelectedAmount(amt)}
                       className={cn(
-                        "relative py-3.5 rounded-[16px] text-[16px] font-bold transition-all z-0 overflow-hidden border shadow-sm",
-                        isActive ? "text-emerald-400 border-transparent" : "text-foreground/70 bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10"
+                        "relative py-3.5 rounded-[16px] text-[16px] font-bold transition-all z-0 overflow-hidden border shadow-sm cursor-pointer",
+                        isActive ? "text-emerald-600 dark:text-emerald-400 border-emerald-500/50 bg-emerald-500/10" : "text-foreground bg-surface-interactive border-border hover:bg-surface-interactive/80"
                       )}
                     >
                       {isActive && (
@@ -108,8 +111,8 @@ export function TopUpModal() {
                   setCustomAmount("");
                 }}
                 className={cn(
-                  "w-full relative py-3.5 px-5 rounded-[16px] text-[16px] font-bold transition-all z-0 overflow-hidden border flex items-center justify-between shadow-sm",
-                  selectedAmount === "custom" ? "text-emerald-400 border-transparent" : "text-foreground/70 bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10"
+                  "w-full relative py-3.5 px-5 rounded-[16px] text-[16px] font-bold transition-all z-0 overflow-hidden border flex items-center justify-between shadow-sm cursor-pointer",
+                  selectedAmount === "custom" ? "text-emerald-600 dark:text-emerald-400 border-emerald-500/50 bg-emerald-500/10" : "text-foreground bg-surface-interactive border-border hover:bg-surface-interactive/80"
                 )}
               >
                 {selectedAmount === "custom" && (
@@ -140,15 +143,15 @@ export function TopUpModal() {
 
             {/* Payment Method */}
             <div>
-              <h3 className="text-sm font-medium tracking-tight mb-3 px-1">
+              <h3 className="text-sm font-bold text-foreground tracking-tight mb-3 px-1">
                 Payment Method
               </h3>
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => setMethod("gcash")}
                   className={cn(
-                    "flex items-center gap-4 p-4 rounded-[16px] border transition-all active:scale-[0.98] shadow-sm",
-                    method === "gcash" ? "border-[#0055FE]/50 bg-[#0055FE]/10" : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]"
+                    "flex items-center gap-4 p-4 rounded-[16px] border transition-all active:scale-[0.98] shadow-sm cursor-pointer",
+                    method === "gcash" ? "border-[#0055FE]/60 bg-[#0055FE]/10" : "border-border bg-surface-interactive hover:bg-surface-interactive/80"
                   )}
                 >
                   <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center p-1.5 overflow-hidden shrink-0", method === "gcash" ? "bg-white shadow-[0_4px_12px_rgba(0,85,254,0.4)]" : "bg-white/10 border border-white/10")}>
@@ -166,11 +169,11 @@ export function TopUpModal() {
                 <button
                   onClick={() => setMethod("maya")}
                   className={cn(
-                    "flex items-center gap-4 p-4 rounded-[16px] border transition-all active:scale-[0.98] shadow-sm",
-                    method === "maya" ? "border-[#42d6a4]/50 bg-[#42d6a4]/10" : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]"
+                    "flex items-center gap-4 p-4 rounded-[16px] border transition-all active:scale-[0.98] shadow-sm cursor-pointer",
+                    method === "maya" ? "border-[#42d6a4]/60 bg-[#42d6a4]/10" : "border-border bg-surface-interactive hover:bg-surface-interactive/80"
                   )}
                 >
-                  <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center font-black text-lg", method === "maya" ? "bg-white text-zinc-900 shadow-[0_4px_12px_rgba(255,255,255,0.2)]" : "bg-white/5 text-foreground/50 border border-white/5")}>
+                  <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center font-black text-lg", method === "maya" ? "bg-white text-zinc-900 shadow-[0_4px_12px_rgba(255,255,255,0.2)]" : "bg-surface-base text-foreground border border-border")}>
                     M
                   </div>
                   <div className="flex flex-col items-start flex-1">
@@ -190,7 +193,7 @@ export function TopUpModal() {
             <button
               onClick={handleTopUp}
               disabled={amount <= 0 || isLoading}
-              className="relative w-full py-4 rounded-[16px] text-[16px] font-extrabold text-white shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 overflow-hidden"
+              className="relative w-full py-4 rounded-[16px] text-[16px] font-extrabold text-white shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 overflow-hidden cursor-pointer"
               style={{
                 background: method === "gcash" ? "linear-gradient(135deg, #0055FE 0%, #0030B5 100%)" : "linear-gradient(135deg, #2ED573 0%, #17A05D 100%)",
                 boxShadow: method === "gcash" ? "0 8px 30px rgba(0,85,254,0.4), inset 0 1px 1px rgba(255,255,255,0.2)" : "0 8px 30px rgba(46,213,115,0.4), inset 0 1px 1px rgba(255,255,255,0.4)"
@@ -221,6 +224,7 @@ export function TopUpModal() {
               </AnimatePresence>
             </button>
           </div>
+          </FocusTrap>
         </motion.div>
       </div>
     </AnimatePresence>

@@ -45,11 +45,11 @@ export function ChampionshipCelebration({ champion, tournamentName, onDismiss }:
 
   return (
     <motion.div
-      initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-      animate={{ opacity: 1, backdropFilter: 'blur(40px)' }}
-      exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="fixed inset-0 z-[600] flex items-center justify-center bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
     >
       {/* Dismiss Button */}
       <motion.button

@@ -23,13 +23,13 @@ async function makeSupabase() {
 /** DELETE /api/community/feed/[id] — delete own post */
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   const supabase = await makeSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const postId = params.id;
+  const { id: postId } = await params;
 
   // Verify ownership before deleting
   const { data: post } = await supabase

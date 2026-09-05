@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from "motion/react";
 import {
   LayoutDashboard, User, Settings,
-  Trophy, LogOut, Grid2x2, Bell, MessageCircle
+  Trophy, LogOut, Grid2x2, Bell, MessageCircle, Wallet
 } from "lucide-react";
 import { PicklersLogo } from "@/components/ui/PicklersLogo";
 import ShinyText from "@/components/ui/ShinyText";
@@ -19,7 +19,7 @@ import { useTournamentStore } from "@/store/useTournamentStore";
 import { OwnerProvider } from "@/contexts/OwnerContext";
 import { DemoBanner } from "@/components/shared/DemoBanner";
 
-type OwnerTabId = "owner-dashboard" | "owner-courts" | "owner-open-play" | "owner-tournaments" | "owner-messages" | "owner-notifications" | "owner-settings";
+type OwnerTabId = "owner-dashboard" | "owner-courts" | "owner-open-play" | "owner-tournaments" | "owner-earnings" | "owner-messages" | "owner-notifications" | "owner-settings";
 
 interface OwnerTab {
   id: OwnerTabId;
@@ -31,6 +31,7 @@ export const OWNER_TABS: OwnerTab[] = [
   { id: "owner-dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "owner-courts", label: "My Courts", icon: Grid2x2 },
   { id: "owner-tournaments", label: "Tournaments", icon: Trophy },
+  { id: "owner-earnings", label: "Earnings", icon: Wallet },
   { id: "owner-messages", label: "Messages", icon: MessageCircle },
   { id: "owner-settings", label: "Settings", icon: Settings },
 ];
@@ -179,7 +180,7 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
             <main className="flex-1 overflow-y-auto pb-[120px] md:pb-0 relative bg-background flex flex-col">
               {/* Mobile Premium Header */}
               <div
-                className="md:hidden sticky top-0 z-[100] flex items-center justify-between px-[15px] py-[6px] border-b border-white/10 bg-[#0A1628]/95 dark:bg-[#0A1628]/95 backdrop-blur-3xl saturate-200">
+                className="md:hidden sticky top-0 z-[100] flex items-center justify-between px-[15px] py-[6px] border-b border-border bg-surface-nav/95 backdrop-blur-3xl saturate-200">
                 <div className="flex items-center gap-1">
                   <PicklersLogo size={36} />
                   <ShinyText text="PICKLERS" className="text-[18px] font-black" style={{ fontFamily: "var(--font-montserrat), sans-serif", letterSpacing: "-0.02em", textTransform: "uppercase", lineHeight: "1.2", display: "inline-block", paddingTop: "4px", paddingBottom: "2px", paddingRight: "0.1em", marginLeft: "-8px" }} color="var(--ink-primary)" shineColor="#4abd96" speed={3} delay={0} />
@@ -200,12 +201,12 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
 
                     <AnimatePresence>
                       {showNotifs && (
-                        <NotificationDropdown onClose={() => setShowNotifs(false)} className="!fixed !top-[60px] !left-[15px] !right-[15px] !w-auto !max-w-none origin-top" />
+                        <NotificationDropdown onClose={() => setShowNotifs(false)} className="!fixed !top-[calc(56px+env(safe-area-inset-top,0px))] !left-[15px] !right-[15px] !w-auto !max-w-none origin-top" />
                       )}
                     </AnimatePresence>
                   </div>
 
-                  <button onClick={() => setShowLogoutConfirm(true)} className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px]">
+                  <button onClick={() => setShowLogoutConfirm(true)} className="relative w-9 h-9 rounded-full flex items-center justify-center p-[1.5px] active:scale-95 transition-transform overflow-hidden min-w-[44px] min-h-[44px] cursor-pointer">
                     <div className="absolute inset-0 w-full h-full"
                       style={{
                         background: "conic-gradient(from 180deg at 50% 50%, #10b981 0deg, #FBBF24 180deg, #10b981 360deg)"
@@ -239,7 +240,7 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
               </div>
             </main>
 
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-white/10 z-40 bg-[#0A1628] dark:bg-[#0A1628] backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.5)]" style={{ background: "#0A1628", paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-border z-[200] bg-surface-nav backdrop-blur-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.5)]" style={{ paddingBottom: "env(safe-area-inset-bottom, 8px)" }}>
               {OWNER_TABS.map(tab => {
                 const active = view === tab.id;
                 const Icon = tab.icon;
@@ -265,22 +266,42 @@ export default function OwnerLayout({ children }: { children?: React.ReactNode }
 
             <AnimatePresence>
               {showLogoutConfirm && (
-                <motion.div key="logout-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl" onClick={() => setShowLogoutConfirm(false)}>
-                  <motion.div key="logout-modal" initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center" onClick={e => e.stopPropagation()}>
-                    <div className="w-[340px] bg-background dark:bg-surface-base border border-border rounded-3xl shadow-2xl relative p-6 pb-7 text-center flex flex-col items-center">
-                      <div className="w-14 h-14 relative z-10 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-5 mt-2">
-                        <LogOut className="w-6 h-6 text-red-500" style={{ marginLeft: "-2px" }} strokeWidth={2.5} />
+                <motion.div
+                  key="logout-bg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  <motion.div
+                    key="logout-modal"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="relative w-full max-w-sm flex flex-col gap-2 z-[610] items-center"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="w-full max-w-[340px] bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] relative p-6 pb-6 text-center flex flex-col items-center">
+                      <div className="w-14 h-14 relative z-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 mt-2 text-red-500 dark:text-red-400">
+                        <LogOut className="w-6 h-6" style={{ marginLeft: "-2px" }} strokeWidth={2.5} />
                       </div>
-                      <h3 className="text-[19px] font-bold text-foreground tracking-tight mb-2">Sign Out?</h3>
-                      <p className="text-[14px] text-muted-foreground font-medium leading-relaxed px-1">
+                      <h3 className="text-lg font-bold text-foreground tracking-tight mb-2">Sign Out?</h3>
+                      <p className="text-xs text-muted-foreground font-medium leading-relaxed px-1">
                         You will need to sign in again to access the facility dashboard.
                       </p>
-                      <div className="flex gap-3 w-full mt-7">
-                        <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all active:scale-[0.98]">
+                      <div className="flex gap-2.5 w-full mt-6">
+                        <button
+                          onClick={() => setShowLogoutConfirm(false)}
+                          className="flex-1 py-3 rounded-xl text-xs font-semibold text-foreground bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-all active:scale-[0.98] cursor-pointer"
+                        >
                           Cancel
                         </button>
-                        <button onClick={() => { logout(); router.push("/auth"); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-red-500 hover:bg-red-600 transition-all active:scale-[0.98]">
+                        <button
+                          onClick={() => { logout(); router.push("/auth"); }}
+                          className="flex-1 py-3 rounded-xl text-xs font-bold text-white bg-red-500 hover:bg-red-600 shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                        >
                           Sign Out
                         </button>
                       </div>

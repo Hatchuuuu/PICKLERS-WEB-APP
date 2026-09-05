@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { CalendarDays, Wallet, AlertTriangle, Navigation, Map, PlusCircle, ArrowDownLeft, QrCode } from "lucide-react";
+import { CalendarDays, Wallet, AlertTriangle, Navigation, Map, PlusCircle, ArrowDownLeft, ArrowUpRight, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -25,15 +25,15 @@ export default function BookingsTab() {
   const { showToast } = useToast();
   const { data: wallet } = useWallet();
 
-  const [transactions, setTransactions] = useState<{ id: string; label: string; amount: string; date: string }[]>([]);
+  const [transactions, setTransactions] = useState<{ id: string; label: string; amount: string; date: string; isDebit: boolean }[]>([]);
 
   useEffect(() => {
     async function fetchTransactions() {
       const isDemo = user?.isDemo || user?.role === "demo";
       if (isDemo) {
         setTransactions([
-          { id: "1", label: "Refund — BGC Hub Court 2", amount: "+₱400", date: "Jun 28" },
-          { id: "2", label: "Refund — SM Southmall Court 1", amount: "+₱800", date: "Jun 15" },
+          { id: "1", label: "Refund — BGC Hub Court 2", amount: "+₱400", date: "Jun 28", isDebit: false },
+          { id: "2", label: "Refund — SM Southmall Court 1", amount: "+₱800", date: "Jun 15", isDebit: false },
         ]);
         return;
       }
@@ -47,12 +47,18 @@ export default function BookingsTab() {
           .order("created_at", { ascending: false });
 
         if (!error && data && data.length > 0) {
-          const formatted = data.map((t: any) => ({
-            id: t.id,
-            label: t.label,
-            amount: `+₱${Number(t.amount).toLocaleString()}`,
-            date: new Date(t.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric" }),
-          }));
+          const formatted = data.map((t: any) => {
+            const numAmount = Number(t.amount);
+            const isDebit = t.type === "payment" || numAmount < 0;
+            const absVal = Math.abs(numAmount);
+            return {
+              id: t.id,
+              label: t.label,
+              amount: `${isDebit ? "-" : "+"}₱${absVal.toLocaleString()}`,
+              date: new Date(t.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric" }),
+              isDebit,
+            };
+          });
           setTransactions(formatted);
         } else {
           setTransactions([]);
@@ -70,118 +76,123 @@ export default function BookingsTab() {
   async function handleCancelConfirm() {
     if (!cancelModal) return;
 
-    // Check if cancellation is within 24 hours
-    const isWithin24Hours = isBookingWithin24Hours(cancelModal.date, cancelModal.time);
+    try {
+      const res = await fetch("/api/bookings/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId: cancelModal.id }),
+      });
 
-    setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: "cancelled" } : b));
+      const data = await res.json();
 
-    // Clear joinedMatches for open play
-    if (cancelModal.id.startsWith("PKL-OP-")) {
-      const matchId = parseInt(cancelModal.id.replace("PKL-OP-", "").slice(0, -3));
-      if (!isNaN(matchId)) {
-        setJoinedMatches(prev => {
-          const next = new Set(prev);
-          next.delete(matchId);
-          return next;
-        });
+      if (!res.ok || data.error) {
+        showToast(data.error || "Failed to cancel booking.", "error");
+        setCancelModal(null);
+        return;
       }
-    }
 
-    // Show toast with appropriate message based on timing
-    if (isWithin24Hours) {
-      showToast(`Booking cancelled. No refund available for cancellations within 24 hours (venue policy applies).`, "error");
-    } else {
-      const refundAmount = cancelModal.total ?? cancelModal.price ?? 0;
-      const label = `Refund — ${cancelModal.court || cancelModal.facility}`;
-      const todayLabel = new Date().toLocaleDateString("en-PH", { month: "short", day: "numeric" });
-      
-      // Update local transactions state optimistically
-      setTransactions(prev => [{ id: String(Date.now()), label, amount: `+₱${refundAmount.toLocaleString()}`, date: todayLabel }, ...prev]);
+      setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: "cancelled" } : b));
 
-      // Save to Supabase if logged in and client exists
-      if (user?.id && supabase?.from) {
-        try {
-          await supabase.from("wallet_transactions").insert({
-            user_id: user.id,
-            label,
-            amount: refundAmount,
-            type: "refund"
+      // Clear joinedMatches for open play
+      if (cancelModal.id.startsWith("PKL-OP-")) {
+        const matchId = parseInt(cancelModal.id.replace("PKL-OP-", "").slice(0, -3));
+        if (!isNaN(matchId)) {
+          setJoinedMatches(prev => {
+            const next = new Set(prev);
+            next.delete(matchId);
+            return next;
           });
-        } catch (e) {
-          console.warn("Could not insert transaction to DB:", e);
         }
       }
 
-      showToast(`Booking cancelled. ₱${refundAmount.toLocaleString()} Pickle Credits refunded.`, "success");
+      const refundAmount = data.result?.refund_amount || 0;
+      if (data.result?.refunded) {
+        const label = `Refund — ${cancelModal.court || cancelModal.facility}`;
+        const todayLabel = new Date().toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+        setTransactions(prev => [{ id: String(Date.now()), label, amount: `+₱${refundAmount.toLocaleString()}`, date: todayLabel, isDebit: false }, ...prev]);
+        showToast(`Booking cancelled. ₱${refundAmount.toLocaleString()} Pickle Credits refunded.`, "success");
+      } else {
+        showToast("Booking cancelled. No refund available for cancellations within 24 hours (venue policy applies).", "error");
+      }
+    } catch (err: unknown) {
+      console.error("Error cancelling booking:", err);
+      showToast("Error processing cancellation. Please try again.", "error");
+    } finally {
+      setCancelModal(null);
     }
-    setCancelModal(null);
   }
 
-// Helper function to check if a booking is within 24 hours
+  // Helper function to check if a booking is within 24 hours of its
+  // start time. P1.3: the previous version parsed the date string three
+  // times (today/tomorrow/yesterday aliases, then `new Date(dateStr)`, then
+  // the time regex). It also had a silent fallback that returned
+  // `today === today` when the time format didn't match, which gave a
+  // false "within 24h" for any same-day booking. The new implementation
+  // does a single parse, accepts both 12h and 24h formats, and refuses
+  // ambiguous input rather than guessing.
   function isBookingWithin24Hours(dateStr: string, timeStr: string): boolean {
-    try {
-      // Get current time once to ensure consistency
-      const now = new Date();
-
-      // Parse the date string (handles formats like "Tomorrow", "Today", "July 20, 2026", etc.)
-      let bookingDate: Date;
-
-      // Today at 00:00:00
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      const lowerDate = dateStr.toLowerCase().trim();
-
-      if (lowerDate === "today") {
-        bookingDate = today;
-      } else if (lowerDate === "tomorrow") {
-        bookingDate = new Date(today);
-        bookingDate.setDate(bookingDate.getDate() + 1);
-      } else if (lowerDate === "yesterday") {
-        bookingDate = new Date(today);
-        bookingDate.setDate(bookingDate.getDate() - 1);
-      } else {
-        // Try to parse as a standard date format
-        const parsedDate = new Date(dateStr);
-        if (isNaN(parsedDate.getTime())) {
-          // If parsing fails, assume it's not within 24 hours to be safe
-          return false;
-        }
-        bookingDate = parsedDate;
-      }
-
-      // Parse the time string (format: "6:00 PM - 8:00 PM")
-      // We'll use the start time for our calculation
-      const timeMatch = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (!timeMatch) {
-        // If we can't parse the time, check if the date is today
-        return bookingDate.getTime() === now.getTime();
-      }
-
-      let hours = parseInt(timeMatch[1]);
-      const minutes = parseInt(timeMatch[2]);
-      const ampm = timeMatch[3].toUpperCase();
-
-      // Convert to 24-hour format
-      if (ampm === "PM" && hours !== 12) {
-        hours += 12;
-      } else if (ampm === "AM" && hours === 12) {
-        hours = 0;
-      }
-
-      // Set the booking date to the parsed time
-      bookingDate.setHours(hours, minutes, 0, 0);
-
-      // Calculate the difference in hours
-      const timeDiff = bookingDate.getTime() - now.getTime();
-      const hoursDiff = timeDiff / (1000 * 60 * 60);
-
-      // Return true if the booking is within 24 hours (and in the future)
-      return hoursDiff > 0 && hoursDiff <= 24;
-    } catch (error) {
-      // If there's any error in parsing, assume it's not within 24 hours to be safe
-      console.warn("Error parsing date/time for cancellation check:", error);
-      return false;
+    const startTime = parseBookingStart(dateStr, timeStr);
+    if (!startTime) {
+      // Refuse to refund: a booking we can't parse is conservatively
+      // treated as imminent. The product team should fix the data
+      // upstream rather than silently granting refunds on bad input.
+      console.warn('[bookings] unable to parse date/time for refund check', { dateStr, timeStr });
+      return true;
     }
+    const hoursUntil = (startTime.getTime() - Date.now()) / (1000 * 60 * 60);
+    return hoursUntil > 0 && hoursUntil <= 24;
+  }
+
+  // Single-pass parser. Accepts:
+  //   dateStr: "YYYY-MM-DD" (ISO), "Today", "Tomorrow", "Yesterday", or
+  //            any string Date() can parse unambiguously.
+  //   timeStr: "10:00 AM", "10:00am", "14:00", or a slot like
+  //            "10:00 AM – 11:00 AM" (we use the start).
+  function parseBookingStart(dateStr: string, timeStr: string): Date | null {
+    if (!dateStr) return null;
+    const lowerDate = dateStr.toLowerCase().trim();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let baseDate: Date | null = null;
+    if (lowerDate === 'today') {
+      baseDate = new Date(today);
+    } else if (lowerDate === 'tomorrow') {
+      baseDate = new Date(today);
+      baseDate.setDate(baseDate.getDate() + 1);
+    } else if (lowerDate === 'yesterday') {
+      baseDate = new Date(today);
+      baseDate.setDate(baseDate.getDate() - 1);
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      // ISO date: parse as LOCAL midnight, not UTC. `new Date("YYYY-MM-DD")`
+      // is UTC, which shifts by the timezone offset and gives wrong results.
+      const [y, m, d] = dateStr.split('-').map(Number);
+      if (!y || !m || !d) return null;
+      baseDate = new Date(y, m - 1, d, 0, 0, 0, 0);
+    } else {
+      const parsed = new Date(dateStr);
+      if (Number.isNaN(parsed.getTime())) return null;
+      baseDate = parsed;
+      baseDate.setHours(0, 0, 0, 0);
+    }
+    if (!baseDate) return null;
+
+    // Parse the start of the time slot. "10:00 AM – 11:00 AM" → "10:00 AM".
+    const timeOnly = (timeStr || '').split(/[–—\-]/)[0].trim();
+    if (!timeOnly) return null;
+
+    const m = timeOnly.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+    if (!m) return null;
+    let hours = parseInt(m[1], 10);
+    const minutes = parseInt(m[2], 10);
+    const ampm = (m[3] || '').toUpperCase();
+    if (hours < 0 || hours > 24 || minutes < 0 || minutes > 59) return null;
+    if (ampm === 'PM' && hours !== 12) hours += 12;
+    else if (ampm === 'AM' && hours === 12) hours = 0;
+    if (ampm === '' && hours > 23) return null;
+
+    baseDate.setHours(hours, minutes, 0, 0);
+    return baseDate;
   }
 
   return (
@@ -277,15 +288,25 @@ export default function BookingsTab() {
                 transactions.map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-400">
-                        <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border ${
+                        tx.isDebit 
+                          ? "bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400" 
+                          : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400"
+                      }`}>
+                        {tx.isDebit ? (
+                          <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                        ) : (
+                          <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-bold text-foreground dark:text-white truncate">{tx.label}</div>
                         <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{tx.date}</div>
                       </div>
                     </div>
-                    <span className="text-[15px] font-black text-emerald-600 dark:text-emerald-400 tracking-tight shrink-0">
+                    <span className={`text-[15px] font-black tracking-tight shrink-0 ${
+                      tx.isDebit ? "text-red-500 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"
+                    }`}>
                       {tx.amount}
                     </span>
                   </div>
@@ -385,42 +406,42 @@ export default function BookingsTab() {
       {/* Cancellation Modal */}
       <AnimatePresence>
         {cancelModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/70 backdrop-blur-md"
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
               onClick={() => setCancelModal(null)}
             />
             
             <motion.div 
-              initial={{ scale: 1.05, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}
-              className="relative z-10 w-full max-w-[360px]"
+              className="relative z-[610] w-full max-w-[360px]"
             >
-              <div className="bg-background/95 dark:bg-[#0d1527]/95 border border-border/80 dark:border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.7)] p-6 text-center flex flex-col items-center backdrop-blur-2xl">
-                 <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-4 shadow-lg shadow-red-500/10 text-red-500 dark:text-red-400">
-                   <AlertTriangle className="w-6.5 h-6.5 stroke-[2.5]" />
+              <div className="bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] p-6 text-center flex flex-col items-center">
+                 <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-4 text-red-500 dark:text-red-400">
+                   <AlertTriangle className="w-6 h-6 stroke-[2.5]" />
                  </div>
                  <h3 className="text-[20px] font-black text-foreground tracking-tight mb-2">Cancel Booking?</h3>
-                 <p className="text-[13.5px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed px-1 mb-2">
+                 <p className="text-[13.5px] text-muted-foreground font-medium leading-relaxed px-1 mb-2">
                    {isBookingWithin24Hours(cancelModal.date, cancelModal.time) ? (
-                    <>Cancel reservation for <span className="text-foreground dark:text-white font-extrabold">{cancelModal.court}</span>? <span className="text-red-500 dark:text-red-400 font-bold block mt-2 p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-[12.5px]">⚠️ No refund available for cancellations within 24 hours of start time (venue policy).</span></>
+                    <>Cancel reservation for <span className="text-foreground font-extrabold">{cancelModal.court}</span>? <span className="text-red-500 dark:text-red-400 font-bold block mt-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-[12.5px]">⚠️ No refund available for cancellations within 24 hours of start time (venue policy).</span></>
                    ) : (
-                    <>Cancel reservation for <span className="text-foreground dark:text-white font-extrabold">{cancelModal.court}</span>? You will receive <span className="text-emerald-600 dark:text-emerald-400 font-black">₱{(cancelModal.total ?? cancelModal.price ?? 0).toLocaleString()}</span> in Pickle Credits.</>
+                    <>Cancel reservation for <span className="text-foreground font-extrabold">{cancelModal.court}</span>? You will receive <span className="text-emerald-500 dark:text-emerald-400 font-black">₱{(cancelModal.total ?? cancelModal.price ?? 0).toLocaleString()}</span> in Pickle Credits.</>
                    )}
                  </p>
                  <div className="flex gap-3 w-full mt-5">
                    <button
                      type="button"
                      onClick={() => setCancelModal(null)}
-                     className="flex-1 py-3 rounded-xl text-[14px] font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10 transition-all active:scale-[0.98] shadow-sm"
+                     className="flex-1 py-3 rounded-xl text-[14px] font-bold text-foreground bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-all active:scale-[0.98] cursor-pointer"
                    >
                      No
                    </button>
                    <button
                      type="button"
                      onClick={handleCancelConfirm}
-                     className="flex-1 py-3 rounded-xl text-[14px] font-extrabold text-white bg-red-500 hover:bg-red-600 shadow-[0_4px_16px_rgba(239,68,68,0.35)] border border-red-400/30 transition-all active:scale-[0.98]"
+                     className="flex-1 py-3 rounded-xl text-[14px] font-extrabold text-white bg-red-500 hover:bg-red-600 shadow-md transition-all active:scale-[0.98] cursor-pointer"
                    >
                      Yes
                    </button>
@@ -434,6 +455,8 @@ export default function BookingsTab() {
       {navigatingTo && (
         <NavigationOverlay 
           destination={navigatingTo.facility} 
+          destLat={(navigatingTo as any).destLat || (navigatingTo as any).lat}
+          destLng={(navigatingTo as any).destLng || (navigatingTo as any).lng}
           onClose={() => setNavigatingTo(null)} 
         />
       )}

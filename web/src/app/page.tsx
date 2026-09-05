@@ -6,14 +6,11 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
   X, Menu, ArrowRight, Radio, Building, CalendarCheck, UserSearch,
-  Search, CalendarDays, CheckCircle2, ChevronDown, Instagram, Twitter, Facebook,
-  Star, ShieldCheck, CreditCard, Zap, Users, Trophy, Sun, Moon,
-  Loader2, ArrowUp
+  Search, CalendarDays, CheckCircle2, Instagram, Twitter, Facebook,
+  Star, ShieldCheck, CreditCard, Zap, Users, Trophy, Sun, Moon
 } from "lucide-react";
 import { Facility, MatchData } from "@/types";
 import { useTheme } from "next-themes";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 import { supabase } from "@/lib/supabase";
 import { PicklersLogo } from "@/components/ui/PicklersLogo";
@@ -23,10 +20,18 @@ import AnimatedContent from "@/components/ui/AnimatedContent";
 import CountUp from "@/components/ui/CountUp";
 import ShinyText from "@/components/ui/ShinyText";
 import { DraggableMarquee } from "@/components/shared/DraggableMarquee";
+import { LandingFAQ } from "@/components/landing/LandingFAQ";
+import { LandingAIChat } from "@/components/landing/LandingAIChat";
+import { LANDING_FAQS } from "@/components/landing/landingFaqs";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const shimmerStyles = `
   @keyframes shimmer {
     100% { transform: translateX(100%); }
+  }
+
+  .animate-[shimmer_1.5s_infinite] {
+    animation: shimmer 1.5s infinite linear;
   }
 `;
 
@@ -35,43 +40,6 @@ export default function LandingPage() {
   const [toggle, setToggle] = useState<"facilities" | "open-play">("facilities");
   const [isFetching, setIsFetching] = useState(true);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const [aiQuestion, setAiQuestion] = useState("");
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
-
-  const handleAiSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiQuestion.trim()) return;
-
-    setIsAiLoading(true);
-    setAiResponse(null);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: aiQuestion
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch response");
-      }
-
-      const data = await response.json();
-      setAiResponse(data.reply);
-    } catch (error) {
-      console.error(error);
-      setAiResponse("Sorry, I'm having trouble connecting right now. Please try again later!");
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
 
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -135,6 +103,11 @@ export default function LandingPage() {
   const navShadow = useTransform(scrollY, [0, 100], ["none", isDark ? "0 4px 24px rgba(0,0,0,0.4)" : "0 4px 24px rgba(0,0,0,0.06)"]);
   const navBlur = useTransform(scrollY, [0, 100], ["blur(0px)", "blur(20px)"]);
   const logoScale = useTransform(scrollY, [0, 100], [1, 0.95]);
+  // Respect user's motion preference for the spinning tracing beams
+  // (5 simultaneous infinite conic-gradient rotations: 1 hero + 4 stat cards).
+  // When reduced motion is on, the gradient is frozen at its initial angle
+  // and only the hover opacity transition remains.
+  const prefersReducedMotion = useReducedMotion();
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -146,6 +119,26 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-accent-primary/20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          // F-206: FAQ data is sourced from a single constant so the visual
+          // accordion and the structured-data block stay in lockstep. Adding
+          // or editing a FAQ in `landingFaqs.ts` updates both at once.
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: LANDING_FAQS.map((faq) => ({
+              "@type": "Question",
+              name: faq.q,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.a,
+              },
+            })),
+          }),
+        }}
+      />
       {/* Scroll-Linked Navbar */}
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12"
@@ -273,8 +266,12 @@ export default function LandingPage() {
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px]">
                 <motion.div
                   className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                  animate={prefersReducedMotion ? undefined : { rotate: 360 }}
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : { repeat: Infinity, duration: 4, ease: "linear" }
+                  }
                   style={{
                     background: "conic-gradient(from 0deg, transparent 0 120deg, #3b82f6 180deg, transparent 180deg 300deg, #3b82f6 360deg)"
                   }}
@@ -371,13 +368,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
 
               {/* Card 1 */}
-              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group"
-                style={{
-
-                  backdropFilter: "blur(24px)",
-                  WebkitBackdropFilter: "blur(24px)",
-                  boxShadow: "0 16px 32px -12px rgba(0,0,0,0.5)"
-                }}>
+              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group bg-surface-raised border border-border backdrop-blur-xl shadow-lg dark:shadow-[0_16px_32px_-12px_rgba(0,0,0,0.5)]">
 
                 {/* Soft Green Tracing Beam */}
                 <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-500 z-0"
@@ -388,8 +379,12 @@ export default function LandingPage() {
                     maskComposite: "exclude",
                   }}>
                   <motion.div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2"
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                    animate={prefersReducedMotion ? undefined : { rotate: 360 }}
+                    transition={
+                      prefersReducedMotion
+                        ? { duration: 0 }
+                        : { repeat: Infinity, duration: 4, ease: "linear" }
+                    }
                     style={{ background: "conic-gradient(from 0deg, transparent 60%, rgba(0, 217, 139, 0.3) 85%, var(--accent-primary) 100%)" }} />
                 </div>
 
@@ -398,17 +393,11 @@ export default function LandingPage() {
                 <div className="text-3xl md:text-[34px] leading-none font-bold tracking-tight mb-2.5 text-foreground" >
                   <CountUp from={0} to={142} duration={2} />+
                 </div>
-                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-foreground" >Venues</div>
+                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground" >Venues</div>
               </div>
 
               {/* Card 2 */}
-              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group"
-                style={{
-
-                  backdropFilter: "blur(24px)",
-                  WebkitBackdropFilter: "blur(24px)",
-                  boxShadow: "0 16px 32px -12px rgba(0,0,0,0.5)"
-                }}>
+              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group bg-surface-raised border border-border backdrop-blur-xl shadow-lg dark:shadow-[0_16px_32px_-12px_rgba(0,0,0,0.5)]">
 
                 {/* Soft Green Tracing Beam */}
                 <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-500 z-0"
@@ -419,8 +408,12 @@ export default function LandingPage() {
                     maskComposite: "exclude",
                   }}>
                   <motion.div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2"
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                    animate={prefersReducedMotion ? undefined : { rotate: 360 }}
+                    transition={
+                      prefersReducedMotion
+                        ? { duration: 0 }
+                        : { repeat: Infinity, duration: 4, ease: "linear" }
+                    }
                     style={{ background: "conic-gradient(from 0deg, transparent 60%, rgba(0, 217, 139, 0.3) 85%, var(--accent-primary) 100%)" }} />
                 </div>
 
@@ -429,17 +422,11 @@ export default function LandingPage() {
                 <div className="text-3xl md:text-[34px] leading-none font-bold tracking-tight mb-2.5 text-foreground" >
                   <CountUp from={0} to={12450} separator="," duration={2} />+
                 </div>
-                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-foreground" >Players</div>
+                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground" >Players</div>
               </div>
 
               {/* Card 3 */}
-              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group"
-                style={{
-
-                  backdropFilter: "blur(24px)",
-                  WebkitBackdropFilter: "blur(24px)",
-                  boxShadow: "0 16px 32px -12px rgba(0,0,0,0.5)"
-                }}>
+              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group bg-surface-raised border border-border backdrop-blur-xl shadow-lg dark:shadow-[0_16px_32px_-12px_rgba(0,0,0,0.5)]">
 
                 {/* Soft Green Tracing Beam (Staggered) */}
                 <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-500 z-0"
@@ -450,8 +437,12 @@ export default function LandingPage() {
                     maskComposite: "exclude",
                   }}>
                   <motion.div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2"
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 4, ease: "linear", delay: -2 }}
+                    animate={prefersReducedMotion ? undefined : { rotate: 360 }}
+                    transition={
+                      prefersReducedMotion
+                        ? { duration: 0 }
+                        : { repeat: Infinity, duration: 4, ease: "linear", delay: -2 }
+                    }
                     style={{
                       background: "conic-gradient(from 0deg, transparent 60%, rgba(0, 217, 139, 0.3) 85%, var(--accent-primary) 100%)"
                     }} />
@@ -462,17 +453,11 @@ export default function LandingPage() {
                 <div className="text-3xl md:text-[34px] leading-none font-bold tracking-tight mb-2.5 flex items-center justify-center gap-1 text-foreground" >
                   <CountUp from={0} to={5} duration={1.5} />–<CountUp from={0} to={10} duration={1.5} />%
                 </div>
-                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-foreground" >Service Fee</div>
+                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground" >Service Fee</div>
               </div>
 
               {/* Card 4 */}
-              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group"
-                style={{
-
-                  backdropFilter: "blur(24px)",
-                  WebkitBackdropFilter: "blur(24px)",
-                  boxShadow: "0 16px 32px -12px rgba(0,0,0,0.5)"
-                }}>
+              <div className="flex flex-col items-center justify-center text-center p-6 md:p-8 rounded-2xl relative overflow-hidden group bg-surface-raised border border-border backdrop-blur-xl shadow-lg dark:shadow-[0_16px_32px_-12px_rgba(0,0,0,0.5)]">
 
                 {/* Soft Green Tracing Beam (Staggered) */}
                 <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-500 z-0"
@@ -483,8 +468,12 @@ export default function LandingPage() {
                     maskComposite: "exclude",
                   }}>
                   <motion.div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2"
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 4, ease: "linear", delay: -2 }}
+                    animate={prefersReducedMotion ? undefined : { rotate: 360 }}
+                    transition={
+                      prefersReducedMotion
+                        ? { duration: 0 }
+                        : { repeat: Infinity, duration: 4, ease: "linear", delay: -2 }
+                    }
                     style={{
                       background: "conic-gradient(from 0deg, transparent 60%, rgba(0, 217, 139, 0.3) 85%, var(--accent-primary) 100%)"
                     }} />
@@ -495,7 +484,7 @@ export default function LandingPage() {
                 <div className="text-3xl md:text-[34px] leading-none font-bold tracking-tight mb-2.5 flex items-baseline justify-center gap-1 text-foreground" >
                   <CountUp from={0} to={200} duration={2} /><span className="text-[18px] md:text-[22px] font-medium text-foreground/40">/day</span>
                 </div>
-                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-foreground" >Signups</div>
+                <div className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground" >Signups</div>
               </div>
 
             </div>
@@ -536,10 +525,12 @@ export default function LandingPage() {
               transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }} />
             {(["facilities", "open-play"] as const).map((val, idx) => (
               <button key={val} onClick={() => handleToggle(val)}
-                className="relative z-10 w-[140px] sm:w-[160px] flex items-center justify-center py-2 rounded-full text-[13.5px] sm:text-[14.5px] font-bold tracking-tight transition-colors duration-300"
+                className={`relative z-10 w-[140px] sm:w-[160px] flex items-center justify-center py-2 rounded-full text-[13.5px] sm:text-[14.5px] font-bold tracking-tight transition-colors duration-300 ${
+                  toggle === val ? "text-white" : "text-muted-foreground hover:text-foreground"
+                }`}
                 style={{
                   WebkitFontSmoothing: "antialiased",
-                  textShadow: toggle === val ? "0 1px 2px rgba(0,0,0,0.1)" : "none"
+                  textShadow: toggle === val ? "0 1px 2px rgba(0,0,0,0.15)" : "none"
                 }}>
                 {idx === 0 ? "Pickle Facilities" : "Open Play"}
               </button>
@@ -774,168 +765,25 @@ export default function LandingPage() {
             </div>
           </AnimatedContent>
 
-          <div className="flex flex-col gap-3">
-            {[
-              { q: "Is Picklers free to use?", a: "Yes, joining the platform and browsing venues is completely free. You only pay for the courts you book or the open play sessions you join, plus a small platform fee." },
-              { q: "How do cancellations work?", a: "You can cancel any booking up to 24 hours in advance for a full refund. Cancellations made within 24 hours are subject to the venue's specific policy." },
-              { q: "Can I host my own private matches?", a: "Absolutely. You can book a court and keep it private for your group, or open it up for others to join and split the cost." },
-              { q: "Are there skill levels for open play?", a: "Yes! Every open play session displays the target skill level (Beginner, Intermediate, Advanced), so you'll always find a match that fits your competitive level." }
-            ].map((faq, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1], delay: i * 0.05 }}
-                className={`overflow-hidden rounded-2xl transition-colors duration-300 cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${openFaq === i ? 'bg-black/[0.04] border-black/[0.08] dark:bg-white/[0.04] dark:border-white/[0.08]' : 'bg-black/[0.02] border-black/[0.04] dark:bg-white/[0.02] dark:border-white/[0.04]'}`}
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                role="button"
-                tabIndex={0}
-                aria-expanded={openFaq === i}
-                aria-controls={`faq-answer-${i}`}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setOpenFaq(openFaq === i ? null : i);
-                  }
-                }}
-              >
-                <div className="px-6 py-5 flex items-center justify-between">
-                  <h4 className="text-base font-semibold tracking-tight pr-4 text-foreground" id={`faq-question-${i}`}>
-                    {faq.q}
-                  </h4>
-                  <motion.div
-                    animate={{ rotate: openFaq === i ? 180 : 0 }}
-                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                    className="text-emerald-500/70"
-                  >
-                    <ChevronDown className="w-5 h-5" />
-                  </motion.div>
-                </div>
-                <AnimatePresence initial={false}>
-                  {openFaq === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                      id={`faq-answer-${i}`}
-                      role="region"
-                      aria-labelledby={`faq-question-${i}`}
-                    >
-                      <div className="px-6 pb-5 pt-0 text-[15px] leading-relaxed" style={{ color: "var(--ink-muted)" }}>
-                        <motion.div
-                          initial={{ y: -8 }}
-                          animate={{ y: 0 }}
-                          exit={{ y: -8 }}
-                          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                        >
-                          {faq.a}
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))}
-          </div>
+          <LandingFAQ />
 
           {/* AI FAQ Box */}
-          <div className="mt-12 p-6 md:p-8 rounded-2xl relative overflow-hidden bg-surface-raised border border-border backdrop-blur-xl group">
-
-            <div className="relative z-10 flex flex-col gap-5">
-              <div className="flex items-center gap-3 md:gap-5">
-                <img src="/prend-chatbot-logo.svg" alt="Prend Picklers Chatbot" className="w-12 md:w-20 h-12 md:h-20 object-contain drop-shadow-md shrink-0" />
-                <div className="flex flex-col justify-center">
-                  <h3 className="text-xl md:text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Ask Prend Anything</h3>
-                  <p className="text-[14px] md:text-[15px] text-foreground/60 mt-0.5 font-medium">Can't find your answer? Ask Prend, our smart assistant.</p>
-                </div>
-              </div>
-
-              <form onSubmit={handleAiSubmit} className="relative mt-2 flex items-center">
-                <input
-                  type="text"
-                  value={aiQuestion}
-                  onChange={(e) => setAiQuestion(e.target.value)}
-                  placeholder="e.g. Can I bring my own paddle?"
-                  className="w-full h-14 pl-5 pr-16 rounded-2xl bg-white/[0.03] dark:bg-white/[0.02] border border-black/10 dark:border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-[#00a4d3]/40 focus:border-[#00a4d3] hover:bg-black/[0.06] dark:hover:bg-white/[0.04] transition-all duration-300 text-[15px]"
-                />
-                <button
-                  type="submit"
-                  disabled={isAiLoading || !aiQuestion.trim()}
-                  className="absolute right-2 top-2 bottom-2 w-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-[#4cbd96] to-[#00a4d3] text-white shadow-[0_4px_16px_rgba(0,164,211,0.25)] hover:shadow-[0_4px_24px_rgba(0,164,211,0.45)] hover:brightness-110 disabled:opacity-50 disabled:hover:brightness-100 disabled:hover:shadow-[0_4px_16px_rgba(0,164,211,0.2)] transition-all duration-300 active:scale-[0.95]"
-                >
-                  {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowUp className="w-5 h-5" strokeWidth={2.5} />}
-                </button>
-              </form>
-
-              <AnimatePresence>
-                {aiResponse && !isAiLoading && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                    className="mt-4 p-5 md:p-6 rounded-2xl border shadow-[0_10px_40px_-15px_rgba(0,164,211,0.15)] backdrop-blur-3xl bg-white/[0.03] dark:bg-[#00a4d3]/[0.03] border-black/10 dark:border-white/10 text-foreground relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#00a4d3]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#4cbd96]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
-                    <div className="flex gap-4">
-                      <img src="/prend-chatbot-logo.svg" alt="Prend Picklers Chatbot" className="w-7 h-7 shrink-0 mt-0 drop-shadow-[0_0_8px_rgba(76,189,150,0.4)] object-contain" />
-                      <div className="text-[15px] md:text-[16px] leading-relaxed w-full overflow-hidden text-foreground/90 font-medium">
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            p: ({ node, ...props }) => <p className="mb-3 last:mb-0 text-foreground/90" {...props} />,
-                            strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
-                            ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 last:mb-0 space-y-1 text-foreground/90" {...props} />,
-                            ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 last:mb-0 space-y-1 text-foreground/90" {...props} />,
-                            li: ({ node, ...props }) => <li {...props} />,
-                            a: ({ node, ...props }) => <a className="underline decoration-emerald-500/50 hover:decoration-emerald-500 text-emerald-600 dark:text-emerald-400 underline-offset-4" {...props} />,
-                            table: ({ node, ...props }) => <div className="overflow-x-auto mb-3 last:mb-0 bg-black/5 dark:bg-white/5 rounded-xl border border-border"><table className="w-full text-left border-collapse text-sm text-foreground/90" {...props} /></div>,
-                            th: ({ node, ...props }) => <th className="border-b border-border py-2.5 px-3 font-semibold bg-black/5 dark:bg-white/5 text-foreground" {...props} />,
-                            td: ({ node, ...props }) => <td className="border-b border-border py-2 px-3 last:border-0" {...props} />,
-                            h1: ({ node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2 text-foreground" {...props} />,
-                            h2: ({ node, ...props }) => <h2 className="text-lg font-bold mt-4 mb-2 text-foreground" {...props} />,
-                            h3: ({ node, ...props }) => <h3 className="text-md font-bold mt-3 mb-2 text-foreground" {...props} />,
-                            code: ({ node, ...props }) => <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded-md text-[13px] font-mono text-foreground" {...props} />,
-                          }}
-                        >
-                          {aiResponse}
-                        </ReactMarkdown>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {isAiLoading && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-4 overflow-hidden"
-                  >
-                    <div className="p-5 md:p-6 rounded-2xl border shadow-[0_10px_40px_-15px_rgba(0,164,211,0.15)] backdrop-blur-3xl bg-white/[0.03] dark:bg-[#00a4d3]/[0.03] border-black/10 dark:border-white/10 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-[#00a4d3]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
-                      <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#4cbd96]/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
-                      <div className="flex gap-4 animate-pulse relative z-10">
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 shrink-0" />
-                        <div className="w-full space-y-2.5 mt-1">
-                          <div className="h-3 bg-emerald-500/20 rounded-full w-full" />
-                          <div className="h-3 bg-emerald-500/20 rounded-full w-5/6" />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+          <LandingAIChat />
         </div>
       </section>
 
 
-      {/* Premium Grid Footer */}
+      {/* Skeleton loading shimmer animation */}
+<style dangerouslySetInnerHTML={{ __html: `
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+
+  .animate-[shimmer_1.5s_infinite] {
+    animation: shimmer 1.5s infinite linear;
+  }
+`}} />
+{/* Premium Grid Footer */}
       <footer className="px-6 py-16 md:py-24 border-t border-solid" style={{ borderColor: "var(--border-subtle)", background: "var(--surface-base)" }}>
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">

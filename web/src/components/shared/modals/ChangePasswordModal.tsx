@@ -118,39 +118,41 @@ export function ChangePasswordModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="relative z-10 w-full max-w-[400px] flex flex-col items-center"
+            initial={{ scale: 0.96, opacity: 0, y: 10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.96, opacity: 0, y: 10 }}
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+            className="relative z-[610] w-full max-w-[400px] flex flex-col items-center"
           >
-            <div className="w-full flex flex-col items-center gap-4 px-6 py-6 rounded-[var(--radius-xl)] border shadow-xl backdrop-blur-2xl bg-background/95 border-border/50 relative">
+            <div className="w-full flex flex-col items-center gap-4 px-6 py-6 rounded-3xl border border-border dark:border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.5)] bg-surface-overlay dark:bg-[#13223F] relative">
               <button
+                type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+                aria-label="Close password modal"
+                className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-surface-interactive hover:bg-surface-interactive/80 dark:bg-white/10 dark:hover:bg-white/20 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4 text-muted-foreground" />
+                <X className="w-4 h-4" />
               </button>
 
               {/* Icon Header */}
-              <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-1 shadow-[0_10px_40px_rgba(16,185,129,0.15)]">
-                <KeyRound className="w-6 h-6 text-emerald-500" />
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mb-1 shadow-sm text-emerald-500 dark:text-emerald-400">
+                <KeyRound className="w-6 h-6 stroke-[2.2]" />
               </div>
 
               <div className="flex flex-col items-center text-center w-full">
-                <h3 className="text-[18px] font-bold text-foreground leading-tight mb-1">
+                <h3 className="text-lg font-bold text-foreground leading-tight mb-1" style={{ fontFamily: "var(--font-outfit), var(--font-montserrat), sans-serif" }}>
                   Change Password
                 </h3>
-                <p className="text-[13px] text-muted-foreground font-medium mb-4">
+                <p className="text-xs text-muted-foreground font-medium mb-4">
                   Update your security credentials for Picklers.
                 </p>
 
                 {/* Pure OAuth Social Login Notice */}
                 {isPureOAuth ? (
-                  <div className="w-full p-4 rounded-xl border bg-amber-500/10 border-amber-500/20 text-amber-500 dark:text-amber-400 text-left mb-3 flex items-start gap-3">
+                  <div className="w-full p-4 rounded-2xl border bg-amber-500/10 border-amber-500/20 text-amber-500 dark:text-amber-400 text-left mb-3 flex items-start gap-3">
                     <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
                     <div className="text-[12px] font-medium leading-relaxed">
                       <strong className="block text-[13px] font-bold mb-0.5">Social Login Active</strong>
@@ -171,7 +173,7 @@ export function ChangePasswordModal({
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           disabled={isProcessing}
-                          className="w-full px-4 py-2.5 pr-10 rounded-[var(--radius-md)] text-[14px] font-medium outline-none bg-secondary border border-border text-foreground focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all disabled:opacity-50"
+                          className="w-full px-4 py-2.5 pr-10 rounded-2xl text-xs sm:text-sm font-medium outline-none bg-surface-interactive/70 dark:bg-white/[0.06] border border-border dark:border-white/12 text-foreground focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50"
                         />
                         <button
                           type="button"
@@ -195,7 +197,7 @@ export function ChangePasswordModal({
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           disabled={isProcessing}
-                          className="w-full px-4 py-2.5 pr-10 rounded-[var(--radius-md)] text-[14px] font-medium outline-none bg-secondary border border-border text-foreground focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-all disabled:opacity-50"
+                          className="w-full px-4 py-2.5 pr-10 rounded-2xl text-xs sm:text-sm font-medium outline-none bg-surface-interactive/70 dark:bg-white/[0.06] border border-border dark:border-white/12 text-foreground focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50"
                         />
                         <button
                           type="button"
@@ -214,7 +216,7 @@ export function ChangePasswordModal({
                           <span className="text-muted-foreground">Password Strength</span>
                           <span className={getStrengthLabel().text}>{getStrengthLabel().label}</span>
                         </div>
-                        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden flex gap-1">
+                        <div className="h-1.5 w-full bg-surface-interactive dark:bg-white/10 rounded-full overflow-hidden flex gap-1">
                           <div className={`h-full flex-1 transition-all duration-300 ${strengthScore >= 1 ? getStrengthLabel().color : "bg-border"}`} />
                           <div className={`h-full flex-1 transition-all duration-300 ${strengthScore >= 2 ? getStrengthLabel().color : "bg-border"}`} />
                           <div className={`h-full flex-1 transition-all duration-300 ${strengthScore >= 3 ? getStrengthLabel().color : "bg-border"}`} />
@@ -242,12 +244,12 @@ export function ChangePasswordModal({
                     <button
                       type="submit"
                       disabled={isProcessing || !isMinLength || !hasNumOrSymbol || !isMatching}
-                      className="w-full py-3 mt-2 rounded-[var(--radius-md)] text-[14px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full py-3.5 mt-2 rounded-2xl font-bold text-xs sm:text-sm text-white bg-emerald-500 hover:bg-emerald-400 border border-emerald-400/40 shadow-lg active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer uppercase tracking-wider"
                     >
                       {isProcessing ? (
                         <>
-                          <div className="w-4 h-4 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
-                          Updating...
+                          <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                          <span>Updating...</span>
                         </>
                       ) : (
                         "Save New Password"
@@ -262,7 +264,7 @@ export function ChangePasswordModal({
                     type="button"
                     onClick={handleSendResetEmail}
                     disabled={isSendingResetEmail}
-                    className="text-[12px] font-medium text-muted-foreground hover:text-emerald-500 transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
+                    className="text-[12px] font-medium text-muted-foreground hover:text-emerald-500 transition-colors inline-flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                   >
                     <Mail className="w-3.5 h-3.5" />
                     {isSendingResetEmail ? "Sending reset link..." : "Send password reset link to email"}

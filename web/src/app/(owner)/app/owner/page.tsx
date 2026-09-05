@@ -6,7 +6,7 @@ import { X, Check, Eye, EyeOff, Camera, TrendingUp, Clock, Users, UserCheck, Arr
 
 import { CourtCard } from "@/components/owner/CourtCard";
 import { useAppUIStore } from "@/store/useUIStore";
-import { useLiveCourts, useUpdateCourt, useBookingRequests, useResolveRequest } from "@/hooks/useCourts";
+import { useLiveCourts, useUpdateCourt, useBookingRequests, useResolveRequest, useOwnerMetrics } from "@/hooks/useCourts";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +41,19 @@ function PesoIcon({ className }: { className?: string }) {
   return <span className={cn("font-black text-sm sm:text-base leading-none select-none flex items-center justify-center", className)}>₱</span>;
 }
 
+function formatCurrency(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "₱0";
+  if (n >= 1_000_000) return `₱${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `₱${(n / 1_000).toFixed(1)}k`;
+  return `₱${Math.round(n).toLocaleString()}`;
+}
+
+function formatDelta(pct: number | null): string {
+  if (pct === null) return "—";
+  const sign = pct >= 0 ? "+" : "";
+  return `${sign}${pct}%`;
+}
+
 export default function OwnerDashboard() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -57,6 +70,11 @@ export default function OwnerDashboard() {
   const requests = isDemo && fetchedRequests.length === 0 ? DEMO_BOOKING_REQUESTS : fetchedRequests;
 
   const { mutate: resolveRequest } = useResolveRequest();
+
+  // F-800: real owner metrics. Replaces the hardcoded literal array
+  // (₱48,200 monthly revenue / 12 active bookings / 8 new players) that
+  // every owner used to see. The hook returns zeros until the data lands.
+  const ownerMetrics = useOwnerMetrics(user?.id);
 
   const [requestSuccess, setRequestSuccess] = useState<{ msg: string, type: "success" | "danger" } | null>(null);
   const [declineModalId, setDeclineModalId] = useState<string | null>(null);
@@ -171,11 +189,46 @@ export default function OwnerDashboard() {
           >
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               {[
-                { label: "Monthly Revenue", value: "₱48,200", change: "+12%", icon: PesoIcon, color: "emerald", isPositive: true },
-                { label: "Repeaters", value: "45%", change: "-2%", icon: UserCheck, color: "emerald", isPositive: false },
-                { label: "Today's Revenue", value: "₱3,200", change: "+5%", icon: TrendingUp, color: "cyan", isPositive: true },
-                { label: "Active Bookings", value: "12", change: "Live", icon: Clock, color: "amber", isPositive: true },
-                { label: "New Players", value: "8", change: "Today", icon: Users, color: "purple", isPositive: true },
+                {
+                  label: "Monthly Revenue",
+                  value: formatCurrency(ownerMetrics.monthlyRevenue),
+                  change: formatDelta(ownerMetrics.monthlyRevenueDeltaPct),
+                  icon: PesoIcon,
+                  color: "emerald",
+                  isPositive: (ownerMetrics.monthlyRevenueDeltaPct ?? 0) >= 0,
+                },
+                {
+                  label: "Repeaters",
+                  value: ownerMetrics.repeaterRatePct === null ? "—" : `${ownerMetrics.repeaterRatePct}%`,
+                  change: ownerMetrics.repeaterRatePct === null ? "—" : "90d",
+                  icon: UserCheck,
+                  color: "emerald",
+                  isPositive: true,
+                },
+                {
+                  label: "Today's Revenue",
+                  value: formatCurrency(ownerMetrics.todayRevenue),
+                  change: "Live",
+                  icon: TrendingUp,
+                  color: "cyan",
+                  isPositive: true,
+                },
+                {
+                  label: "Active Bookings",
+                  value: String(ownerMetrics.activeBookings),
+                  change: "Live",
+                  icon: Clock,
+                  color: "amber",
+                  isPositive: true,
+                },
+                {
+                  label: "New Players",
+                  value: String(ownerMetrics.newPlayersLast7d),
+                  change: "7d",
+                  icon: Users,
+                  color: "purple",
+                  isPositive: true,
+                },
               ].map((m, index) => {
                 const Icon = m.icon;
                 const isGoingUp = m.isPositive;
@@ -186,7 +239,7 @@ export default function OwnerDashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className={cn(
-                      "p-4 sm:p-5 rounded-[24px] bg-[#0C172E] border border-white/15 shadow-xl hover:border-emerald-500/40 transition-all flex flex-col justify-between group relative overflow-hidden",
+                      "p-4 sm:p-5 rounded-[24px] bg-surface-raised dark:bg-surface-nav-elevated border border-border dark:border-white/15 shadow-xl hover:border-emerald-500/40 transition-all flex flex-col justify-between group relative overflow-hidden",
                       index === 0 ? "col-span-2 lg:col-span-5" : ""
                     )}
                   >
@@ -216,7 +269,7 @@ export default function OwnerDashboard() {
                     </div>
 
                     <div>
-                      <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                      <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
                         {m.label}
                       </div>
                       <div className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
@@ -437,15 +490,41 @@ export default function OwnerDashboard() {
               </div>
             ) : requests.map(r => (
               <div key={r.id} className="rounded-2xl p-5 transition-all bg-surface-base shadow-lg border border-border dark:bg-white/[0.02] dark:border-white/[0.05] dark:border-t-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl relative">
-                <div className="flex items-start justify-between mb-0.5">
-                  <div className="text-[15px] font-bold text-foreground tracking-tight pr-2">{r.player_name}</div>
+                <div className="flex items-start justify-between mb-1">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-[15px] font-bold text-foreground tracking-tight">{r.player_name || r.player}</div>
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold uppercase">Nickname</span>
+                    </div>
+                    <div className="text-[12px] text-muted-foreground mt-0.5">{r.court_name || r.court} · {r.time}</div>
+                  </div>
                   <div className="text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded-md bg-white/[0.04] border border-white/[0.05] text-white/60 shrink-0">
-                    {r.paymentMethod || 'Cash'}
+                    {r.paymentMethod || 'Paid'}
                   </div>
                 </div>
-                <div className="text-[13px] text-muted-foreground">{r.court_name}</div>
-                <div className="text-[13px] text-muted-foreground">{r.time}</div>
-                <div className="mt-2 text-cyan-400 font-mono text-[15px] font-bold">₱{r.total.toLocaleString()}</div>
+
+                {/* Owner Account Transparency Card */}
+                <div className="mt-3 mb-3 p-2.5 rounded-xl bg-surface-interactive/60 border border-border text-xs space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground font-medium">Verified Account:</span>
+                    <span className="font-bold text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      {r.account_name || r.player_name || "Verified Player"}
+                    </span>
+                  </div>
+                  {(r.player_email || r.player_phone) && (
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/40">
+                      <span>Contact:</span>
+                      <span className="font-mono text-foreground/80">{r.player_phone || r.player_email}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
+                  <span className="text-xs text-muted-foreground font-medium">Court Fee</span>
+                  <div className="text-cyan-400 font-mono text-[15px] font-bold">₱{r.total.toLocaleString()}</div>
+                </div>
+
                 <div className="flex gap-3 mt-4">
                   <button onClick={() => setAcceptModalId(r.id)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-bold active:scale-[0.97] transition-all shadow-lg hover:opacity-90 bg-accent-success text-white" style={{ boxShadow: "0 4px 12px rgba(34,197,94,0.3)" }}>
@@ -486,34 +565,27 @@ export default function OwnerDashboard() {
 
       <AnimatePresence>
         {acceptModalId && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl"
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
               onClick={() => setAcceptModalId(null)} />
-            <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-              <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#0BCE83]/20 via-transparent to-transparent opacity-50"></div>
-                <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#0BCE83]/20 blur-[50px] rounded-full pointer-events-none"></div>
-                  <div className="relative mb-5 mt-2">
-                    <div className="absolute inset-0 bg-[#0BCE83] blur-xl opacity-30 rounded-full animate-pulse"></div>
-                    <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#0BCE83]/20 to-[#0BCE83]/5 flex items-center justify-center border border-[#0BCE83]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
-                      <Check className="w-6 h-6 text-[#0BCE83]" strokeWidth={3} />
-                    </div>
-                  </div>
-                  <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Accept Request?</h3>
-                  <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
-                    This will lock in the court schedule and notify the player that their booking is confirmed.
-                  </p>
-                  <div className="flex gap-3 w-full mt-7">
-                    <button onClick={() => setAcceptModalId(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
-                      Cancel
-                    </button>
-                    <button onClick={() => { handleRequestAction(acceptModalId, "accepted"); setAcceptModalId(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-[#060D1F] bg-gradient-to-b from-[#10e294] to-[#0BCE83] shadow-[0_8px_20px_rgba(11,206,131,0.3),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_10px_25px_rgba(11,206,131,0.4)] transition-all active:scale-[0.98]">
-                      Accept
-                    </button>
-                  </div>
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="relative w-full max-w-sm flex flex-col gap-2 z-[610] items-center">
+              <div className="w-full bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] text-center overflow-hidden flex flex-col items-center">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 mb-4 text-emerald-500 dark:text-emerald-400">
+                  <Check className="w-7 h-7" strokeWidth={3} />
+                </div>
+                <h3 className="text-[19px] font-bold text-foreground tracking-tight mb-2">Accept Request?</h3>
+                <p className="text-[14px] text-muted-foreground font-medium leading-relaxed px-1">
+                  This will lock in the court schedule and notify the player that their booking is confirmed.
+                </p>
+                <div className="flex gap-3 w-full mt-7">
+                  <button onClick={() => setAcceptModalId(null)} className="flex-1 py-3 rounded-xl text-[14px] font-semibold text-foreground bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-all active:scale-[0.98] cursor-pointer">
+                    Cancel
+                  </button>
+                  <button onClick={() => { handleRequestAction(acceptModalId, "accepted"); setAcceptModalId(null); }} className="flex-1 py-3 rounded-xl text-[14px] font-bold text-white bg-emerald-500 hover:bg-emerald-400 shadow-md transition-all active:scale-[0.98] cursor-pointer">
+                    Accept
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -523,34 +595,27 @@ export default function OwnerDashboard() {
 
       <AnimatePresence>
         {declineModalId && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl"
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
               onClick={() => setDeclineModalId(null)} />
-            <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-              <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FF453A]/20 via-transparent to-transparent opacity-50"></div>
-                <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
-                  <div className="relative mb-5 mt-2">
-                    <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
-                    <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
-                      <X className="w-6 h-6 text-[#FF453A]" strokeWidth={3} />
-                    </div>
-                  </div>
-                  <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Decline Request?</h3>
-                  <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
-                    This will reject the reservation request and notify the player. This action cannot be undone.
-                  </p>
-                  <div className="flex gap-3 w-full mt-7">
-                    <button onClick={() => setDeclineModalId(null)} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
-                      Cancel
-                    </button>
-                    <button onClick={() => { handleRequestAction(declineModalId, "declined"); setDeclineModalId(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
-                      Decline
-                    </button>
-                  </div>
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="relative w-full max-w-sm flex flex-col gap-2 z-[610] items-center">
+              <div className="w-full bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] text-center overflow-hidden flex flex-col items-center">
+                <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-4 text-red-500 dark:text-red-400">
+                  <X className="w-7 h-7" strokeWidth={3} />
+                </div>
+                <h3 className="text-[19px] font-bold text-foreground tracking-tight mb-2">Decline Request?</h3>
+                <p className="text-[14px] text-muted-foreground font-medium leading-relaxed px-1">
+                  This will reject the reservation request and notify the player. This action cannot be undone.
+                </p>
+                <div className="flex gap-3 w-full mt-7">
+                  <button onClick={() => setDeclineModalId(null)} className="flex-1 py-3 rounded-xl text-[14px] font-semibold text-foreground bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-all active:scale-[0.98] cursor-pointer">
+                    Cancel
+                  </button>
+                  <button onClick={() => { handleRequestAction(declineModalId, "declined"); setDeclineModalId(null); }} className="flex-1 py-3 rounded-xl text-[14px] font-bold text-white bg-red-500 hover:bg-red-600 shadow-md transition-all active:scale-[0.98] cursor-pointer">
+                    Decline
+                  </button>
                 </div>
               </div>
             </motion.div>

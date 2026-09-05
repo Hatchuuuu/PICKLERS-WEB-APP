@@ -5,6 +5,7 @@ import { X, CalendarDays, MapPin, Clock, CheckCircle2, ShieldCheck, Share2, Tick
 import { useToast } from "@/contexts/ToastContext";
 import { formatFullDate } from "@/lib/timeUtils";
 import { QRCodeSVG } from "qrcode.react";
+import { FocusTrap } from "@/components/a11y/FocusTrap";
 
 interface QRTicketModalProps {
   isOpen: boolean;
@@ -44,13 +45,13 @@ export function QRTicketModal({ isOpen, onClose, booking }: QRTicketModalProps) 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[120] flex items-center justify-center px-3.5 pt-[50px] pb-[66px] md:py-4 overflow-hidden">
+      <div className="fixed inset-0 z-[600] flex items-center justify-center px-3.5 pt-[50px] pb-[66px] md:py-4 overflow-hidden">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/70 backdrop-blur-md z-0"
+          className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50 z-0"
           onClick={(e) => {
             e.stopPropagation();
             onClose();
@@ -65,7 +66,8 @@ export function QRTicketModal({ isOpen, onClose, booking }: QRTicketModalProps) 
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
           className="relative w-full max-w-[390px] max-h-[92vh] z-10 my-auto flex flex-col"
         >
-          <div className="bg-background/95 dark:bg-[#0d1527]/95 backdrop-blur-2xl border border-white/20 dark:border-white/[0.15] rounded-[26px] overflow-hidden shadow-[0_25px_70px_rgba(0,0,0,0.7)] flex flex-col max-h-full">
+          <FocusTrap onEscape={onClose} ariaLabel="Court pass QR code">
+          <div className="bg-background/95 dark:bg-[#13223F] border border-white/20 dark:border-white/12 rounded-[28px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex flex-col max-h-full">
 
             {/* Header */}
             <div className="px-4.5 py-3 border-b border-border dark:border-white/[0.1] flex items-center justify-between bg-surface-interactive/30 dark:bg-white/[0.04] backdrop-blur-md shrink-0">
@@ -165,6 +167,7 @@ export function QRTicketModal({ isOpen, onClose, booking }: QRTicketModalProps) 
             </div>
 
           </div>
+          </FocusTrap>
         </motion.div>
       </div>
     </AnimatePresence>

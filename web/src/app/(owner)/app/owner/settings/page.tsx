@@ -13,7 +13,6 @@ import {
   MapPin,
   Sun,
   ArrowRight,
-  Zap,
   UserCheck,
   User,
   Plus,
@@ -52,7 +51,11 @@ export default function OwnerSettings() {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("picklers_facility_staff");
       if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
+        try { 
+          return JSON.parse(saved); 
+        } catch (e) {
+          console.warn("Failed to parse staff localStorage", e);
+        }
       }
     }
     return user?.isDemo || user?.role === "demo" ? DEMO_STAFF : [];
@@ -89,7 +92,9 @@ export default function OwnerSettings() {
     // Save staff to localStorage whenever it changes
     try {
       localStorage.setItem("picklers_facility_staff", JSON.stringify(staff));
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Failed to save staff to localStorage", e);
+    }
   }, [isDemo, staff]);
 
   const { theme, setTheme } = useTheme();
@@ -196,33 +201,61 @@ export default function OwnerSettings() {
 
   async function handleSave() {
     setSaveStage("saving");
+    const settingsData = {
+      facilityName,
+      location,
+      open24h,
+      openTime,
+      closeTime,
+      gcashEnabled,
+      gcashNumber,
+    };
+
+    // P1.2: persist to Supabase FIRST, then mirror to localStorage on
+    // success only. The previous version wrote localStorage first, so when
+    // Supabase returned an error the user saw the success toast anyway.
+    // The catch block now rolls back the form state to the last-known-good
+    // values so a failed save does not leave the form looking persisted.
+
+    // Snapshot for rollback on failure.
+    const lastGood = {
+      facilityName,
+      location,
+      openTime,
+      closeTime,
+      gcashNumber,
+    };
+    const prevLocal = localStorage.getItem("picklers_owner_settings");
+
     try {
-      const settingsData = {
-        facilityName,
-        location,
-        open24h,
-        openTime,
-        closeTime,
-        gcashEnabled,
-        gcashNumber
-      };
-      localStorage.setItem("picklers_owner_settings", JSON.stringify(settingsData));
-      // Attempt Supabase update if logged in
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { error } = await supabase.from('facilities').update({
           name: facilityName,
           location: location,
-          hours: open24h ? "Open 24/7" : `${openTime} - ${closeTime}`
+          hours: open24h ? "Open 24/7" : `${openTime} - ${closeTime}`,
         }).eq('owner_id', user.id);
-
         if (error) throw error;
       }
+
+      // Supabase succeeded — now mirror to localStorage.
+      localStorage.setItem("picklers_owner_settings", JSON.stringify(settingsData));
       setSaveStage("saved");
       showToast("Facility settings saved successfully!", "success");
       setTimeout(() => setSaveStage("idle"), 2500);
     } catch (e: any) {
       console.error("Save error:", e);
+      // Roll back form state to last-known-good.
+      setFacilityName(lastGood.facilityName);
+      setLocation(lastGood.location);
+      setOpenTime(lastGood.openTime);
+      setCloseTime(lastGood.closeTime);
+      setGcashNumber(lastGood.gcashNumber);
+      if (prevLocal) {
+        localStorage.setItem("picklers_owner_settings", prevLocal);
+      } else {
+        localStorage.removeItem("picklers_owner_settings");
+      }
       setSaveStage("idle");
       showToast(e?.message || "Failed to save facility settings.", "error");
     }
@@ -305,9 +338,8 @@ export default function OwnerSettings() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80"
-            style={{ backdropFilter: "blur(40px) saturate(1.5)" }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -373,17 +405,11 @@ export default function OwnerSettings() {
                 )}
               </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAuthenticated(true);
-                  showToast("Bypassed Secure Enclave in Demo Mode", "success");
-                }}
-                className="w-full mt-3 py-3 rounded-xl font-extrabold text-[13.5px] bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-500 dark:text-amber-400 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
-                Bypass Lock in Demo Mode
-              </button>
+              {/* F-580-fix: the "Bypass Lock in Demo Mode" button was visible
+                  to every owner in production. It defeated biometric auth and
+                  let anyone click past the lock. Removed. Real auth is the
+                  only path. The Zap icon import is kept in case it's used
+                  elsewhere in this file. */}
             </motion.div>
           </motion.div>
         )}
@@ -547,49 +573,83 @@ export default function OwnerSettings() {
                 </div>
               )}
 
-              {/* Add Staff Modal (simplified version from staff page) */}
+              {/* Add Staff Modal */}
               {addStaffOpen && (
                 <>
-                  <motion.div key="staff-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" />
-                  <motion.div key="staff-modal" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed inset-0 z-50 flex items-center justify-center px-4"
-                    onClick={() => setAddStaffOpen(false)}>
-                    <div className="w-full max-w-sm rounded-2xl p-6 shadow-[0_24px_64px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-border bg-surface-base"
-                      onClick={(e) => e.stopPropagation()}>
+                  <motion.div
+                    key="staff-bg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[600] bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
+                    onClick={() => setAddStaffOpen(false)}
+                  />
+                  <motion.div
+                    key="staff-modal"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="fixed inset-0 z-[610] flex items-center justify-center px-4"
+                    onClick={() => setAddStaffOpen(false)}
+                  >
+                    <div
+                      className="w-full max-w-sm rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] border border-border dark:border-white/12 bg-surface-overlay dark:bg-[#13223F]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-between mb-5">
-                        <h2 className="text-lg font-bold tracking-tight">Add Staff</h2>
-                        <button onClick={() => setAddStaffOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-interactive/80"
-                          style={{ border: "1px solid var(--border-default)", color: "var(--ink-muted)" }}><X className="w-4 h-4" /></button>
+                        <h2 className="text-lg font-bold tracking-tight text-foreground">Add Staff</h2>
+                        <button
+                          onClick={() => setAddStaffOpen(false)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-interactive text-muted-foreground hover:text-foreground border border-border transition-colors cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium tracking-tight mb-1.5">Full Name</label>
-                          <input value={newStaffName} onChange={e => setNewStaffName(e.target.value)} placeholder="e.g. Maria Santos"
-                            className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors placeholder:text-muted-foreground" />
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Full Name</label>
+                          <input
+                            value={newStaffName}
+                            onChange={e => setNewStaffName(e.target.value)}
+                            placeholder="e.g. Maria Santos"
+                            className="w-full px-4 py-3 rounded-xl text-sm outline-none border border-border bg-surface-interactive text-foreground focus:border-emerald-500 transition-colors placeholder:text-muted-foreground"
+                          />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium tracking-tight mb-1.5">Email</label>
-                          <input value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} type="email" placeholder="staff@facility.com"
-                            className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors placeholder:text-muted-foreground" />
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Email</label>
+                          <input
+                            value={newStaffEmail}
+                            onChange={e => setNewStaffEmail(e.target.value)}
+                            type="email"
+                            placeholder="staff@facility.com"
+                            className="w-full px-4 py-3 rounded-xl text-sm outline-none border border-border bg-surface-interactive text-foreground focus:border-emerald-500 transition-colors placeholder:text-muted-foreground"
+                          />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium tracking-tight mb-1.5">Role</label>
-                          <div className="flex gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Role</label>
+                          <div className="flex gap-1 bg-surface-interactive p-1 rounded-xl border border-border">
                             {(["desk", "manager"] as const).map(r => (
-                              <button key={r} onClick={() => setNewStaffRole(r)}
+                              <button
+                                key={r}
+                                onClick={() => setNewStaffRole(r)}
                                 className={cn(
-                                  "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200",
+                                  "flex-1 py-2 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer",
                                   newStaffRole === r
-                                    ? "bg-white dark:bg-[#1E293B] text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-black/5 dark:border-white/5"
+                                    ? "bg-surface-overlay text-foreground shadow-sm border border-border"
                                     : "text-muted-foreground hover:text-foreground border border-transparent"
                                 )}
-                              >{r}</button>
+                              >
+                                {r}
+                              </button>
                             ))}
                           </div>
                         </div>
-                        <button onClick={addStaff} disabled={!newStaffName.trim() || !newStaffEmail.trim()}
-                          className="w-full mt-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.97] disabled:opacity-40 bg-accent-success text-white" style={{ transition: "opacity 150ms ease-out" }}>
+                        <button
+                          onClick={addStaff}
+                          disabled={!newStaffName.trim() || !newStaffEmail.trim()}
+                          className="w-full mt-5 py-3 rounded-xl font-bold text-sm active:scale-[0.97] disabled:opacity-40 bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition-all cursor-pointer"
+                        >
                           Add Staff Member
                         </button>
                       </div>
@@ -600,34 +660,27 @@ export default function OwnerSettings() {
 
               {/* Delete Confirmation Modal */}
               {confirm !== null && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-black/20 dark:bg-[#0B132B]/80 backdrop-blur-3xl"
+                    className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
                     onClick={() => { setConfirm(null); }} />
-                  <motion.div initial={{ y: "100%", opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    className="relative w-full max-w-sm flex flex-col gap-2 z-10 items-center">
-                    <div className="w-[340px] bg-background dark:bg-gradient-to-b dark:from-[#1A2235] dark:to-[#0B132B] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl ring-1 ring-black/5 dark:ring-0 relative p-[1px]">
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#FF453A]/20 via-transparent to-transparent opacity-50"></div>
-                      <div className="relative bg-surface-base dark:bg-[#0A1124] rounded-[27px] p-6 pb-7 text-center overflow-hidden flex flex-col items-center">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FF453A]/20 blur-[50px] rounded-full pointer-events-none"></div>
-                        <div className="relative mb-5 mt-2">
-                          <div className="absolute inset-0 bg-[#FF453A] blur-xl opacity-30 rounded-full animate-pulse"></div>
-                          <div className="w-14 h-14 relative z-10 rounded-[18px] bg-gradient-to-b from-[#FF453A]/20 to-[#FF3B30]/5 flex items-center justify-center border border-[#FF453A]/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
-                            <span className="text-[24px] font-black text-[#FF453A] drop-shadow-[0_0_12px_rgba(255,59,48,0.6)]">!</span>
-                          </div>
-                        </div>
-                        <h3 className="text-[19px] font-bold text-foreground dark:text-white tracking-tight mb-2">Revoke Access?</h3>
-                        <p className="text-[14px] text-muted-foreground dark:text-slate-400 font-medium leading-relaxed px-1">
-                          This will immediately remove this user's access to the facility dashboard and management system.
-                        </p>
-                        <div className="flex gap-3 w-full mt-7">
-                          <button onClick={() => { setConfirm(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-foreground/80 dark:text-slate-300 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.06] hover:text-foreground dark:hover:text-white transition-all active:scale-[0.98]">
-                            Cancel
-                          </button>
-                          <button onClick={() => { handleDelete(confirm!); setConfirm(null); }} className="flex-1 py-3.5 rounded-xl text-[14px] font-bold text-white bg-gradient-to-b from-[#FF453A] to-[#E02D23] shadow-[0_8px_20px_rgba(255,59,48,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.4)] transition-all active:scale-[0.98]">
-                            Revoke
-                          </button>
-                        </div>
+                  <motion.div initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="relative w-full max-w-sm flex flex-col gap-2 z-[610] items-center">
+                    <div className="w-full bg-surface-overlay dark:bg-[#13223F] border border-border dark:border-white/12 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] text-center overflow-hidden flex flex-col items-center">
+                      <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-4 text-red-500 dark:text-red-400">
+                        <span className="text-[24px] font-black">!</span>
+                      </div>
+                      <h3 className="text-[19px] font-bold text-foreground tracking-tight mb-2">Revoke Access?</h3>
+                      <p className="text-[14px] text-muted-foreground font-medium leading-relaxed px-1">
+                        This will immediately remove this user's access to the facility dashboard and management system.
+                      </p>
+                      <div className="flex gap-3 w-full mt-7">
+                        <button onClick={() => { setConfirm(null); }} className="flex-1 py-3 rounded-xl text-[14px] font-semibold text-foreground bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-all active:scale-[0.98] cursor-pointer">
+                          Cancel
+                        </button>
+                        <button onClick={() => { handleDelete(confirm!); setConfirm(null); }} className="flex-1 py-3 rounded-xl text-[14px] font-bold text-white bg-red-500 hover:bg-red-600 shadow-md transition-all active:scale-[0.98] cursor-pointer">
+                          Revoke
+                        </button>
                       </div>
                     </div>
                   </motion.div>
@@ -652,7 +705,7 @@ export default function OwnerSettings() {
                         <div className="text-xs text-muted-foreground mt-1">{s.role} • Joined {s.joined}</div>
                       </div>
                       <button onClick={() => setConfirm(s.id)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-red-500/15 active:scale-[0.97] shrink-0"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-red-500/15 active:scale-[0.97] shrink-0 cursor-pointer"
                         style={{ border: "1px solid rgba(239,68,68,0.2)", color: "var(--accent-danger)" }}>
                         <X className="w-4 h-4" />
                       </button>
@@ -665,37 +718,36 @@ export default function OwnerSettings() {
               {addStaffOpen && (
                 <>
                   <motion.div key="staff-bg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" />
+                    className="fixed inset-0 z-[600] bg-black/40 backdrop-blur-[2px] dark:bg-black/50" />
                   <motion.div key="staff-modal" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed inset-0 z-50 flex items-center justify-center px-4"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed inset-0 z-[610] flex items-center justify-center px-4"
                     onClick={() => setAddStaffOpen(false)}>
-                    <div className="w-full max-w-sm rounded-2xl p-6 shadow-[0_24px_64px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-border bg-surface-base"
+                    <div className="w-full max-w-sm rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)] border border-border dark:border-white/12 bg-surface-overlay dark:bg-[#13223F]"
                       onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-between mb-5">
-                        <h2 className="text-lg font-bold tracking-tight">Add Staff</h2>
-                        <button onClick={() => setAddStaffOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-interactive/80"
-                          style={{ border: "1px solid var(--border-default)", color: "var(--ink-muted)" }}><X className="w-4 h-4" /></button>
+                        <h2 className="text-lg font-bold tracking-tight text-foreground">Add Staff</h2>
+                        <button onClick={() => setAddStaffOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-surface-interactive hover:bg-surface-interactive/80 text-muted-foreground hover:text-foreground border border-border cursor-pointer"><X className="w-4 h-4" /></button>
                       </div>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium tracking-tight mb-1.5">Full Name</label>
+                          <label className="block text-sm font-medium tracking-tight mb-1.5 text-foreground">Full Name</label>
                           <input value={newStaffName} onChange={e => setNewStaffName(e.target.value)} placeholder="e.g. Maria Santos"
-                            className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors placeholder:text-muted-foreground" />
+                            className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-surface-interactive text-foreground placeholder:text-muted-foreground focus:border-emerald-500 transition-colors" />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium tracking-tight mb-1.5">Email</label>
+                          <label className="block text-sm font-medium tracking-tight mb-1.5 text-foreground">Email</label>
                           <input value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} type="email" placeholder="staff@facility.com"
-                            className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-black/5 dark:bg-white/5 text-foreground focus:border-emerald-500/50 transition-colors placeholder:text-muted-foreground" />
+                            className="w-full px-4 py-3 rounded-xl text-[15px] outline-none border border-border bg-surface-interactive text-foreground placeholder:text-muted-foreground focus:border-emerald-500 transition-colors" />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium tracking-tight mb-1.5">Role</label>
-                          <div className="flex gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+                          <label className="block text-sm font-medium tracking-tight mb-1.5 text-foreground">Role</label>
+                          <div className="flex gap-1 bg-surface-interactive p-1 rounded-xl border border-border">
                             {(["desk", "manager"] as const).map(r => (
                               <button key={r} onClick={() => setNewStaffRole(r)}
                                 className={cn(
-                                  "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200",
+                                  "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200 cursor-pointer",
                                   newStaffRole === r
-                                    ? "bg-white dark:bg-[#1E293B] text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-black/5 dark:border-white/5"
+                                    ? "bg-surface-overlay text-foreground shadow-sm border border-border"
                                     : "text-muted-foreground hover:text-foreground border border-transparent"
                                 )}
                               >{r}</button>
@@ -706,7 +758,7 @@ export default function OwnerSettings() {
                           <button
                             type="button"
                             onClick={() => setAddStaffOpen(false)}
-                            className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-surface-interactive transition-colors"
+                            className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-surface-interactive transition-colors cursor-pointer"
                           >
                             Cancel
                           </button>
@@ -714,7 +766,7 @@ export default function OwnerSettings() {
                             type="button"
                             onClick={addStaff}
                             disabled={!newStaffName.trim() || !newStaffEmail.trim()}
-                            className="px-5 py-2.5 rounded-xl font-bold text-sm active:scale-[0.97] disabled:opacity-40 bg-accent-success text-white transition-opacity duration-150">
+                            className="px-5 py-2.5 rounded-xl font-bold text-sm active:scale-[0.97] disabled:opacity-40 bg-emerald-500 hover:bg-emerald-400 text-white shadow-md transition-all cursor-pointer">
                             Add Staff Member
                           </button>
                         </div>

@@ -55,10 +55,34 @@ export function ApplicationDetailDrawer({
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [showRevisionInput, setShowRevisionInput] = useState(false);
   const [revisionNote, setRevisionNote] = useState("");
+  const [internalNotes, setInternalNotes] = useState(application?.internal_notes || "");
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [zoomedDoc, setZoomedDoc] = useState<string | null>(null);
 
   if (!application) return null;
+
+  const handleSaveInternalNotes = async () => {
+    setIsSavingNotes(true);
+    try {
+      const res = await fetch(`/api/admin/applications/${application.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save_notes", internal_notes: internalNotes }),
+      });
+      if (res.ok) {
+        showToast("Internal review notes saved successfully", "success");
+        onRefresh();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to save notes", "error");
+      }
+    } catch {
+      showToast("Failed to save internal notes", "error");
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
 
   const isActionable =
     application.status === "pending" || application.status === "in_review";
@@ -221,13 +245,13 @@ export function ApplicationDetailDrawer({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex justify-end">
+      <div className="fixed inset-0 z-[600] flex justify-end">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          className="absolute inset-0 bg-black/40 backdrop-blur-[2px] dark:bg-black/50"
           onClick={onClose}
         />
 
@@ -237,12 +261,12 @@ export function ApplicationDetailDrawer({
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", stiffness: 350, damping: 35 }}
-          className="relative w-full max-w-2xl h-full bg-surface-base border-l border-border shadow-2xl z-10 flex flex-col overflow-hidden"
+          className="relative w-full max-w-2xl h-full bg-surface-overlay dark:bg-[#13223F] border-l border-border dark:border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-[610] flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="p-6 border-b border-border flex items-center justify-between bg-surface-base/80 backdrop-blur-2xl">
+          <div className="p-6 border-b border-border flex items-center justify-between bg-surface-interactive/30">
             <div className="flex flex-col gap-1">
-              <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
+              <div className="text-xs font-bold text-emerald-500 dark:text-emerald-400 uppercase tracking-widest">
                 Owner Application Inspection
               </div>
               <h2 className="text-xl font-black text-foreground tracking-tight">
@@ -260,7 +284,8 @@ export function ApplicationDetailDrawer({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-surface-raised text-muted-foreground transition-colors"
+              aria-label="Close drawer"
+              className="w-8 h-8 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -295,24 +320,14 @@ export function ApplicationDetailDrawer({
                       ? "Application was rejected"
                       : "Application marked as more info requested"}
                   </div>
-                  {(application as unknown as Record<string, string>)
-                    .rejection_reason && (
+                  {application.rejection_reason && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      Reason:{" "}
-                      {
-                        (application as unknown as Record<string, string>)
-                          .rejection_reason
-                      }
+                      Reason: {application.rejection_reason}
                     </div>
                   )}
-                  {(application as unknown as Record<string, string>)
-                    .revision_request_note && (
+                  {application.revision_request_note && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      Revision note:{" "}
-                      {
-                        (application as unknown as Record<string, string>)
-                          .revision_request_note
-                      }
+                      Revision note: {application.revision_request_note}
                     </div>
                   )}
                 </div>
@@ -421,13 +436,40 @@ export function ApplicationDetailDrawer({
                   <button
                     onClick={handleRequestRevision}
                     disabled={isSubmitting}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-black hover:bg-amber-400 disabled:opacity-60"
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-400 disabled:opacity-60 cursor-pointer shadow-sm"
                   >
                     Submit Revision Request
                   </button>
                 </div>
               </div>
             )}
+
+            {/* Internal Review Notes Section */}
+            <div className="flex flex-col gap-3 p-4 rounded-2xl border border-border bg-surface-raised/40">
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                  Internal Review Notes
+                </div>
+                <span className="text-[10px] text-muted-foreground">Admin Only • Private</span>
+              </div>
+              <textarea
+                rows={3}
+                value={internalNotes}
+                onChange={(e) => setInternalNotes(e.target.value)}
+                placeholder="Add private staff notes, background check findings, or verification logs here..."
+                className="w-full p-2.5 rounded-xl border border-border bg-surface-base text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none leading-relaxed"
+              />
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSaveInternalNotes}
+                  disabled={isSavingNotes}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-raised hover:bg-surface-interactive border border-border text-foreground transition-colors disabled:opacity-50"
+                >
+                  {isSavingNotes ? "Saving Note..." : "Save Internal Note"}
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Action Bar Footer — only shown for actionable applications */}
@@ -487,7 +529,7 @@ export function ApplicationDetailDrawer({
       {/* Document Zoom Modal */}
       {zoomedDoc && (
         <div
-          className="fixed inset-0 z-[120] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-[600] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setZoomedDoc(null)}
         >
           <div className="relative max-w-4xl max-h-[90vh] overflow-auto rounded-2xl">

@@ -75,7 +75,7 @@ export function PlayerAvatar({ teamName, teamType = 'DOUBLES', size = 'sm', avat
 
   if (avatarUrl) {
     return (
-      <img src={avatarUrl} alt={teamName} className="rounded-full object-cover shrink-0 shadow-[0_0_8px_rgba(0,0,0,0.3)]" style={{ width: s, height: s }} />
+      <img src={avatarUrl} alt={teamName} loading="lazy" className="rounded-full object-cover shrink-0 shadow-[0_0_8px_rgba(0,0,0,0.3)]" style={{ width: s, height: s }} />
     );
   }
 

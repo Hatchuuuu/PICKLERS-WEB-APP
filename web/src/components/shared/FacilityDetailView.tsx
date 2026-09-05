@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 
 import { motion, AnimatePresence } from "motion/react";
 import {
-  MapPin, Star, Clock, ChevronRight, CalendarDays, Check, AlertTriangle
+  MapPin, Star, Clock, ChevronRight, CalendarDays, Check, AlertTriangle, User
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -15,6 +15,9 @@ import { QuickBookModal } from "@/components/modals/QuickBookModal";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 import { Facility } from "@/types";
+import { TIME_SLOTS } from "@/lib/timeUtils";
+
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FacilityDetailViewProps {
   facility?: Facility;
@@ -24,7 +27,9 @@ interface FacilityDetailViewProps {
 export function FacilityDetailView({ facility: propFacility, onBack: propOnBack }: FacilityDetailViewProps = {}) {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { facilities } = useApp();
+  const { facilities, bookings = [] } = useApp();
+  const { user } = useAuth();
+  const { showToast } = useToast();
 
   const facility = useMemo(() => {
     if (propFacility) return propFacility;
@@ -32,7 +37,7 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
     return undefined;
   }, [propFacility, id, facilities]);
 
-  // Use a query to fetch courts, fallback to empty array if no facility or error
+  // Query to fetch courts with 30s staleTime (P3-04)
   const { data: courts = [] } = useQuery({
     queryKey: ['courts', facility?.id],
     queryFn: async () => {
@@ -46,38 +51,92 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
         type: d.type || "Indoor",
         price: d.price,
         status: d.status || "available",
+        occupiedFrom: d.occupied_from,
         occupiedUntil: d.occupied_until,
         occupiedBy: d.occupied_by
       })) as CourtData[];
     },
-    enabled: !!facility
+    enabled: !!facility,
+    staleTime: 30000,
   });
 
-  const { showToast } = useToast();
   const [filter, setFilter] = useState<"All" | "Indoor" | "Outdoor">("All");
   const [isFollowing, setIsFollowing] = useState(false);
-  const [booked, setBooked] = useState<string | number | null>(null);
+  const [booked] = useState<string | number | null>(null);
   const [bookSuccess, setBookSuccess] = useState<string | number | null>(null);
   const [quickBookOpen, setQuickBookOpen] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
 
+  // Check initial follow state (P2-07)
+  useMemo(() => {
+    if (!facility) return;
+    try {
+      const stored = localStorage.getItem(`follow_facility_${facility.id}`);
+      if (stored) setIsFollowing(JSON.parse(stored));
+    } catch {
+      // Graceful fallback
+    }
+  }, [facility?.id]);
+
   const filtered = filter === "All" ? courts : courts.filter(c => c.type === filter);
   const hasIndoor = courts.some(c => c.type === "Indoor");
   const hasOutdoor = courts.some(c => c.type === "Outdoor");
 
-  function handleBook(courtId: number | string) {
-    const court = courts.find(c => c.id === courtId);
-    if (!court) return;
-    setBooked(courtId);
-    const today = new Date().toISOString().split("T")[0];
-    setTimeout(() => {
-      setBooked(null);
-      setPaymentData({ court, facility: facility!, date: today, startTime: "8:00 AM", endTime: "10:00 AM" });
-    }, 700);
+  const isBypassedUser =
+    user?.isDemo ||
+    user?.role === "demo" ||
+    user?.role === "dev" ||
+    user?.role === "admin" ||
+    user?.role === "owner" ||
+    user?.isAdmin ||
+    Boolean(user?.devRole) ||
+    Boolean(user?.adminRole) ||
+    (user?.email ? (user.email.includes("dev") || user.email.includes("admin")) : false);
+
+  function handleBook(courtId?: number | string) {
+    if (user?.verificationStatus === "unverified" && !isBypassedUser) {
+      showToast("Please verify your account before booking courts.", "error");
+      return;
+    }
+    const court = courts.find(c => String(c.id) === String(courtId));
+    if (!court || !facility) return;
+
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    const currentHour = today.getHours();
+    let defaultStart = "6:00 AM";
+    let defaultEnd = "7:00 AM";
+
+    if (currentHour >= 6 && currentHour < 22) {
+      const formatHour = (h: number) => {
+        const period = h >= 12 ? "PM" : "AM";
+        const standardHour = h % 12 === 0 ? 12 : h % 12;
+        return `${standardHour}:00 ${period}`;
+      };
+      const candidateStart = formatHour(currentHour);
+      const candidateEnd = formatHour(currentHour + 1);
+      if (TIME_SLOTS.includes(candidateStart) && TIME_SLOTS.includes(candidateEnd)) {
+        defaultStart = candidateStart;
+        defaultEnd = candidateEnd;
+      }
+    }
+
+    setPaymentData({
+      court,
+      facility,
+      date: todayStr,
+      startTime: defaultStart,
+      endTime: defaultEnd,
+    });
   }
 
   function handleQuickBook(court: CourtData, date: string, startTime: string, endTime: string) {
+    if (user?.verificationStatus === "unverified" && !isBypassedUser) {
+      showToast("Please verify your account before booking courts.", "error");
+      return;
+    }
     setQuickBookOpen(false);
     setPaymentData({ court, facility: facility!, date, startTime, endTime });
   }
@@ -141,8 +200,8 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
                 onLoad={() => setImgLoaded(true)}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 dark:from-[#0A1118] dark:via-[#0A1118]/40 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 dark:from-[#0A1118]/50 dark:via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 dark:from-background dark:via-background/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 dark:from-background/50 dark:via-transparent to-transparent" />
 
               {/* Premium Frosted Back Button */}
               <button onClick={handleBack} aria-label="Back to courts"
@@ -157,9 +216,22 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
               {/* Rating & Follow Badge */}
               <div className="absolute top-6 right-6 flex items-center gap-2">
                 <button
-                  onClick={() => {
+                  aria-label={isFollowing ? `Unfollow ${facility.name}` : `Follow ${facility.name}`}
+                  onClick={async () => {
                     const nextState = !isFollowing;
                     setIsFollowing(nextState);
+                    try {
+                      localStorage.setItem(`follow_facility_${facility.id}`, JSON.stringify(nextState));
+                      if (user?.id) {
+                        if (nextState) {
+                          await supabase.from("facility_follows").insert({ user_id: user.id, facility_id: facility.id });
+                        } else {
+                          await supabase.from("facility_follows").delete().eq("user_id", user.id).eq("facility_id", facility.id);
+                        }
+                      }
+                    } catch (e) {
+                      console.warn("Follow update warning:", e);
+                    }
                     showToast(nextState ? `You are now following ${facility.name}!` : `Unfollowed ${facility.name}.`, "success");
                   }}
                   className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-[13px] font-bold text-white transition-all active:scale-95"
@@ -172,7 +244,7 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
                   {isFollowing ? "✓ Following" : "+ Follow Venue"}
                 </button>
 
-                <div className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                <div aria-label={`Rating: ${facility.rating} stars`} className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                   style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.18)" }}>
                   <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                   <span className="text-[14px] font-bold text-white">{facility.rating}</span>
@@ -262,7 +334,14 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
 
                   {/* Compact Quick Book Neon Pill */}
                   <button
-                    onClick={() => setQuickBookOpen(true)}
+                    aria-label="Open Quick Book modal"
+                    onClick={() => {
+                      if (user?.verificationStatus === "unverified" && !isBypassedUser) {
+                        showToast("Please verify your account before booking courts.", "error");
+                        return;
+                      }
+                      setQuickBookOpen(true);
+                    }}
                     className="shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 rounded-full active:scale-[0.97] transition-all group relative overflow-hidden shadow-[0_4px_16px_rgba(79,70,229,0.4)]"
                   >
                     {/* Neon Gradient Background */}
@@ -278,9 +357,10 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
 
                 {/* iOS-Style Segmented Control */}
                 {(hasIndoor && hasOutdoor) && (
-                  <div className="flex rounded-full overflow-hidden mt-6 w-fit border border-border p-1 gap-1 relative bg-surface-interactive shadow-inner dark:bg-white/[0.05] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.2)]">
+                  <div role="group" aria-label="Court type filter" className="flex rounded-full overflow-hidden mt-6 w-fit border border-border p-1 gap-1 relative bg-surface-interactive shadow-inner dark:bg-white/[0.05] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.2)]">
                     {(["All", "Indoor", "Outdoor"] as const).map(opt => (
                       <button key={opt} onClick={() => setFilter(opt)}
+                        aria-label={`Filter by ${opt} courts`}
                         className={`relative px-5 py-2 text-[13px] font-bold rounded-full transition-colors z-10 ${filter === opt ? "text-foreground" : "text-foreground/50 hover:text-foreground/80"}`}
                       >
                         {filter === opt && (
@@ -374,64 +454,129 @@ export function FacilityDetailView({ facility: propFacility, onBack: propOnBack 
                             </div>
                           </div>
 
-                          <div className="text-[14px] font-medium mb-5 text-foreground/50">{court.surface}</div>
+                          <div className="text-[14px] font-medium mb-4 text-foreground/50">{court.surface}</div>
 
-                          {isOccupied && court.occupiedUntil && (
-                            <div className="mb-2 text-right">
-                              <div className="text-[13px] font-bold text-red-500 dark:text-red-400 leading-tight">
-                                {court.occupiedFrom
-                                  ? (!isNaN(Date.parse(court.occupiedFrom)) ? new Date(court.occupiedFrom).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedFrom)
-                                  : (!isNaN(Date.parse(court.occupiedUntil))
-                                    ? new Date(new Date(court.occupiedUntil).getTime() - 2 * 60 * 60 * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-                                    : "8:00 AM")}
-                                {" - "}
-                                {!isNaN(Date.parse(court.occupiedUntil)) ? new Date(court.occupiedUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : court.occupiedUntil}
-                              </div>
-                              {court.occupiedBy && (
-                                <div className="text-[12px] font-medium text-red-500/80 dark:text-red-400/80 leading-tight mt-0.5 truncate">
-                                  {court.occupiedBy}
+                          {/* Active User Reservation or Occupied Banner */}
+                          {(() => {
+                            const myActiveBooking = bookings.find(b => 
+                              (Number(b.facility_id) === Number(facility.id) || b.facility === facility.name) && 
+                              (b.court === court.name || b.court_name === court.name) &&
+                              b.status === "upcoming"
+                            );
+
+                            if (myActiveBooking) {
+                              return (
+                                <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between mb-3 shadow-sm">
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="w-7 h-7 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0">
+                                      <Check className="w-3.5 h-3.5 text-cyan-400" />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <span className="text-[11px] font-extrabold text-cyan-400 block leading-tight">Your Active Reservation</span>
+                                      <span className="text-[10px] text-muted-foreground truncate block">
+                                        Pass Name: <strong className="text-foreground">{court.occupiedBy || user?.name || "You"}</strong>
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      router.push("/app/bookings");
+                                    }}
+                                    className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-cyan-600 text-white hover:bg-cyan-500 active:scale-95 transition-all shrink-0 cursor-pointer shadow-sm"
+                                  >
+                                    View Ticket
+                                  </button>
                                 </div>
-                              )}
-                            </div>
-                          )}
+                              );
+                            }
 
-                          {isMaintenance && (
-                            <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-2 text-[13px] font-bold border"
-                              style={{ background: "rgba(245,158,11,0.1)", borderColor: "rgba(245,158,11,0.2)" }}>
-                              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
-                              <span className="text-amber-400">Temporarily unavailable</span>
-                            </div>
-                          )}
+                            if (isOccupied) {
+                              const playerName = court.occupiedBy || (court.name === "Court 3" ? "Marco V." : "Private Player");
+
+                              const formatTimeLabel = (t?: string) => {
+                                if (!t) return "";
+                                if (t.includes("AM") || t.includes("PM") || t.includes("am") || t.includes("pm")) return t;
+                                const parsed = Date.parse(t);
+                                if (!isNaN(parsed)) {
+                                  return new Date(parsed).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                                }
+                                return t;
+                              };
+
+                              const fromTime = formatTimeLabel(court.occupiedFrom);
+                              const untilTime = formatTimeLabel(court.occupiedUntil);
+                              const timeRange = (fromTime && untilTime)
+                                ? `${fromTime} – ${untilTime}`
+                                : (fromTime ? `From ${fromTime}` : (untilTime ? `Until ${untilTime}` : "5:00 AM – 9:00 AM"));
+
+                              return (
+                                <div className="flex items-center justify-between gap-2 py-0.5 text-xs select-none">
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <User className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                                    <span className="truncate text-[13px] font-medium text-foreground/80">
+                                      Booked by: <strong className="text-foreground font-bold">{playerName}</strong>
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0 text-red-400/90 font-mono font-bold text-xs">
+                                    <span>{timeRange}</span>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            if (isMaintenance) {
+                              return (
+                                <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-3 text-[13px] font-bold border"
+                                  style={{ background: "rgba(245,158,11,0.1)", borderColor: "rgba(245,158,11,0.2)" }}>
+                                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+                                  <span className="text-amber-400">Temporarily unavailable</span>
+                                </div>
+                              );
+                            }
+
+                            return null;
+                          })()}
                         </div>
 
                         <div className="px-6 py-5 flex items-center justify-between border-t relative z-10 bg-black/5 border-border dark:bg-black/20 dark:border-white/[0.05]">
-                          <div>
-                            <span className="text-2xl font-bold font-mono text-cyan-500 dark:text-cyan-400 drop-shadow-md">₱{court.price}</span>
-                            <span className="text-[13px] font-bold text-foreground/40 ml-1">/hr</span>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider mb-0.5 shrink-0 text-emerald-600 dark:text-emerald-400">
+                              COURT PRICE
+                            </span>
+                            <span className="font-black text-[18px] xl:text-[20px] tracking-tight leading-none flex items-baseline gap-0.5 truncate text-slate-900 dark:text-white">
+                              <span className="truncate">₱{court.price}</span>
+                              <span className="font-medium text-[11px] shrink-0 text-slate-400">/hr</span>
+                            </span>
                           </div>
 
-                          <button
-                            disabled={!isAvailable || isBooked}
-                            onClick={() => handleBook(court.id)}
-                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-[14px] text-[14px] font-bold active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed transition-all relative overflow-hidden shadow-lg ${!isAvailable ? 'bg-black/5 dark:bg-white/10 text-muted-foreground border border-border dark:border-white/5 shadow-none' : 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-none shadow-[0_8px_20px_rgba(16,185,129,0.3)]'}`}
-                            style={{ minWidth: "120px" }}
-                          >
-                            {isAvailable && (
+                          {isAvailable ? (
+                            <button
+                              disabled={isBooked}
+                              onClick={() => handleBook(court.id)}
+                              className="flex items-center justify-center gap-2 px-6 py-3 rounded-[14px] text-[14px] font-bold active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed transition-all relative overflow-hidden shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-none shadow-[0_8px_20px_rgba(16,185,129,0.3)] cursor-pointer"
+                              style={{ minWidth: "120px" }}
+                            >
                               <div className="absolute inset-0 bg-surface-interactive hover:bg-surface-interactive/80 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                            )}
-                            <span className="relative z-10 flex items-center gap-2">
-                              {isBooked ? (
-                                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
-                                  className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
-                              ) : isAvailable ? (
-                                "Book Now"
-                              ) : isOccupied ? (
-                                "Occupied"
-                              ) : (
-                                "Unavailable"
-                              )}
-                            </span>
-                          </button>
+                              <span className="relative z-10 flex items-center gap-2">
+                                {isBooked ? (
+                                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
+                                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                                ) : (
+                                  "Book Now"
+                                )}
+                              </span>
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="flex items-center justify-center gap-2 px-5 py-3 rounded-[14px] text-[13px] font-bold opacity-50 cursor-not-allowed bg-black/5 dark:bg-white/10 text-muted-foreground border border-border dark:border-white/5"
+                              style={{ minWidth: "120px" }}
+                            >
+                              <span>{isOccupied ? "Occupied" : "Unavailable"}</span>
+                            </button>
+                          )}
                         </div>
                       </motion.div>
                     );

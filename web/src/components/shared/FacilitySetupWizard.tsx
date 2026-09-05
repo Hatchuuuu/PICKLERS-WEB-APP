@@ -153,7 +153,7 @@ export function FacilitySetupWizard({ onClose }: FacilitySetupWizardProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-background flex flex-col">
+    <div className="fixed inset-0 z-[600] bg-background flex flex-col">
       {/* Header */}
       <div className="h-16 border-b border-border flex items-center px-4 justify-between bg-surface-raised shrink-0">
         <div className="flex items-center gap-4">

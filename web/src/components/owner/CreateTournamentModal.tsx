@@ -21,6 +21,7 @@ import {
     StepperTitle,
     StepperTrigger,
 } from '@/components/ui/stepper';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
 
 
 
@@ -48,13 +49,13 @@ function PremiumDatePicker({ value, onChange }: { value: string, onChange: (val:
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full min-h-[48px] bg-white/[0.06] border border-white/15 hover:border-white/25 rounded-2xl pl-11 pr-4 py-3 text-left text-[14px] sm:text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all flex items-center justify-between shadow-inner shrink-0"
+                className="w-full min-h-[48px] bg-surface-interactive border border-border hover:border-border/80 rounded-2xl pl-11 pr-4 py-3 text-left text-[14px] sm:text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all flex items-center justify-between shadow-inner shrink-0 cursor-pointer"
             >
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400 shrink-0" />
-                <span className={cn("truncate whitespace-nowrap", value ? "text-white font-bold" : "text-slate-400 font-medium")}>
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 shrink-0" />
+                <span className={cn("truncate whitespace-nowrap", value ? "text-foreground font-bold" : "text-muted-foreground font-medium")}>
                     {value ? format(parseISO(value), 'MMM d, yyyy') : 'Select Date'}
                 </span>
-                <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform shrink-0 ml-1", isOpen && "rotate-180")} />
+                <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform shrink-0 ml-1", isOpen && "rotate-180")} />
             </button>
 
             <AnimatePresence>
@@ -67,17 +68,17 @@ function PremiumDatePicker({ value, onChange }: { value: string, onChange: (val:
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                            className="absolute top-[calc(100%+8px)] left-0 w-[280px] sm:w-[300px] bg-[#0C172E] border border-white/20 rounded-[24px] shadow-[0_24px_70px_rgba(0,0,0,0.9)] z-[200] p-4"
+                            className="absolute top-[calc(100%+8px)] left-0 w-[280px] sm:w-[300px] bg-surface-overlay border border-border rounded-[24px] shadow-2xl z-[200] p-4"
                         >
                             <div className="flex justify-between items-center mb-3 px-1">
-                                <button type="button" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white"><ChevronLeft className="w-4 h-4" /></button>
-                                <span className="text-[14px] font-bold text-white tracking-wide whitespace-nowrap">{format(currentMonth, 'MMMM yyyy')}</span>
-                                <button type="button" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white"><ChevronRight className="w-4 h-4" /></button>
+                                <button type="button" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1.5 hover:bg-surface-interactive rounded-full transition-colors text-foreground cursor-pointer"><ChevronLeft className="w-4 h-4" /></button>
+                                <span className="text-[14px] font-bold text-foreground tracking-wide whitespace-nowrap">{format(currentMonth, 'MMMM yyyy')}</span>
+                                <button type="button" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1.5 hover:bg-surface-interactive rounded-full transition-colors text-foreground cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
                             </div>
 
                             <div className="grid grid-cols-7 gap-1 mb-2 text-center">
                                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                                    <div key={day} className="text-center text-[10px] font-extrabold tracking-wider text-slate-400 uppercase leading-none py-1">{day}</div>
+                                    <div key={day} className="text-center text-[10px] font-extrabold tracking-wider text-muted-foreground uppercase leading-none py-1">{day}</div>
                                 ))}
                             </div>
 
@@ -96,10 +97,10 @@ function PremiumDatePicker({ value, onChange }: { value: string, onChange: (val:
                                                 setIsOpen(false);
                                             }}
                                             className={cn(
-                                                "aspect-square rounded-full flex items-center justify-center text-[13px] transition-all relative z-10",
-                                                !isCurrentMonth ? "text-slate-600" : "text-slate-300 hover:text-white",
+                                                "aspect-square rounded-full flex items-center justify-center text-[13px] transition-all relative z-10 cursor-pointer",
+                                                !isCurrentMonth ? "text-muted-foreground/40" : "text-foreground hover:bg-surface-interactive",
                                                 isSelected && "text-[#0A1121] font-bold",
-                                                isToday && !isSelected && "text-[#0BCE83] font-bold"
+                                                isToday && !isSelected && "text-emerald-500 font-bold"
                                             )}
                                         >
                                             {isSelected && (
@@ -129,10 +130,10 @@ function PremiumSelect({ value, onChange, options, labelMap }: { value: string |
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full bg-white/[0.06] border border-white/15 hover:border-white/25 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all shadow-inner flex items-center justify-between"
+                className="w-full bg-surface-interactive border border-border hover:border-border/80 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all shadow-inner flex items-center justify-between cursor-pointer"
             >
-                <span className="text-white font-bold">{labelMap ? labelMap[value] : value}</span>
-                <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", isOpen && "rotate-180")} />
+                <span className="text-foreground font-bold">{labelMap ? labelMap[value] : value}</span>
+                <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
             </button>
 
             <AnimatePresence>
@@ -144,7 +145,7 @@ function PremiumSelect({ value, onChange, options, labelMap }: { value: string |
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                            className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#0F172A]/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-50 p-2 flex flex-col gap-1"
+                            className="absolute top-[calc(100%+8px)] left-0 right-0 bg-surface-overlay backdrop-blur-2xl border border-border rounded-2xl shadow-2xl z-50 p-2 flex flex-col gap-1"
                         >
                             {options.map(opt => (
                                 <button
@@ -155,10 +156,10 @@ function PremiumSelect({ value, onChange, options, labelMap }: { value: string |
                                         setIsOpen(false);
                                     }}
                                     className={cn(
-                                        "px-4 py-3 rounded-xl text-left text-[15px] transition-all font-medium",
+                                        "px-4 py-3 rounded-xl text-left text-[15px] transition-all font-medium cursor-pointer",
                                         value === opt
-                                            ? "bg-[#0BCE83]/10 text-[#0BCE83] font-bold shadow-sm border border-[#0BCE83]/20"
-                                            : "text-slate-300 hover:bg-white/10 hover:text-white border border-transparent"
+                                            ? "bg-[#0BCE83]/10 text-emerald-500 font-bold shadow-sm border border-[#0BCE83]/20"
+                                            : "text-foreground hover:bg-surface-interactive border border-transparent"
                                     )}
                                 >
                                     {labelMap ? labelMap[opt] : opt}
@@ -343,26 +344,27 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 overflow-hidden">
+        <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/40 backdrop-blur-[2px] dark:bg-black/50 p-4 sm:p-6 overflow-hidden">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="relative bg-[#0F172A]/95 dark:bg-[#0B132B]/95 backdrop-blur-2xl rounded-3xl border border-white/15 shadow-[0_25px_80px_rgba(0,0,0,0.85)] w-full max-w-[480px] max-h-[88vh] overflow-hidden flex flex-col ring-1 ring-white/10"
+                className="relative bg-surface-overlay dark:bg-[#13223F] rounded-3xl border border-border dark:border-white/12 shadow-[0_25px_60px_rgba(0,0,0,0.5)] w-full max-w-[480px] max-h-[88vh] overflow-hidden flex flex-col"
             >
-                <div className="px-6 py-5 flex justify-between items-center bg-white/[0.04] backdrop-blur-xl shrink-0 border-b border-white/10">
-                    <h2 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                <FocusTrap onEscape={onClose} ariaLabel="Create tournament">
+                <div className="px-6 py-5 flex justify-between items-center bg-surface-interactive/30 backdrop-blur-xl shrink-0 border-b border-border">
+                    <h2 className="text-xl font-black tracking-tight text-foreground flex items-center gap-2">
                         Create Tournament
                     </h2>
-                    <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
+                    <button onClick={onClose} className="p-2 rounded-full bg-surface-interactive hover:bg-surface-interactive/80 border border-border transition-colors text-muted-foreground hover:text-foreground cursor-pointer">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-hide flex flex-col">
                     <Stepper value={activeStep} onValueChange={setActiveStep} className="space-y-8 flex flex-col h-full">
-                        <StepperNav className="gap-3.5 shrink-0 bg-white/[0.03] p-3 rounded-2xl border border-white/10">
+                        <StepperNav className="gap-3.5 shrink-0 bg-surface-interactive/50 p-3 rounded-2xl border border-border">
                             {steps.map((step, index) => {
                                 const stepNum = index + 1;
                                 const isCompleted =
@@ -373,11 +375,11 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                 return (
                                     <StepperItem key={index} step={stepNum} completed={activeStep > stepNum || isCompleted} className="relative flex-1 items-start">
                                         <StepperTrigger className="flex flex-col items-start justify-center gap-3.5 grow pointer-events-none">
-                                            <StepperIndicator className="bg-white/10 rounded-full h-1.5 w-full data-[state=active]:bg-[#0BCE83] data-[state=completed]:bg-[#0BCE83] transition-colors overflow-hidden relative">
+                                            <StepperIndicator className="bg-surface-interactive rounded-full h-1.5 w-full data-[state=active]:bg-[#0BCE83] data-[state=completed]:bg-[#0BCE83] transition-colors overflow-hidden relative">
                                                 <div className="absolute inset-0" />
                                             </StepperIndicator>
                                             <div className="flex flex-col items-start gap-1">
-                                                <StepperTitle className="text-start text-xs font-bold uppercase tracking-wider text-slate-400 group-data-[state=active]/step:text-white group-data-[state=completed]/step:text-[#0BCE83] transition-colors">
+                                                <StepperTitle className="text-start text-xs font-bold uppercase tracking-wider text-muted-foreground group-data-[state=active]/step:text-foreground group-data-[state=completed]/step:text-[#0BCE83] transition-colors">
                                                     {step.title}
                                                 </StepperTitle>
                                             </div>
@@ -391,11 +393,11 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                             {/* STEP 1: Basic Details */}
                             <StepperContent value={1} className="flex flex-col gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Tournament Name</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Tournament Name</label>
                                     <input
                                         type="text"
                                         placeholder="e.g. Summer Smash 2026"
-                                        className="w-full bg-white/[0.06] border border-white/15 hover:border-white/25 focus:border-[#0BCE83] focus:ring-2 focus:ring-[#0BCE83]/40 rounded-2xl px-4 py-3 text-white text-[15px] font-semibold transition-all placeholder:text-slate-400 shadow-inner"
+                                        className="w-full bg-surface-interactive border border-border hover:border-border/80 focus:border-[#0BCE83] focus:ring-2 focus:ring-[#0BCE83]/40 rounded-2xl px-4 py-3 text-foreground text-[15px] font-semibold transition-all placeholder:text-muted-foreground shadow-inner"
                                         value={name}
                                         onChange={e => setName(e.target.value)}
                                     />
@@ -403,11 +405,11 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Date</label>
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Date</label>
                                         <PremiumDatePicker value={date} onChange={setDate} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Play Type</label>
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Play Type</label>
                                         <PremiumSelect
                                             value={playType}
                                             onChange={(val) => {
@@ -421,7 +423,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Tournament Format</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Tournament Format</label>
                                     <PremiumSelect
                                         value={format}
                                         onChange={(val) => setFormat(val as string)}
@@ -431,14 +433,14 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
                                         {playType === 'doubles' ? 'Max Teams' : 'Max Players'}
                                     </label>
                                     <input
                                         type="number"
                                         min="2"
                                         placeholder="e.g. 8"
-                                        className="w-full bg-white/[0.06] border border-white/15 hover:border-white/25 focus:border-[#0BCE83] focus:ring-2 focus:ring-[#0BCE83]/40 rounded-2xl px-4 py-3 text-white text-[15px] font-semibold transition-all placeholder:text-slate-400 shadow-inner"
+                                        className="w-full bg-surface-interactive border border-border hover:border-border/80 focus:border-[#0BCE83] focus:ring-2 focus:ring-[#0BCE83]/40 rounded-2xl px-4 py-3 text-foreground text-[15px] font-semibold transition-all placeholder:text-muted-foreground shadow-inner"
                                         value={capacity || ''}
                                         onChange={e => setCapacity(parseInt(e.target.value) || 0)}
                                     />
@@ -467,7 +469,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                             disabled={isRosterFull}
                                             placeholder={isRosterFull ? "Roster is full!" : "Search Picklers Account..."}
                                             className={cn(
-                                                "w-full bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] rounded-2xl pl-11 pr-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner",
+                                                "w-full bg-surface-interactive border border-border hover:border-border/80 rounded-2xl pl-11 pr-4 py-3.5 text-foreground text-sm font-semibold focus:outline-none focus-visible:ring-2 focus:ring-[#0BCE83]/50 transition-all placeholder:text-muted-foreground shadow-inner",
                                                 isRosterFull && "opacity-50 cursor-not-allowed"
                                             )}
                                             value={poolSearchText}
@@ -489,7 +491,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                                     {poolSearchText.trim().length > 0 && !enrolledPlayers.includes(poolSearchText.trim()) ? (
                                                         <button
                                                             type="button"
-                                                            className="w-full flex items-center gap-3 px-5 py-3 text-sm font-semibold text-[#0BCE83] hover:bg-white/[0.05] transition-colors"
+                                                            className="w-full flex items-center gap-3 px-5 py-3 text-sm font-semibold text-emerald-500 hover:bg-surface-interactive transition-colors cursor-pointer"
                                                             onClick={() => {
                                                                 setEnrolledPlayers(prev => [...prev, poolSearchText.trim()]);
                                                                 setPoolSearchText('');
@@ -521,7 +523,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         exit={{ opacity: 0, scale: 0.8 }}
                                                         key={p}
-                                                        className="flex items-center gap-2 bg-surface-interactive border border-border/50 pl-1 pr-1.5 py-1 rounded-full text-xs font-bold text-muted-foreground shadow-sm"
+                                                        className="flex items-center gap-2 bg-surface-interactive border border-border pl-1 pr-1.5 py-1 rounded-full text-xs font-bold text-foreground shadow-sm"
                                                     >
                                                         <PlayerAvatar teamName={p} teamType="SINGLES" size="sm" />
                                                         <span>{p}</span>
@@ -531,7 +533,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                                                 setEnrolledPlayers(prev => prev.filter(x => x !== p));
                                                                 setTeams([]);
                                                             }}
-                                                            className="hover:bg-slate-700 rounded-full p-1 transition-colors text-muted-foreground hover:text-white"
+                                                            className="hover:bg-surface-interactive/80 rounded-full p-1 transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
                                                         >
                                                             <X className="w-3.5 h-3.5" />
                                                         </button>
@@ -548,9 +550,9 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                 {playType === 'singles' ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
                                         <div className="w-16 h-16 bg-[#0BCE83]/10 rounded-full flex items-center justify-center mb-4">
-                                            <Trophy className="w-8 h-8 text-muted-foreground" />
+                                            <Trophy className="w-8 h-8 text-emerald-500" />
                                         </div>
-                                        <h3 className="text-xl font-bold text-white mb-2">Ready to Go!</h3>
+                                        <h3 className="text-xl font-bold text-foreground mb-2">Ready to Go!</h3>
                                         <p className="text-sm text-muted-foreground">Your {capacity}-player singles tournament is fully configured and ready to be generated.</p>
                                     </div>
                                 ) : (
@@ -558,7 +560,7 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                         <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                                             Team Pairing Mode
                                         </label>
-                                        <div className="flex gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl mb-6">
+                                        <div className="flex gap-1 bg-surface-interactive p-1 rounded-xl mb-6 border border-border">
                                             {['auto', 'manual'].map((mode) => (
                                                 <button
                                                     key={mode}
@@ -569,9 +571,9 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                                         setSelectedToPair(null);
                                                     }}
                                                     className={cn(
-                                                        "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200 relative z-10",
+                                                        "flex-1 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200 relative z-10 cursor-pointer",
                                                         pairingMode === mode
-                                                            ? "bg-white dark:bg-[#1E293B] text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-black/5 dark:border-white/5"
+                                                            ? "bg-surface-overlay text-foreground shadow-sm border border-border"
                                                             : "text-muted-foreground hover:text-foreground border border-transparent"
                                                     )}
                                                 >
@@ -581,23 +583,23 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                         </div>
 
                                         {pairingMode === 'auto' ? (
-                                            <div className="flex flex-col items-center justify-center p-8 bg-white/[0.02] rounded-3xl border border-white/[0.05] shadow-inner">
+                                            <div className="flex flex-col items-center justify-center p-8 bg-surface-interactive/40 rounded-3xl border border-border shadow-inner">
                                                 <button
                                                     type="button"
                                                     onClick={handleAutoMix}
-                                                    className="px-6 py-3.5 bg-white/[0.05] border border-white/[0.1] hover:bg-white/[0.1] text-white font-bold rounded-xl transition-all flex items-center gap-2 active:scale-95 shadow-lg"
+                                                    className="px-6 py-3.5 bg-surface-interactive border border-border hover:bg-surface-interactive/80 text-foreground font-bold rounded-xl transition-all flex items-center gap-2 active:scale-95 shadow-sm cursor-pointer"
                                                 >
                                                     🎲 Mix Teams Randomly
                                                 </button>
                                                 {teams.length === capacity && (
-                                                    <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-[#0BCE83] font-semibold mt-4">
+                                                    <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-emerald-500 font-semibold mt-4">
                                                         {capacity} Teams generated successfully!
                                                     </motion.p>
                                                 )}
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
-                                                <div className="text-xs font-medium text-muted-foreground bg-white/[0.02] p-3 rounded-lg border border-white/[0.05] text-center shadow-inner">
+                                                <div className="text-xs font-medium text-muted-foreground bg-surface-interactive/50 p-3 rounded-lg border border-border text-center shadow-inner">
                                                     Tap two players from the unassigned pool below to form a team.
                                                 </div>
 
@@ -613,10 +615,10 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                                                 type="button"
                                                                 onClick={() => handleManualPairTap(p)}
                                                                 className={cn(
-                                                                    "flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full text-sm font-bold transition-all active:scale-95 shadow-sm",
+                                                                    "flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full text-sm font-bold transition-all active:scale-95 shadow-sm cursor-pointer",
                                                                     selectedToPair === p
                                                                         ? "bg-[#0BCE83] text-[#0A1121] shadow-[0_4px_12px_rgba(11,206,131,0.3)] border border-[#0BCE83]/50"
-                                                                        : "bg-white/[0.03] text-slate-300 hover:bg-white/[0.08] border border-white/[0.08]"
+                                                                        : "bg-surface-interactive text-foreground hover:bg-surface-interactive/80 border border-border"
                                                                 )}
                                                             >
                                                                 <PlayerAvatar teamName={p} teamType="SINGLES" size="sm" />
@@ -638,25 +640,25 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                                                             animate={{ opacity: 1, scale: 1 }}
                                                             exit={{ opacity: 0, scale: 0.9 }}
                                                             key={idx}
-                                                            className="bg-white/[0.02] rounded-xl p-3 border border-white/[0.05] shadow-inner flex flex-col gap-2 relative group"
+                                                            className="bg-surface-interactive/50 rounded-xl p-3 border border-border shadow-inner flex flex-col gap-2 relative group"
                                                         >
                                                             {pairingMode === 'manual' && (
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleUnpair(idx)}
-                                                                    className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                                                    className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
                                                                 >
                                                                     <X className="w-3.5 h-3.5" />
                                                                 </button>
                                                             )}
                                                             <span className="text-[10px] font-black tracking-tight text-muted-foreground">{t.name}</span>
                                                             <div className="flex flex-col gap-1.5">
-                                                                <div className="text-sm font-semibold text-white flex items-center gap-2">
+                                                                <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                                                                     <PlayerAvatar teamName={t.p1} teamType="SINGLES" size="sm" />
                                                                     <span className="truncate">{t.p1}</span>
                                                                 </div>
                                                                 {t.p2 && (
-                                                                    <div className="text-sm font-semibold text-white flex items-center gap-2">
+                                                                    <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                                                                         <PlayerAvatar teamName={t.p2} teamType="SINGLES" size="sm" />
                                                                         <span className="truncate">{t.p2}</span>
                                                                     </div>
@@ -675,12 +677,12 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                 </div>
 
                 {/* Bottom Action Bar */}
-                <div className="px-6 py-4 bg-surface-base border-t border-border z-20 shrink-0 flex gap-3">
+                <div className="px-6 py-4 bg-surface-overlay border-t border-border z-20 shrink-0 flex gap-3">
                     {activeStep > 1 && (
                         <button
                             type="button"
                             onClick={() => setActiveStep(prev => prev - 1)}
-                            className="p-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.1] text-white font-bold transition-colors active:scale-95 shadow-sm"
+                            className="p-4 rounded-2xl bg-surface-interactive border border-border hover:bg-surface-interactive/80 text-foreground font-bold transition-colors active:scale-95 shadow-sm cursor-pointer"
                         >
                             <ChevronLeft className="w-5 h-5" />
                         </button>
@@ -692,10 +694,10 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                             onClick={() => setActiveStep(prev => prev + 1)}
                             disabled={activeStep === 1 ? !isStep1Complete : !isStep2Complete}
                             className={cn(
-                                "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2",
+                                "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2 cursor-pointer",
                                 (activeStep === 1 ? isStep1Complete : isStep2Complete)
                                     ? "bg-[#0BCE83] text-[#0A1121] shadow-[0_10px_30px_rgba(11,206,131,0.25)] hover:shadow-[0_10px_40px_rgba(11,206,131,0.4)] hover:scale-[1.02] active:scale-[0.98]"
-                                    : "bg-white/[0.03] text-slate-500 cursor-not-allowed border border-white/[0.05]"
+                                    : "bg-surface-interactive text-muted-foreground/50 cursor-not-allowed border border-border"
                             )}
                         >
                             Next Step <ChevronRight className="w-5 h-5" />
@@ -706,16 +708,17 @@ export function CreateTournamentModal({ isOpen, onClose }: { isOpen: boolean, on
                             onClick={handleSubmit}
                             disabled={!isStep3Complete}
                             className={cn(
-                                "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2 shadow-xl",
+                                "flex-1 py-4 rounded-2xl font-black text-[15px] transition-all flex items-center justify-center gap-2 shadow-xl cursor-pointer",
                                 isStep3Complete
                                     ? "bg-[#0BCE83] text-[#0A1121] shadow-[0_10px_30px_rgba(11,206,131,0.25)] hover:shadow-[0_10px_40px_rgba(11,206,131,0.4)] hover:scale-[1.02] active:scale-[0.98]"
-                                    : "bg-white/[0.03] text-slate-500 cursor-not-allowed border border-white/[0.05]"
+                                    : "bg-surface-interactive text-muted-foreground/50 cursor-not-allowed border border-border"
                             )}
                         >
                             Create Tournament <Check className="w-5 h-5" />
                         </button>
                     )}
                 </div>
+                </FocusTrap>
             </motion.div>
         </div>
     );
